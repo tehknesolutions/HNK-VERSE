@@ -588,7 +588,7 @@ Not in ZERO:
 7. Define ZERO event contracts.
 8. Define persistence schema.
 9. Define first world/entity/placement contracts.
-10. Define deterministic ZERO fixture. **ACTIVE in ZERO-PERSISTENCE-SCHEMA-FIXTURE-V1.md.**
+10. Define deterministic ZERO fixture. **LOCKED in ZERO-PERSISTENCE-SCHEMA-FIXTURE-V1.md.**
 11. Define visual target/reference board.
 12. Define asset status/promotional gates for ZERO.
 13. Produce ZERO technical architecture and sprint plan.
@@ -684,3 +684,26 @@ Important implementation gap discovered:
 the current contracts package still requires `CodexRef.canonicalId: string`. ZERO requires a truthful pending-reference union before runtime implementation; fake canonical IDs are forbidden.
 
 The persistence schema/fixture remains PROPOSAL until Creator lock.
+
+
+## 35. ZERO Technical Architecture + Contracts state
+
+`ZERO-TECHNICAL-ARCHITECTURE-CONTRACTS-V1.md` is the active technical proposal.
+
+Bootstrap code is now present for:
+
+- `@hnk-verse/contracts`;
+- `@hnk-verse/domain`;
+- `@hnk-verse/persistence`;
+- `@hnk-verse/fixtures`.
+
+The proposal introduces:
+
+- resolved/pending CODEX reference typing;
+- ZERO command/event/rejection registries;
+- deterministic stable IDs;
+- pure event reduction and milestone predicates;
+- persistence ports;
+- deterministic Malkuth fixture and golden-state assertions.
+
+This code is **not yet declared CI-green**. TypeScript compilation, tests, command handlers and in-memory persistence remain the next implementation gate.
