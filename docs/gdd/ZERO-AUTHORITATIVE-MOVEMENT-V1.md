@@ -131,16 +131,22 @@ The browser-local persistence check in repo is also extended to verify checkpoin
 
 ## 9. Current limitations
 
-Movement V1 validates Land bounds but does not yet implement:
+The next spatial layer is implemented in `ZERO-INTERACTION-RANGE-COLLISION-V1.md`.
+
+Now implemented:
 
 - fixture collision;
-- walls/doors;
-- pathfinding;
-- range gating for every interaction;
-- terrain traversal capabilities;
-- movement Energy cost.
+- Home wall collision;
+- explicit traversable threshold;
+- single-step movement;
+- domain-enforced interaction range.
 
-Those are gameplay-system gates, not reasons to keep Avatar position presentation-only.
+Still deferred:
+
+- stateful doors;
+- generalized Agent pathfinding;
+- terrain traversal capabilities/costs;
+- movement Energy/time costs.
 
 ## 10. Classification
 
