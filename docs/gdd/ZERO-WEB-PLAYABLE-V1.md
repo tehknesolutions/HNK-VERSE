@@ -166,13 +166,13 @@ Keyboard/touch movement remains visually immediate:
 
 The authority gap from the first implementation is now closed by `ZERO-AUTHORITATIVE-MOVEMENT-V1.md`.
 
-Visual movement is debounced into:
+Logical movement is now reconciled by `ZERO-CLICK-TO-WALK-PATH-ROUTING-V1.md`.
 
-`MoveAvatar → AvatarPositionCheckpointed`
+Keyboard, touch and click routes all execute accepted logical tiles through:
 
-after a short idle period.
+`MoveAvatar → AvatarPositionCheckpointed`.
 
-Therefore the renderer remains responsive while the Event Ledger stores safe logical checkpoints rather than animation frames.
+The Event Ledger records logical movement, not animation frames.
 
 ## 9. Camera
 
@@ -315,8 +315,9 @@ Therefore current classification is:
 6. authoritative Avatar movement/checkpoint — **IMPLEMENTED_LOCAL_GREEN**;
 7. Chronicle-derived event list surface — **IMPLEMENTED_LOCAL_GREEN**;
 8. interaction range + collision + Home threshold — **IMPLEMENTED / RUNNER_PENDING**;
-9. replace prototype glyphs with approved visual assets;
-9. connect trusted server/Postgres persistence when HNK-VERSE DB exists.
+9. click-to-walk + route preview + interaction routing — **IMPLEMENTED / RUNNER_PENDING**;
+10. replace prototype glyphs with approved visual assets;
+11. connect trusted server/Postgres persistence when HNK-VERSE DB exists.
 
 ## 16. Current classification
 
@@ -343,3 +344,17 @@ The implementation is suitable to merge as the first playable Web projection, bu
 - proximity-gated interactions;
 - Web distance affordances;
 - runtime path traversal in tests.
+
+
+## 18. Click-to-walk update
+
+`ZERO-CLICK-TO-WALK-PATH-ROUTING-V1.md` adds deterministic navigation on top of the spatial authority layer.
+
+The Web now supports:
+
+- click/tap a free cell → exact route;
+- click/tap an interactive fixture → route to a valid adjacent cell;
+- visible route preview;
+- step-by-step runtime authorization;
+- route interruption on rejected World state;
+- keyboard/mobile movement through the same logical-step contract.
