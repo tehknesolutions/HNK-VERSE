@@ -595,7 +595,7 @@ Not in ZERO:
 
 ## 32. ZERO Home + Land design state
 
-`ZERO-HOME-LAND-DESIGN-V0.1.md` is the active spatial proposal for the first playable environment.
+`ZERO-HOME-LAND-DESIGN-V0.1.md` is now **Creator-locked** as the spatial design for the first playable environment.
 
 It proposes one continuous 18×14 logical Land/Home scene containing:
 
@@ -609,7 +609,7 @@ It proposes one continuous 18×14 logical Land/Home scene containing:
 - fixed/controlled isometric camera with bounded zoom;
 - deterministic persistence matrix for reload validation.
 
-The spatial design remains PROPOSAL until Creator lock.
+The spatial design is LOCKED. `ZERO-INTERACTION-EVENT-CONTRACT-V0.1.md` is now the active proposal translating this space into commands, events, validation gates and deterministic persistence.
 
 ## 31. Content selection state
 

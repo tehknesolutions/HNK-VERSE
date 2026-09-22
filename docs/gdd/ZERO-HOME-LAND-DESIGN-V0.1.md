@@ -1,6 +1,6 @@
 # HNK-VERSE — ZERO HOME + LAND DESIGN V0.1
 
-**Status:** PROPOSAL — awaiting Creator lock  
+**Status:** LOCKED — Creator-approved ZERO Home + Land design  
 **Date:** 2026-09-22  
 **Parent:** HNK-VERSE GDD V0.1 / ZERO Content Selection V0.1 LOCK  
 **Scope:** ZERO / Malkuth / first 10-minute playable environment
@@ -621,7 +621,7 @@ This proposal does not add:
 - new HNK words;
 - a canonical CODEX-HNK Malkuth ID.
 
-## 28. Candidate lock decisions
+## 28. Locked decisions
 
 1. ZERO begins in one continuous Home + owned Land scene in Malkuth.
 2. The logical world uses an 18×14 deterministic grid beneath isometric projection for ZERO.
