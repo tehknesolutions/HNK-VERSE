@@ -14,6 +14,11 @@
     "test:zero": "node --experimental-strip-types scripts/zero-runtime-check.ts"
   },
   "devDependencies": {
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "@hnk-verse/contracts": "workspace:*",
+    "@hnk-verse/domain": "workspace:*",
+    "@hnk-verse/persistence": "workspace:*",
+    "@hnk-verse/fixtures": "workspace:*",
+    "@hnk-verse/simulation": "workspace:*"
   }
 }
