@@ -46,7 +46,7 @@ function fixtureEvent(
   index: number,
   eventType: string,
   payload: unknown,
-  actorId = ZERO_IDS.avatar,
+  actorId: string = ZERO_IDS.avatar,
   targetId?: string,
   correlationId = 'CORR-ZERO',
   causationId?: string,
