@@ -98,3 +98,31 @@ Current branch-level implementation introduces:
 - deterministic Malkuth fixture event stream and golden-state assertions.
 
 Important: this is a bootstrap, not yet a claim of CI-green runtime implementation. Compilation, unit tests, command handlers and storage adapters remain the next execution gate.
+
+
+## Production persistence boundary — V1
+
+The first durable adapter is PostgreSQL/Supabase-compatible while domain ports remain vendor-neutral.
+
+```text
+validated command
+      ↓
+PostgresPersistence
+      ↓
+hnk_verse_private.world_streams
+      ├─→ world_events (append-only)
+      ├─→ command_receipts
+      └─→ world_snapshots
+```
+
+The authoritative persistence core is intentionally private and is not exposed as a browser Data API surface.
+
+Current implementation status:
+
+- private declarative schema: present;
+- Postgres persistence port implementation: present;
+- static schema security gate: present;
+- dedicated HNK-VERSE remote Supabase project: not provisioned;
+- remote Postgres integration tests: pending.
+
+Other product databases must not be reused implicitly.
