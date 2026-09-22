@@ -16,6 +16,13 @@ import {
   ZeroCommandRuntime,
   stableStateHash,
 } from '@hnk-verse/simulation';
+import {
+  ZERO_WORLD_POSITIONS,
+  insideZeroLand,
+  isStaticSolidCell,
+  manhattanDistance,
+  type ZeroLogicalPoint,
+} from '@hnk-verse/world';
 
 function assert(condition: unknown, message: string): asserts condition {
   if (!condition) throw new Error(message);
@@ -65,11 +72,147 @@ function ports(store: InMemoryPersistence<ZeroWorldState>) {
   };
 }
 
+let autoMoveSerial = 0;
+
+function payloadRecord(cmd: HnkCommand<unknown>): Record<string, unknown> {
+  return (cmd.payload ?? {}) as Record<string, unknown>;
+}
+
+function interactionTargetForCommand(
+  cmd: HnkCommand<unknown>,
+): ZeroLogicalPoint | null {
+  const payload = payloadRecord(cmd);
+
+  switch (cmd.commandType) {
+    case 'ObserveLexeme':
+      return ZERO_WORLD_POSITIONS.valiSurface;
+    case 'RequestLexemeTeaching':
+    case 'DiscoverKnowledge':
+    case 'InteractWithAgent':
+    case 'OfferTransfer':
+    case 'TransferOwnership':
+      return ZERO_WORLD_POSITIONS.metatron;
+    case 'GatherResource':
+      return ZERO_WORLD_POSITIONS.woodNode;
+    case 'AttemptPractice':
+    case 'CraftEntity':
+      return ZERO_WORLD_POSITIONS.workbench;
+    case 'Rest':
+      return ZERO_WORLD_POSITIONS.bed;
+    case 'ValidatePlacement':
+    case 'PlaceEntity': {
+      const logicalX = Number(payload.logicalX);
+      const logicalY = Number(payload.logicalY);
+      if (!Number.isInteger(logicalX) || !Number.isInteger(logicalY)) return null;
+      return { x: logicalX, y: logicalY };
+    }
+    default:
+      return null;
+  }
+}
+
+function cellBlocked(
+  state: ZeroWorldState,
+  point: ZeroLogicalPoint,
+): boolean {
+  if (isStaticSolidCell(point)) return true;
+
+  return Object.values(state.entities).some(
+    (entity) =>
+      entity.spatialBinding?.logicalX === point.x &&
+      entity.spatialBinding?.logicalY === point.y,
+  );
+}
+
+function pathToInteractionRange(
+  state: ZeroWorldState,
+  target: ZeroLogicalPoint,
+): ZeroLogicalPoint[] {
+  const start = {
+    x: state.avatarPosition.logicalX,
+    y: state.avatarPosition.logicalY,
+  };
+
+  if (manhattanDistance(start, target) <= 1) return [];
+
+  const queue: Array<{ point: ZeroLogicalPoint; path: ZeroLogicalPoint[] }> = [
+    { point: start, path: [] },
+  ];
+  const visited = new Set<string>([`${start.x},${start.y}`]);
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (!current) break;
+
+    const neighbors = [
+      { x: current.point.x + 1, y: current.point.y },
+      { x: current.point.x - 1, y: current.point.y },
+      { x: current.point.x, y: current.point.y + 1 },
+      { x: current.point.x, y: current.point.y - 1 },
+    ];
+
+    for (const next of neighbors) {
+      const key = `${next.x},${next.y}`;
+      if (visited.has(key) || !insideZeroLand(next) || cellBlocked(state, next)) {
+        continue;
+      }
+
+      const path = [...current.path, next];
+      if (manhattanDistance(next, target) === 1) return path;
+
+      visited.add(key);
+      queue.push({ point: next, path });
+    }
+  }
+
+  throw new Error(
+    `NO_WALKABLE_PATH_TO_INTERACTION_RANGE: ${target.x},${target.y}`,
+  );
+}
+
+async function prepareSpatialContext(
+  runtime: ZeroCommandRuntime,
+  cmd: HnkCommand<unknown>,
+): Promise<void> {
+  if (cmd.commandType === 'MoveAvatar') return;
+
+  const target = interactionTargetForCommand(cmd);
+  if (!target || !insideZeroLand(target)) return;
+
+  const path = pathToInteractionRange(runtime.state, target);
+  for (const step of path) {
+    autoMoveSerial += 1;
+    const move = await runtime.execute(
+      command(
+        `AUTO-MOVE-${autoMoveSerial}`,
+        'MoveAvatar',
+        {
+          logicalX: step.x,
+          logicalY: step.y,
+        },
+        { targetId: ZERO_IDS.avatar },
+      ),
+    );
+    assert(
+      move.accepted,
+      `Auto movement failed at (${step.x}, ${step.y}): ${move.rejectionCode}`,
+    );
+  }
+}
+
+async function executePrepared(
+  runtime: ZeroCommandRuntime,
+  cmd: HnkCommand<unknown>,
+) {
+  await prepareSpatialContext(runtime, cmd);
+  return runtime.execute(cmd);
+}
+
 async function expectAccepted(
   runtime: ZeroCommandRuntime,
   cmd: HnkCommand<unknown>,
 ): Promise<void> {
-  const result = await runtime.execute(cmd);
+  const result = await executePrepared(runtime, cmd);
   assert(
     result.accepted,
     `Expected ${cmd.commandType} to be accepted, got ${result.rejectionCode}`,
@@ -133,7 +276,8 @@ async function runGoldenPath(): Promise<void> {
 
   await expectAccepted(runtime, command('CMD-PRACTICE', 'AttemptPractice'));
 
-  const prematureOffer = await runtime.execute(
+  const prematureOffer = await executePrepared(
+    runtime,
     command('CMD-OFFER-PRE', 'OfferTransfer', {}, { targetId: ZERO_IDS.metatron }),
   );
   assert(prematureOffer.accepted, 'Premature offer command itself should be accepted.');
@@ -160,7 +304,8 @@ async function runGoldenPath(): Promise<void> {
     'Wrong placement rejection code',
   );
 
-  const validation = await runtime.execute(
+  const validation = await executePrepared(
+    runtime,
     command('CMD-VALIDATE', 'ValidatePlacement', {
       landId: ZERO_IDS.land,
       logicalX: 5,
@@ -186,7 +331,8 @@ async function runGoldenPath(): Promise<void> {
   );
   assert(snapshot.streamSequenceNo > 0, 'Snapshot stream position must be non-zero.');
 
-  const offer = await runtime.execute(
+  const offer = await executePrepared(
+    runtime,
     command('CMD-OFFER', 'OfferTransfer', {}, { targetId: ZERO_IDS.metatron }),
   );
   assert(offer.accepted, 'Post-placement offer should be accepted.');
@@ -349,13 +495,17 @@ async function runRejectedPrerequisites(): Promise<void> {
     ZERO_FIXTURE_V1_INITIAL_STATE,
   );
 
-  const gather = await runtime.execute(
+  const gather = await executePrepared(
+    runtime,
     command('REJECT-GATHER', 'GatherResource', { quantity: 1 }),
   );
   equal(gather.accepted, false, 'Gather before knowledge must fail');
   equal(gather.rejectionCode, 'KNOWLEDGE_REQUIRED', 'Wrong gather rejection');
 
-  const craft = await runtime.execute(command('REJECT-CRAFT', 'CraftEntity'));
+  const craft = await executePrepared(
+    runtime,
+    command('REJECT-CRAFT', 'CraftEntity'),
+  );
   equal(craft.accepted, false, 'Craft before knowledge must fail');
   equal(craft.rejectionCode, 'KNOWLEDGE_REQUIRED', 'Wrong craft rejection');
 }
