@@ -265,6 +265,8 @@ export const ZERO_IDS = {
   valiSurface: 'ENTITY-VALI-SURFACE-ZERO-001',
   cartographyTable: 'ENTITY-CARTOGRAPHY-TABLE-ZERO-001',
   woodNode: 'RESOURCE-NODE-WOOD-ZERO-001',
+  storageZone: 'ZONE-ZERO-HOME-STORAGE-001',
+  homeThreshold: 'THRESHOLD-ZERO-HOME-EAST-001',
   woodenBox: 'ENTITY-WOODEN-BOX-ZERO-001',
   playerInventory: 'INVENTORY-ZERO-PLAYER-001',
   metatronInventory: 'INVENTORY-ZERO-METATRON-001',
