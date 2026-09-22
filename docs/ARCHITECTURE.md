@@ -126,3 +126,52 @@ Current implementation status:
 - remote Postgres integration tests: pending.
 
 Other product databases must not be reused implicitly.
+
+
+## Web projection boundary — ZERO V1
+
+The first Web/PWA projection keeps presentation downstream of domain truth:
+
+```text
+@hnk-verse/contracts
+        ↓
+@hnk-verse/domain
+        ↓
+@hnk-verse/simulation
+        ↓
+@hnk-verse/persistence
+        ↓
+apps/web
+        ↑
+@hnk-verse/renderer
+```
+
+For the local vertical slice:
+
+```text
+ZeroCommandRuntime
+      ↓
+BrowserLocalPersistence
+      ↓
+localStorage Event/Receipt/Snapshot document
+```
+
+For production:
+
+```text
+ZeroCommandRuntime / trusted server boundary
+      ↓
+PostgresPersistence
+      ↓
+private PostgreSQL/Supabase durable schema
+```
+
+Renderer responsibilities:
+
+- logical-to-isometric projection;
+- scene fixture projection;
+- visual selection/highlight;
+- camera/zoom;
+- non-authoritative presentation movement.
+
+Renderer must not author inventory, Skill, ownership, Agent memory, relationship history or canonical authority.
