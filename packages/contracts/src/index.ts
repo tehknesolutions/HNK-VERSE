@@ -250,6 +250,7 @@ export type AvatarPositionCheckpointedPayload = {
   avatarId: string;
   logicalX: number;
   logicalY: number;
+  homeThreshold?: boolean;
 };
 
 export const ZERO_IDS = {
