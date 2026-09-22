@@ -66,6 +66,25 @@ const runtimeA = await ZeroCommandRuntime.create(
 );
 
 await runtimeA.execute(command('StartSession'));
+
+for (const [index, step] of [
+  { logicalX: 5, logicalY: 4 },
+  { logicalX: 6, logicalY: 4 },
+  { logicalX: 7, logicalY: 4 },
+].entries()) {
+  const moved = await runtimeA.execute(
+    command(
+      `WEB-CHECK-APPROACH-VALI-${index + 1}`,
+      'MoveAvatar',
+      step,
+      ZERO_IDS.avatar,
+    ),
+  );
+  if (!moved.accepted) {
+    throw new Error(`BROWSER_LOCAL_APPROACH_VALI_FAILED: ${moved.rejectionCode}`);
+  }
+}
+
 const observed = await runtimeA.execute(
   command('ObserveLexeme', {}, ZERO_IDS.valiSurface),
 );
@@ -84,19 +103,27 @@ if (!runtimeB.state.lexemeObserved) {
   throw new Error('BROWSER_LOCAL_RELOAD_LOST_STATE');
 }
 
-const moved = await runtimeB.execute(
-  command(
-    'MoveAvatar',
-    {
-      logicalX: 7,
-      logicalY: 6,
-    },
-    ZERO_IDS.avatar,
-  ),
-);
+for (const [index, step] of [
+  { logicalX: 7, logicalY: 5 },
+  { logicalX: 7, logicalY: 6 },
+].entries()) {
+  const moved = await runtimeB.execute(
+    command(
+      `WEB-CHECK-MOVE-${index + 1}`,
+      'MoveAvatar',
+      step,
+      ZERO_IDS.avatar,
+    ),
+  );
+
+  if (!moved.accepted) {
+    throw new Error(
+      `BROWSER_LOCAL_AVATAR_CHECKPOINT_FAILED: ${moved.rejectionCode}`,
+    );
+  }
+}
 
 if (
-  !moved.accepted ||
   runtimeB.state.avatarPosition.logicalX !== 7 ||
   runtimeB.state.avatarPosition.logicalY !== 6
 ) {

@@ -24,12 +24,19 @@ import {
   ZERO_SCENE_POSITIONS,
   buildZeroScene,
   insideZeroLand,
+  isHomeThresholdCell,
+  isHomeWallCell,
   logicalToIso,
   tilePolygon,
   type LogicalPoint,
   type ZeroSceneFixture,
 } from '@hnk-verse/renderer';
 import { ZeroCommandRuntime } from '@hnk-verse/simulation';
+import {
+  isStaticSolidCell,
+  isWithinInteractionRange,
+  manhattanDistance,
+} from '@hnk-verse/world';
 
 const appNode = document.querySelector<HTMLElement>('#app');
 if (!appNode) throw new Error('HNK_VERSE_WEB_ROOT_MISSING');
@@ -277,6 +284,8 @@ function renderTiles(): string {
     for (let x = 1; x <= ZERO_GRID.width; x += 1) {
       const classes = ['tile'];
       if (homeTile(x, y)) classes.push('tile--home');
+      if (isHomeWallCell({ x, y })) classes.push('tile--wall');
+      if (isHomeThresholdCell({ x, y })) classes.push('tile--threshold');
       if (x === 5 && y === 5) classes.push('tile--storage');
 
       tiles.push(
@@ -319,6 +328,17 @@ function primaryActionFor(
   state: ZeroWorldState,
 ): { label: string; enabled: boolean } {
   if (!fixture) return { label: 'Selecione algo no mundo', enabled: false };
+
+  if (
+    fixture.interactive &&
+    !isWithinInteractionRange(avatarVisual, fixture.logical)
+  ) {
+    const distance = manhattanDistance(avatarVisual, fixture.logical);
+    return {
+      label: `Aproxime-se · distância ${distance}`,
+      enabled: false,
+    };
+  }
 
   switch (fixture.kind) {
     case 'vali':
@@ -378,9 +398,22 @@ function primaryActionFor(
 }
 
 async function runPrimaryAction(): Promise<void> {
-  const state = runtime.state;
-  const fixture = selectedFixture(state);
+  const initialState = runtime.state;
+  const fixture = selectedFixture(initialState);
   if (!fixture) return;
+
+  if (
+    fixture.interactive &&
+    !isWithinInteractionRange(avatarVisual, fixture.logical)
+  ) {
+    notice = `Aproxime-se de ${fixture.label} para interagir.`;
+    render();
+    return;
+  }
+
+  if (!(await synchronizeAvatarCheckpoint())) return;
+
+  const state = runtime.state;
 
   switch (fixture.kind) {
     case 'vali': {
@@ -453,7 +486,7 @@ async function runPrimaryAction(): Promise<void> {
       if (!state.entities[ZERO_IDS.woodenBox]) {
         const result = await execute('CraftEntity', {}, ZERO_IDS.workbench);
         if (result?.accepted) {
-          selectedId = 'ZONE-ZERO-HOME-STORAGE-001';
+          selectedId = ZERO_IDS.storageZone;
           notice = 'Caixa criada. A identidade existe antes da posição. Agora coloque-a na Home.';
         }
       }
@@ -497,6 +530,44 @@ async function runPrimaryAction(): Promise<void> {
   }
 }
 
+async function synchronizeAvatarCheckpoint(): Promise<boolean> {
+  if (moveCheckpointTimer !== null) {
+    window.clearTimeout(moveCheckpointTimer);
+    moveCheckpointTimer = null;
+  }
+
+  const authoritative = runtime.state.avatarPosition;
+  if (
+    authoritative.logicalX === avatarVisual.x &&
+    authoritative.logicalY === avatarVisual.y
+  ) {
+    return true;
+  }
+
+  const checkpoint = { ...avatarVisual };
+  const result = await execute(
+    'MoveAvatar',
+    {
+      logicalX: checkpoint.x,
+      logicalY: checkpoint.y,
+    },
+    ZERO_IDS.avatar,
+  );
+
+  if (!result?.accepted) {
+    avatarVisual = {
+      x: runtime.state.avatarPosition.logicalX,
+      y: runtime.state.avatarPosition.logicalY,
+    };
+    notice = `Movimento rejeitado: ${result?.rejectionCode ?? 'UNKNOWN'}.`;
+    render();
+    return false;
+  }
+
+  notice = `Posição segura registrada em (${checkpoint.x}, ${checkpoint.y}).`;
+  return true;
+}
+
 function scheduleAvatarCheckpoint(): void {
   if (moveCheckpointTimer !== null) {
     window.clearTimeout(moveCheckpointTimer);
@@ -510,20 +581,18 @@ function scheduleAvatarCheckpoint(): void {
       return;
     }
 
-    const checkpoint = { ...avatarVisual };
-    const result = await execute(
-      'MoveAvatar',
-      {
-        logicalX: checkpoint.x,
-        logicalY: checkpoint.y,
-      },
-      ZERO_IDS.avatar,
-    );
-
-    if (result?.accepted) {
-      notice = `Posição segura registrada em (${checkpoint.x}, ${checkpoint.y}).`;
-    }
+    await synchronizeAvatarCheckpoint();
   }, 240);
+}
+
+function visualCellBlocked(next: LogicalPoint): boolean {
+  if (isStaticSolidCell(next)) return true;
+
+  return Object.values(runtime.state.entities).some(
+    (entity) =>
+      entity.spatialBinding?.logicalX === next.x &&
+      entity.spatialBinding?.logicalY === next.y,
+  );
 }
 
 function moveAvatar(dx: number, dy: number): void {
@@ -532,11 +601,25 @@ function moveAvatar(dx: number, dy: number): void {
     y: Math.max(1, Math.min(ZERO_GRID.height, avatarVisual.y + dy)),
   };
 
-  if (insideZeroLand(next)) {
-    avatarVisual = next;
-    scheduleAvatarCheckpoint();
+  if (!insideZeroLand(next)) {
+    notice = 'O limite desta Land impede esse passo.';
+    render();
+    return;
   }
 
+  if (visualCellBlocked(next)) {
+    notice = 'Caminho bloqueado. Procure outra passagem.';
+    render();
+    return;
+  }
+
+  avatarVisual = next;
+
+  if (isHomeThresholdCell(next)) {
+    notice = 'Você atravessou o threshold da Home.';
+  }
+
+  scheduleAvatarCheckpoint();
   render();
 }
 
@@ -595,7 +678,7 @@ function render(): void {
             </svg>
           </div>
 
-          <div class="mobile-pad" aria-label="Movimento visual">
+          <div class="mobile-pad" aria-label="Movimento no mundo">
             <span></span><button data-move="0,-1">▲</button><span></span>
             <button data-move="-1,0">◀</button><button class="mobile-pad__center" disabled>●</button><button data-move="1,0">▶</button>
             <span></span><button data-move="0,1">▼</button><span></span>
@@ -607,6 +690,7 @@ function render(): void {
             <p class="eyebrow">CONTEXTO</p>
             <h2>${selected?.label ?? 'Mundo'}</h2>
             <p class="muted">${selected?.state ?? 'Selecione um elemento do mundo.'}</p>
+            ${selected ? `<p class="distance-readout">Distância: ${manhattanDistance(avatarVisual, selected.logical)} · alcance: 1</p>` : ''}
             <button class="primary-action" data-primary-action ${action.enabled && !busy ? '' : 'disabled'}>
               ${busy ? 'Processando…' : action.label}
             </button>

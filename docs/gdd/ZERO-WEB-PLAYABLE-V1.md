@@ -313,8 +313,9 @@ Therefore current classification is:
 4. verify mobile/touch;
 5. verify service worker/PWA reload;
 6. authoritative Avatar movement/checkpoint — **IMPLEMENTED_LOCAL_GREEN**;
-7. add Chronicle-derived event list surface;
-8. replace prototype glyphs with approved visual assets;
+7. Chronicle-derived event list surface — **IMPLEMENTED_LOCAL_GREEN**;
+8. interaction range + collision + Home threshold — **IMPLEMENTED / RUNNER_PENDING**;
+9. replace prototype glyphs with approved visual assets;
 9. connect trusted server/Postgres persistence when HNK-VERSE DB exists.
 
 ## 16. Current classification
@@ -330,3 +331,15 @@ Therefore current classification is:
 `VISUAL_QA = PENDING`
 
 The implementation is suitable to merge as the first playable Web projection, but it is not yet a production release.
+
+
+## 17. Spatial interaction update
+
+`ZERO-INTERACTION-RANGE-COLLISION-V1.md` upgrades the first Web playable from remote contextual actions to a spatially constrained World:
+
+- single-step authoritative movement;
+- Home walls + traversable threshold;
+- static/dynamic collision;
+- proximity-gated interactions;
+- Web distance affordances;
+- runtime path traversal in tests.

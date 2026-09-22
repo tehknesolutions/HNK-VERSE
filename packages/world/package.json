@@ -1,5 +1,5 @@
 {
-  "name": "@hnk-verse/domain",
+  "name": "@hnk-verse/world",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -7,7 +7,6 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@hnk-verse/contracts": "workspace:*",
-    "@hnk-verse/world": "workspace:*"
+    "@hnk-verse/contracts": "workspace:*"
   }
 }

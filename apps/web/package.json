@@ -15,7 +15,8 @@
     "@hnk-verse/persistence": "workspace:*",
     "@hnk-verse/renderer": "workspace:*",
     "@hnk-verse/simulation": "workspace:*",
-    "@hnk-verse/chronicle": "workspace:*"
+    "@hnk-verse/chronicle": "workspace:*",
+    "@hnk-verse/world": "workspace:*"
   },
   "devDependencies": {
     "vite": "8.3.0"
