@@ -65,20 +65,20 @@ If the requested checkpoint already equals the current authoritative position, t
 
 ## 5. Web behavior
 
-The Web renderer keeps movement responsive:
+The original V1 used a short debounce between visual movement and authoritative checkpointing.
 
-keyboard/touch input  
-→ update `avatarVisual` immediately  
-→ render immediately.
+After single-cardinal-step movement became a domain invariant, that debounce was superseded by `ZERO-CLICK-TO-WALK-PATH-ROUTING-V1.md`.
 
-After 240 ms without another movement input:
+Current rule:
 
-`MoveAvatar` command  
+keyboard/touch/click route  
+→ one logical tile  
+→ `MoveAvatar`  
 → validation  
 → `AvatarPositionCheckpointed`  
-→ persisted runtime state.
+→ renderer advances.
 
-This prevents one permanent event per visual frame/key repeat while still creating durable safe-position checkpoints.
+The renderer may still interpolate between accepted logical cells without producing frame-level events.
 
 ## 6. Reload behavior
 
@@ -156,4 +156,6 @@ Still deferred:
 
 `SAFE_POSITION_PERSISTENCE = LOCAL_GREEN`
 
-`COLLISION_AND_PATHING = FUTURE_GATE`
+`COLLISION = IMPLEMENTED`
+
+`PATH_ROUTING = IMPLEMENTED / RUNNER_PENDING`
