@@ -631,3 +631,30 @@ Still open/blocking:
 - exact visual palette/art assets.
 
 The GDD must preserve each item's authority state rather than flattening candidate content into canon.
+
+## 33. Survival RPG mechanical reference
+
+`REFERENCE-SURVIVAL-RPG-ADDENDUM-V0.1.md` is now an approved mechanical-reference input.
+
+Absorbed into current ZERO design:
+
+- Bed/Rest becomes a functional optional World verb that restores the soft Energy/Rest state and advances World Time;
+- Workbench is a capability-bearing World fixture rather than a generic menu;
+- recipe/process availability remains knowledge-driven;
+- functional crafting is preferred over decoration-only crafting;
+- mobile interaction should preserve a compact contextual-action philosophy.
+
+Explicitly deferred until post-ZERO:
+
+- tool chains such as axe/pickaxe/hoe/fishing;
+- mining;
+- farming/water loops;
+- armor/weapons/combat;
+- dungeons/caves;
+- hidden-object/environmental puzzles;
+- multiple biomes;
+- boats/vehicle traversal;
+- time-specific threats;
+- broad recipe catalogs.
+
+The reference does not change the locked HD 2D/2.5D isometric visual identity and does not add punitive hunger/thirst systems.
