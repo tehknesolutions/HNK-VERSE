@@ -1,6 +1,6 @@
 # HNK-VERSE — ZERO PRODUCTION PERSISTENCE ADAPTER V1
 
-**Status:** PROPOSAL — awaiting Creator lock  
+**Status:** LOCKED — PostgreSQL/Supabase production persistence design approved for ZERO  
 **Date:** 2026-09-22  
 **Parent:** ZERO Runtime Verification V1 + locked Persistence Schema/Fixture V1  
 **Recommended candidate:** PostgreSQL / Supabase
@@ -408,7 +408,7 @@ Production persistence is green when:
 7. crash/restart persistence passes;
 8. advisors show no unreviewed security regressions.
 
-## 20. Candidate lock decisions
+## 20. Locked decisions
 
 1. PostgreSQL/Supabase is the preferred first production adapter, while persistence ports remain vendor-neutral.
 2. Event Ledger + command receipts + snapshots are the minimal durable core.
