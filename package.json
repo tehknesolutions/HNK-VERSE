@@ -21,6 +21,15 @@
     "test:path-routing": "node --experimental-strip-types scripts/zero-path-routing-check.ts"
   },
   "devDependencies": {
-    "typescript": "5.8.3"
-  }
+    "typescript": "5.8.3",
+    "@hnk-verse/chronicle": "workspace:*",
+    "@hnk-verse/contracts": "workspace:*",
+    "@hnk-verse/domain": "workspace:*",
+    "@hnk-verse/fixtures": "workspace:*",
+    "@hnk-verse/persistence": "workspace:*",
+    "@hnk-verse/renderer": "workspace:*",
+    "@hnk-verse/simulation": "workspace:*",
+    "@hnk-verse/world": "workspace:*"
+  },
+  "type": "module"
 }
