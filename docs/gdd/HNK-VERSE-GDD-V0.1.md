@@ -797,8 +797,9 @@ Verification classification:
 - TypeScript: `LOCAL PASS`;
 - deterministic ZERO runtime: `LOCAL PASS`;
 - browser-local persistence: `LOCAL PASS`;
-- Vite production build: `PENDING_EXTERNAL_RUNNER`;
-- visual desktop/mobile QA: `PENDING`.
+- Vite production build: `GREEN`;
+- visual desktop/mobile QA: `GREEN`;
+- production gameplay + reload E2E: `GREEN`.
 
 Important authority boundary:
 
@@ -899,3 +900,39 @@ Authority invariant:
 `PATH PLAN != WORLD MUTATION`.
 
 The planner proposes a sequence. The domain authorizes each logical step.
+
+
+## 44. ZERO first deploy + browser/device QA state
+
+`ZERO-FIRST-DEPLOY-BROWSER-QA-V1.md` closes the first public deployment and real-browser verification gate.
+
+Production:
+
+`https://hnk-verse.vercel.app`
+
+Verified:
+
+- reproducible frozen-lockfile Vercel build;
+- public production HTTP 200;
+- PWA manifest + active Service Worker;
+- desktop visual/browser QA;
+- 390×844 mobile layout measurements with no document horizontal overflow;
+- complete production gameplay loop through domain-authorized commands;
+- Chronicle/reflection;
+- browser-local persistence through reload;
+- zero final browser console errors;
+- production deployment `READY`.
+
+Live QA found and corrected:
+
+- mobile camera initial framing;
+- mobile world-container/toolbar sizing;
+- missing favicon/PWA icon.
+
+Current classification:
+
+`ZERO_FIRST_LIVE_GREEN`.
+
+This does not change the separate Postgres state:
+
+`REMOTE_DB_PENDING`.
