@@ -132,7 +132,11 @@ function mapEvent(row: EventRow): StoredEvent {
 export class PostgresPersistence<TState>
   implements EventStore, SnapshotStore<TState>, CommandReceiptStore
 {
-  constructor(private readonly database: PostgresExecutor) {}
+  private readonly database: PostgresExecutor;
+
+  constructor(database: PostgresExecutor) {
+    this.database = database;
+  }
 
   async append(input: AppendEventInput): Promise<AppendEventResult> {
     return this.database.transaction(async (tx) => {
