@@ -199,3 +199,20 @@ This avoids both failure modes:
 - one permanent Event Ledger event per animation frame.
 
 The current checkpoint validates the 18×14 Land bounds. Collision/pathing is a future World capability layer.
+
+
+## Chronicle projection boundary — ZERO V1
+
+Chronicle is a rebuildable projection, not persistence authority.
+
+```text
+EventStore
+   ↓
+@hnk-verse/chronicle
+   ├─→ Chronicle readable milestones
+   └─→ Event Inspector audit rows
+```
+
+Readable history intentionally filters low-level/noisy events while the Event Inspector preserves the full supplied stream.
+
+Human-authored reflection is rendered with explicit `HUMAN_AUTHORED_INTERPRETATION` authority and escaped before HTML insertion.
