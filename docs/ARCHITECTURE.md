@@ -216,3 +216,38 @@ EventStore
 Readable history intentionally filters low-level/noisy events while the Event Inspector preserves the full supplied stream.
 
 Human-authored reflection is rendered with explicit `HUMAN_AUTHORED_INTERPRETATION` authority and escaped before HTML insertion.
+
+
+## Logical world topology — ZERO V1
+
+The ZERO spatial truth now lives in `@hnk-verse/world`.
+
+```text
+@hnk-verse/contracts
+        ↓
+@hnk-verse/world  ← logical topology / collision / range
+        ↓
+@hnk-verse/domain ← command validation / World events
+        ↓
+@hnk-verse/simulation
+        ↓
+persistence
+
+@hnk-verse/world
+        ↓
+@hnk-verse/renderer ← isometric projection only
+        ↓
+apps/web
+```
+
+Spatial rules:
+
+- Land bounds: 18×14;
+- Home perimeter is solid;
+- east threshold at logical (9,6) is walkable;
+- static fixtures occupy logical cells;
+- placed entities add dynamic collision;
+- Avatar movement is one cardinal logical step;
+- interaction range is Manhattan distance <= 1.
+
+This removes duplicated topology from the renderer and prevents remote interactions from bypassing spatial play.
