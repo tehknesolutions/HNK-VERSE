@@ -259,11 +259,13 @@ export const ZERO_IDS = {
   valiSurface: 'ENTITY-VALI-SURFACE-ZERO-001',
   cartographyTable: 'ENTITY-CARTOGRAPHY-TABLE-ZERO-001',
   woodNode: 'RESOURCE-NODE-WOOD-ZERO-001',
+  woodenBox: 'ENTITY-WOODEN-BOX-ZERO-001',
   playerInventory: 'INVENTORY-ZERO-PLAYER-001',
   metatronInventory: 'INVENTORY-ZERO-METATRON-001',
   relationship: 'REL-ZERO-PLAYER-METATRON-001',
   skillRecord: 'SKILLREC-ZERO-PRACTICAL-WORK-001',
   eventStream: 'STREAM-ZERO-MALKUTH-001',
+  fixture: 'HNK-ZERO-MALKUTH-FIXTURE-V1',
 } as const;
 
 export const ZERO_PENDING_MALKUTH_CODEX_REF: PendingCodexRef = {
