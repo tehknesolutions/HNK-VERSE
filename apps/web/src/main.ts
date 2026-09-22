@@ -752,6 +752,35 @@ async function moveAvatar(dx: number, dy: number): Promise<void> {
   await walkRoute([next], 'movimento manual');
 }
 
+function focusWorldOnAvatar(): void {
+  if (window.innerWidth > 860) return;
+
+  const viewport = document.querySelector<HTMLElement>('.world-viewport');
+  const avatar = document.querySelector<SVGGElement>('.avatar');
+
+  if (!viewport || !avatar) return;
+
+  const viewportRect = viewport.getBoundingClientRect();
+  const avatarRect = avatar.getBoundingClientRect();
+
+  const avatarCenterX =
+    avatarRect.left - viewportRect.left + viewport.scrollLeft + avatarRect.width / 2;
+  const avatarCenterY =
+    avatarRect.top - viewportRect.top + viewport.scrollTop + avatarRect.height / 2;
+
+  viewport.scrollTo({
+    left: Math.max(0, avatarCenterX - viewport.clientWidth / 2),
+    top: Math.max(0, avatarCenterY - viewport.clientHeight / 2),
+    behavior: 'auto',
+  });
+}
+
+function scheduleWorldCameraSync(): void {
+  window.requestAnimationFrame(() => {
+    focusWorldOnAvatar();
+  });
+}
+
 function render(): void {
   const state = runtime.state;
   const scene = buildZeroScene(state);
@@ -991,6 +1020,8 @@ function render(): void {
 
   // Keep scene reference used by development diagnostics without making it truth.
   void scene;
+
+  scheduleWorldCameraSync();
 }
 
 window.addEventListener('keydown', (event) => {

@@ -704,10 +704,44 @@ h2 {
     top: 8px;
     left: 8px;
     right: 8px;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  .world-toolbar > * {
+    padding: 8px 9px;
   }
 
   .world-toolbar > :first-child {
-    max-width: 62%;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none;
+  }
+
+  .world-toolbar > :first-child small {
+    display: none;
+  }
+
+  .world-toolbar > :first-child strong {
+    white-space: nowrap;
+    font-size: 0.78rem;
+  }
+
+  .zoom-controls {
+    flex: 0 0 auto;
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .zoom-controls button {
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .zoom-controls span {
+    min-width: 42px;
+    text-align: center;
+    font-size: 0.72rem;
   }
 
   .world-card,
