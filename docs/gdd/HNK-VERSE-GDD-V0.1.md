@@ -216,7 +216,7 @@ Required bridge fields:
 - context of use;
 - runtime effect or perception relevance.
 
-**SELECTED SOURCE ASSET — PROPOSAL:** `VALI` / `LEX-013` — FROZEN recovered lexeme, "trabalho / trabalhar".
+**LOCKED ZERO SOURCE ASSET:** `VALI` / `LEX-013` — FROZEN recovered lexeme, "trabalho / trabalhar".
 
 ZERO binding is transversal and does **not** claim an L07/Malkuth curriculum binding. See `ZERO-CONTENT-SELECTION-V0.1.md`.
 
@@ -236,7 +236,7 @@ Required:
 - inventory representation;
 - provenance event.
 
-**SELECTED CONTENT CANDIDATE:** WOOD / MADEIRA.
+**LOCKED ZERO CONTENT:** WOOD / MADEIRA.
 
 Source rationale and authority boundary are recorded in `ZERO-CONTENT-SELECTION-V0.1.md`.
 
@@ -593,23 +593,41 @@ Not in ZERO:
 12. Define asset status/promotional gates for ZERO.
 13. Produce ZERO technical architecture and sprint plan.
 
+## 32. ZERO Home + Land design state
+
+`ZERO-HOME-LAND-DESIGN-V0.1.md` is the active spatial proposal for the first playable environment.
+
+It proposes one continuous 18×14 logical Land/Home scene containing:
+
+- one-room Home with Rest and an initially empty storage placement zone;
+- fixed Workbench;
+- VALI discovery surface;
+- Metatron/cartography area;
+- finite Wood node with 4 units;
+- first Wooden Box recipe using 3 Wood;
+- remaining 1 Wood reserved for the first ownership-transfer/social proof;
+- fixed/controlled isometric camera with bounded zoom;
+- deterministic persistence matrix for reload validation.
+
+The spatial design remains PROPOSAL until Creator lock.
+
 ## 31. Content selection state
 
-A source-grounded first selection is now documented in `ZERO-CONTENT-SELECTION-V0.1.md`:
+A source-grounded first selection is now **Creator-locked for ZERO** in `ZERO-CONTENT-SELECTION-V0.1.md`:
 
-- Malkuth knowledge theme → **Manifestação Concreta** — SOURCE-SUPPORTED DERIVATION;
+- Malkuth knowledge theme → **Manifestação Concreta** — SOURCE-SUPPORTED DERIVATION, locked for ZERO;
 - CODEX-HNK canonical Malkuth ID → **PENDING_CANONICAL_ID**;
-- HNK-Idioma → **VALI / LEX-013** — FROZEN source asset, proposed transversal ZERO binding;
-- Resource → **Wood / Madeira** — CONTENT CANDIDATE;
-- Functional creation → **Wooden Box / Caixa de Madeira** — CONTENT CANDIDATE;
-- Skill → **Basic Practical Work / Trabalho Prático** — DERIVED GAME SYSTEM CANDIDATE;
-- Agent role → **Cartographer / Witness / Investigation Companion / Builder** — CONTENT CANDIDATE;
-- Agent display name → **Metatron** — CONTENT CANDIDATE awaiting Creator lock.
+- HNK-Idioma → **VALI / LEX-013** — FROZEN source asset, locked transversal ZERO binding;
+- Resource → **Wood / Madeira** — ZERO CONTENT LOCK;
+- Functional creation → **Wooden Box / Caixa de Madeira** — ZERO CONTENT LOCK;
+- Skill → **Basic Practical Work / Trabalho Prático** — ZERO DERIVED GAMEPLAY LOCK;
+- Agent role → **Cartographer / Witness / Investigation Companion / Builder** — ZERO CONTENT LOCK;
+- Agent display name → **Metatron** — ZERO CONTENT LOCK.
 
 Still open/blocking:
 
 - exact published CODEX-HNK Malkuth canonical ID/version;
-- exact Home/Land layout;
+- exact Home/Land layout — proposal opened in `ZERO-HOME-LAND-DESIGN-V0.1.md`;
 - exact visual palette/art assets.
 
 The GDD must preserve each item's authority state rather than flattening candidate content into canon.
