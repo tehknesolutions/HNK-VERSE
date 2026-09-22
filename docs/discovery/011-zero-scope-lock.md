@@ -1,7 +1,8 @@
 # DISCOVERY 011 — ZERO SCOPE LOCK
 
-**Status:** PROPOSAL — awaiting Creator lock  
+**Status:** LOCKED  
 **Date:** 2026-09-22  
+**Authority:** Creator-approved HNK-VERSE product canon  
 **Depends on:** DISCOVERY 002–010 + LEGACY CONVERGENCE AUDIT V2
 
 ## 1. Purpose
@@ -809,7 +810,7 @@ Examples:
 - 1 language element → HNK-Idioma progression;
 - 1 world → multiverse traversal.
 
-## 45. Candidate ZERO lock decisions
+## 45. Locked ZERO decisions
 
 1. ZERO is the first complete end-to-end proof of HNK-VERSE, not a feature showcase.
 2. ZERO is located in the first executable Malkuth layer.
