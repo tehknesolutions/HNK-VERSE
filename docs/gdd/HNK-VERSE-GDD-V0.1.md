@@ -707,3 +707,44 @@ The proposal introduces:
 - deterministic Malkuth fixture and golden-state assertions.
 
 This code is **not yet declared CI-green**. TypeScript compilation, tests, command handlers and in-memory persistence remain the next implementation gate.
+
+
+## 36. ZERO Runtime verification state
+
+`ZERO-RUNTIME-VERIFICATION-V1.md` records the first executed deterministic runtime evidence.
+
+Current classification:
+
+- TypeScript strict check: **LOCAL PASS**
+- ZERO runtime check: **LOCAL PASS**
+- Node 22 strip-types compatibility defect: **FOUND + FIXED**
+- golden path / restore / replay / idempotency / concurrency / crash durability: **LOCAL PASS**
+- GitHub Actions: **RUNNER INFRASTRUCTURE BLOCKED BEFORE EXECUTION** (`runner_id=0`, `steps=[]`)
+
+Therefore:
+
+`LOCAL_RUNTIME_GREEN != GITHUB_ACTIONS_GREEN`
+
+No hosted-CI green claim is made yet.
+
+## 37. ZERO Production Persistence Adapter state
+
+`ZERO-PRODUCTION-PERSISTENCE-ADAPTER-V1.md` is the active persistence-production proposal.
+
+Recommended first adapter:
+
+**PostgreSQL / Supabase**
+
+while preserving the existing vendor-neutral persistence ports.
+
+The proposal keeps the durable core intentionally small:
+
+- identity / Verse / World metadata;
+- World stream sequence;
+- append-only Event Ledger;
+- command receipts;
+- snapshots.
+
+It requires atomic event+receipt append, idempotency, optimistic concurrency, RLS/ownership isolation when exposed through Supabase, and the same ZERO golden-path integration tests against real Postgres.
+
+The production adapter remains **PROPOSAL** until Creator lock.
