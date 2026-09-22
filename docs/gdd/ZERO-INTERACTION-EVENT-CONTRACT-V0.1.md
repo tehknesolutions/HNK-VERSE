@@ -1,6 +1,6 @@
 # HNK-VERSE — ZERO INTERACTION + EVENT CONTRACT V0.1
 
-**Status:** PROPOSAL — awaiting Creator lock  
+**Status:** LOCKED — Creator-approved ZERO interaction + event contract  
 **Date:** 2026-09-22  
 **Parent:** HNK-VERSE GDD V0.1 / ZERO Home + Land V0.1 LOCK  
 **Scope:** deterministic first playable loop
@@ -1079,7 +1079,7 @@ Queries/read models remain separate from commands.
 9. ownership mutation is domain-authoritative.
 10. placement is domain-authoritative.
 
-## 48. Candidate lock decisions
+## 48. Locked decisions
 
 1. ZERO uses command → validation → event → reducer → state as the only authoritative mutation path.
 2. Event Ledger events are immutable, versioned and causally traceable.
