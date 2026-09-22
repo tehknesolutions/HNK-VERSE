@@ -1,6 +1,12 @@
 import './styles.css';
 
 import {
+  projectEventInspector,
+  projectZeroChronicle,
+  type ChronicleEntry,
+  type EventInspectorRow,
+} from '@hnk-verse/chronicle';
+import {
   ZERO_IDS,
   type HnkCommand,
   type ZeroCommandType,
@@ -48,11 +54,16 @@ let avatarVisual: LogicalPoint = {
 };
 let moveCheckpointTimer: number | null = null;
 let cameraZoom = 1;
+let chronicleEntries: ChronicleEntry[] = [];
+let eventInspectorRows: EventInspectorRow[] = [];
+let eventInspectorOpen = false;
 let notice = 'Observe o mundo. O ZERO deriva progresso do estado real.';
 let busy = false;
 
 if (runtime.currentSequenceNo === 0) {
   await execute('StartSession');
+} else {
+  await refreshChronicle();
 }
 
 if ('serviceWorker' in navigator) {
@@ -73,6 +84,99 @@ function metatronWood(state = runtime.state): number {
   return (
     state.inventories[ZERO_IDS.metatronInventory]?.['RESOURCE-WOOD-ZERO-V0'] ?? 0
   );
+}
+
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
+}
+
+function formatWorldTimestamp(value: string): string {
+  return value
+    .replace('WORLD-DAY-', 'Dia ')
+    .replace('T', ' · ');
+}
+
+async function refreshChronicle(): Promise<void> {
+  const sources = await ports.events.readAfter(ZERO_IDS.world, 0);
+  chronicleEntries = projectZeroChronicle(sources);
+  eventInspectorRows = projectEventInspector(sources);
+}
+
+function renderChronicle(): string {
+  if (chronicleEntries.length === 0) {
+    return '<p class="muted">O Chronicle ainda não possui marcos derivados.</p>';
+  }
+
+  return chronicleEntries
+    .slice(-8)
+    .reverse()
+    .map((entry) => {
+      const authorityClass =
+        entry.authority === 'HUMAN_AUTHORED_INTERPRETATION'
+          ? ' chronicle-entry--interpretation'
+          : '';
+      const authorityLabel =
+        entry.authority === 'HUMAN_AUTHORED_INTERPRETATION'
+          ? 'INTERPRETAÇÃO'
+          : 'EVENTO DERIVADO';
+
+      return `
+        <article class="chronicle-entry${authorityClass}">
+          <div class="chronicle-entry__meta">
+            <span>${escapeHtml(entry.category)}</span>
+            <span>${authorityLabel}</span>
+            <span>${escapeHtml(formatWorldTimestamp(entry.worldTimestamp))}</span>
+          </div>
+          <strong>${escapeHtml(entry.title)}</strong>
+          <p>${escapeHtml(entry.detail)}</p>
+          <small>fonte: ${entry.sourceEventRefs.map(escapeHtml).join(' · ')}</small>
+        </article>
+      `;
+    })
+    .join('');
+}
+
+function renderEventInspector(): string {
+  if (!eventInspectorOpen) return '';
+
+  if (eventInspectorRows.length === 0) {
+    return '<div class="event-inspector"><p class="muted">Nenhum evento persistido.</p></div>';
+  }
+
+  return `
+    <div class="event-inspector">
+      ${eventInspectorRows
+        .slice()
+        .reverse()
+        .slice(0, 24)
+        .map(
+          (row) => `
+            <details class="event-row">
+              <summary>
+                <span>#${row.sequenceNo}</span>
+                <strong>${escapeHtml(row.eventType)}</strong>
+                <small>${escapeHtml(formatWorldTimestamp(row.worldTimestamp))}</small>
+              </summary>
+              <dl>
+                <dt>eventId</dt><dd>${escapeHtml(row.eventId)}</dd>
+                <dt>actor</dt><dd>${escapeHtml(row.actorId ?? '—')}</dd>
+                <dt>target</dt><dd>${escapeHtml(row.targetId ?? '—')}</dd>
+                <dt>correlation</dt><dd>${escapeHtml(row.correlationId)}</dd>
+                <dt>causation</dt><dd>${escapeHtml(row.causationId ?? '—')}</dd>
+              </dl>
+              <pre>${escapeHtml(JSON.stringify(row.payload, null, 2))}</pre>
+            </details>
+          `,
+        )
+        .join('')}
+    </div>
+  `;
 }
 
 function command(
@@ -123,6 +227,7 @@ async function execute(
       notice = 'O mundo foi recarregado após conflito de versão.';
     }
 
+    await refreshChronicle();
     return result;
   } finally {
     busy = false;
@@ -522,6 +627,24 @@ function render(): void {
             <p>${notice}</p>
           </section>
 
+          <section class="panel-section chronicle">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">CHRONICLE</p>
+                <h2>História reconstruível</h2>
+              </div>
+              <span class="count-badge">${chronicleEntries.length}</span>
+            </div>
+            <p class="muted">Derivado do Event Ledger. Reflexões humanas aparecem separadas como interpretação.</p>
+            <div class="chronicle-list">
+              ${renderChronicle()}
+            </div>
+            <button class="inspector-toggle" data-toggle-inspector>
+              ${eventInspectorOpen ? 'Ocultar Event Inspector' : 'Abrir Event Inspector'}
+            </button>
+            ${renderEventInspector()}
+          </section>
+
           <section class="panel-section reflection">
             <label for="reflection">Chronicle · reflexão humana</label>
             <textarea id="reflection" maxlength="280" placeholder="Registre sua interpretação; ela não vira cânone automaticamente."></textarea>
@@ -572,6 +695,12 @@ function render(): void {
     });
   });
 
+  document.querySelector<HTMLButtonElement>('[data-toggle-inspector]')
+    ?.addEventListener('click', () => {
+      eventInspectorOpen = !eventInspectorOpen;
+      render();
+    });
+
   document.querySelector<HTMLButtonElement>('[data-reflect]')?.addEventListener(
     'click',
     async () => {
@@ -595,6 +724,9 @@ function render(): void {
       );
       if (!confirmed) return;
       persistence.clear(ZERO_IDS.world);
+      chronicleEntries = [];
+      eventInspectorRows = [];
+      eventInspectorOpen = false;
       runtime = await ZeroCommandRuntime.create(
         ports,
         structuredClone(ZERO_FIXTURE_V1_INITIAL_STATE),
