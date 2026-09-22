@@ -193,6 +193,19 @@ h2 {
   stroke: rgba(211, 182, 106, 0.28);
 }
 
+.tile--wall {
+  fill: #111916;
+  stroke: rgba(202, 174, 105, 0.48);
+  stroke-width: 2;
+}
+
+.tile--threshold {
+  fill: #4a3c20;
+  stroke: rgba(245, 212, 124, 0.88);
+  stroke-width: 2;
+  filter: url(#glow);
+}
+
 .tile--storage {
   fill: #3a3021;
   stroke: rgba(231, 198, 111, 0.62);
@@ -326,6 +339,14 @@ h2 {
 .muted {
   color: #9fa99f;
   font-size: 0.86rem;
+}
+
+.distance-readout {
+  margin: 8px 0 10px;
+  color: #c9b877;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
 }
 
 .primary-action {
