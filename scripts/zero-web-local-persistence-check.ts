@@ -74,7 +74,6 @@ for (const [index, step] of [
 ].entries()) {
   const moved = await runtimeA.execute(
     command(
-      `WEB-CHECK-APPROACH-VALI-${index + 1}`,
       'MoveAvatar',
       step,
       ZERO_IDS.avatar,
@@ -109,7 +108,6 @@ for (const [index, step] of [
 ].entries()) {
   const moved = await runtimeB.execute(
     command(
-      `WEB-CHECK-MOVE-${index + 1}`,
       'MoveAvatar',
       step,
       ZERO_IDS.avatar,
