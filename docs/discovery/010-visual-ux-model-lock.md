@@ -1,7 +1,8 @@
-# DISCOVERY 010 — VISUAL + UX MODEL
+# DISCOVERY 010 — VISUAL + UX MODEL LOCK
 
-**Status:** PROPOSAL — awaiting Creator lock  
+**Status:** LOCKED  
 **Date:** 2026-09-22  
+**Authority:** Creator-approved HNK-VERSE product canon  
 **Depends on:** DISCOVERY 002–009 + LEGACY CONVERGENCE AUDIT V2
 
 ## 1. Design question
@@ -927,7 +928,7 @@ ZERO does not need:
 - cinematic 3D;
 - every HNK symbolic layer.
 
-## 52. Candidate lock decisions
+## 52. Locked decisions
 
 1. First production direction is HD 2D/2.5D isometric or near-isometric rather than full 3D or hard retro-pixel identity.
 2. The world must feel inhabitable/readable before mystical decoration is layered onto it.
