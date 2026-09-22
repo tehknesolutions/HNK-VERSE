@@ -175,3 +175,27 @@ Renderer responsibilities:
 - non-authoritative presentation movement.
 
 Renderer must not author inventory, Skill, ownership, Agent memory, relationship history or canonical authority.
+
+
+## Avatar movement authority — ZERO V1
+
+The Web renderer may animate/move the Avatar immediately, but durable position is owned by the domain.
+
+```text
+input
+→ avatarVisual
+→ immediate render
+→ debounce
+→ MoveAvatar
+→ validation
+→ AvatarPositionCheckpointed
+→ reducer
+→ persistence
+```
+
+This avoids both failure modes:
+
+- renderer position as truth;
+- one permanent Event Ledger event per animation frame.
+
+The current checkpoint validates the 18×14 Land bounds. Collision/pathing is a future World capability layer.
