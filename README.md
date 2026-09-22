@@ -28,6 +28,12 @@ These axes are related but not identical.
 
 `WORLD · LIFE · CREATION · CODEX_BRIDGE · LANGUAGE_BRIDGE · LUCIDITY · SIMULATION · AGENTS · SOCIAL · TELEMETRY · CREATOR`
 
+## Live ZERO
+
+**Production:** https://hnk-verse.vercel.app
+
+The first Malkuth ZERO Web/PWA is live and has passed real desktop/mobile browser automation, full gameplay-path execution and reload persistence verification.
+
 ## HNK-VERSE ZERO
 
 The first vertical slice intentionally contains the complete DNA in a small world:
@@ -82,4 +88,6 @@ HNK-VERSE consumes canonical/versioned sources. It must not silently invent HNK 
 
 ---
 
-**Current state:** `R0_BOOTSTRAP_STARTED`
+**Current state:** `ZERO_FIRST_LIVE_GREEN`
+
+Production database integration remains a separate gate: `REMOTE_DB_PENDING`.
