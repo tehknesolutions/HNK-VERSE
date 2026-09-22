@@ -33,6 +33,10 @@ export const ZERO_FIXTURE_V1_INITIAL_STATE: ZeroWorldState = {
   agentMemories: [],
   relationshipHistory: [],
   reflections: [],
+  avatarPosition: {
+    logicalX: 4,
+    logicalY: 4,
+  },
   energyRest: 60,
   worldTime: ZERO_FIXTURE_V1_WORLD_TIME,
   lastEventId: null,

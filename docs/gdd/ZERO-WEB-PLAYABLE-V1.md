@@ -158,23 +158,21 @@ It also proves idempotency for a rejected command without advancing World stream
 
 ## 8. Avatar movement boundary
 
-V1 includes keyboard/touch visual movement:
+Keyboard/touch movement remains visually immediate:
 
 - WASD;
 - arrow keys;
 - mobile directional pad.
 
-This movement is explicitly **presentation movement V1**.
+The authority gap from the first implementation is now closed by `ZERO-AUTHORITATIVE-MOVEMENT-V1.md`.
 
-The current domain command handler does not yet emit AvatarPositionCheckpointed from MoveAvatar.
+Visual movement is debounced into:
 
-Therefore:
+`MoveAvatar → AvatarPositionCheckpointed`
 
-VISUAL AVATAR POSITION != AUTHORITATIVE PERSISTED AVATAR POSITION
+after a short idle period.
 
-until the movement/checkpoint gate is implemented.
-
-This prevents renderer movement from masquerading as durable domain truth.
+Therefore the renderer remains responsive while the Event Ledger stores safe logical checkpoints rather than animation frames.
 
 ## 9. Camera
 
@@ -314,7 +312,7 @@ Therefore current classification is:
 3. verify desktop interactions;
 4. verify mobile/touch;
 5. verify service worker/PWA reload;
-6. implement authoritative Avatar movement/checkpoint;
+6. authoritative Avatar movement/checkpoint — **IMPLEMENTED_LOCAL_GREEN**;
 7. add Chronicle-derived event list surface;
 8. replace prototype glyphs with approved visual assets;
 9. connect trusted server/Postgres persistence when HNK-VERSE DB exists.

@@ -803,3 +803,26 @@ Verification classification:
 Important authority boundary:
 
 visual Avatar movement in V1 is presentation-only until `MoveAvatar` produces an authoritative persisted position/checkpoint event.
+
+
+## 40. ZERO authoritative Avatar movement state
+
+`ZERO-AUTHORITATIVE-MOVEMENT-V1.md` closes the presentation-only movement gap from the first Web playable.
+
+Implemented:
+
+- authoritative `avatarPosition` in `ZeroWorldState`;
+- deterministic fixture spawn at logical `(4, 4)`;
+- real `MoveAvatar` validation;
+- `AvatarPositionCheckpointed` reducer support;
+- duplicate-position checkpoint suppression;
+- Web visual movement with 240 ms debounced safe-position persistence;
+- restore/resync from authoritative state after runtime recreation.
+
+Local verification:
+
+- TypeScript: PASS;
+- ZERO runtime regression: PASS;
+- movement checkpoint + restore: PASS.
+
+Collision, pathing, terrain costs and interaction-range rules remain later gameplay gates.

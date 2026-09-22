@@ -84,15 +84,46 @@ if (!runtimeB.state.lexemeObserved) {
   throw new Error('BROWSER_LOCAL_RELOAD_LOST_STATE');
 }
 
-const beforeRetry = runtimeB.currentSequenceNo;
+const moved = await runtimeB.execute(
+  command(
+    'MoveAvatar',
+    {
+      logicalX: 7,
+      logicalY: 6,
+    },
+    ZERO_IDS.avatar,
+  ),
+);
+
+if (
+  !moved.accepted ||
+  runtimeB.state.avatarPosition.logicalX !== 7 ||
+  runtimeB.state.avatarPosition.logicalY !== 6
+) {
+  throw new Error('BROWSER_LOCAL_AVATAR_CHECKPOINT_FAILED');
+}
+
+const runtimeC = await ZeroCommandRuntime.create(
+  ports,
+  structuredClone(ZERO_FIXTURE_V1_INITIAL_STATE),
+);
+
+if (
+  runtimeC.state.avatarPosition.logicalX !== 7 ||
+  runtimeC.state.avatarPosition.logicalY !== 6
+) {
+  throw new Error('BROWSER_LOCAL_AVATAR_CHECKPOINT_RELOAD_FAILED');
+}
+
+const beforeRetry = runtimeC.currentSequenceNo;
 const retryCommand = command(
   'GatherResource',
   { quantity: 1 },
   ZERO_IDS.woodNode,
 );
 
-const firstRejected = await runtimeB.execute(retryCommand);
-const secondRejected = await runtimeB.execute(retryCommand);
+const firstRejected = await runtimeC.execute(retryCommand);
+const secondRejected = await runtimeC.execute(retryCommand);
 
 if (
   firstRejected.accepted ||
@@ -102,10 +133,10 @@ if (
   throw new Error('BROWSER_LOCAL_REJECTED_COMMAND_IDEMPOTENCY_FAILED');
 }
 
-if (runtimeB.currentSequenceNo !== beforeRetry) {
+if (runtimeC.currentSequenceNo !== beforeRetry) {
   throw new Error('BROWSER_LOCAL_REJECTED_COMMAND_CHANGED_WORLD_STREAM');
 }
 
 console.log(
-  'ZERO_WEB_LOCAL_PERSISTENCE_CHECK_PASS: restore + rejected-command idempotency',
+  'ZERO_WEB_LOCAL_PERSISTENCE_CHECK_PASS: restore + avatar checkpoint + rejected-command idempotency',
 );

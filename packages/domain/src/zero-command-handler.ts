@@ -664,7 +664,47 @@ export function handleZeroCommand(
         events: [event(command, 1, 'IdentitySessionEnded', {})],
       };
 
-    case 'MoveAvatar':
+    case 'MoveAvatar': {
+      const logicalX = Number(payload.logicalX);
+      const logicalY = Number(payload.logicalY);
+
+      if (
+        !Number.isInteger(logicalX) ||
+        !Number.isInteger(logicalY) ||
+        !withinZeroLand(logicalX, logicalY)
+      ) {
+        return reject('OUT_OF_BOUNDS');
+      }
+
+      if (
+        state.avatarPosition.logicalX === logicalX &&
+        state.avatarPosition.logicalY === logicalY
+      ) {
+        return {
+          accepted: true,
+          events: [],
+          data: { alreadyCheckpointed: true },
+        };
+      }
+
+      return {
+        accepted: true,
+        events: [
+          event(
+            command,
+            1,
+            'AvatarPositionCheckpointed',
+            {
+              avatarId: ZERO_IDS.avatar,
+              logicalX,
+              logicalY,
+            },
+            { targetId: ZERO_IDS.avatar },
+          ),
+        ],
+      };
+    }
+
     case 'InteractWithAgent':
       return { accepted: true, events: [] };
 
