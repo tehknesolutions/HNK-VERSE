@@ -47,6 +47,10 @@ export type ZeroWorldState = {
   agentMemories: ZeroAgentMemory[];
   relationshipHistory: ZeroRelationshipHistory[];
   reflections: ZeroReflection[];
+  avatarPosition: {
+    logicalX: number;
+    logicalY: number;
+  };
   energyRest: number;
   worldTime: string;
   lastEventId: string | null;
@@ -83,6 +87,13 @@ export function reduceZeroEvent(
   const payload = (event.payload ?? {}) as AnyPayload;
 
   switch (event.eventType) {
+    case 'AvatarPositionCheckpointed':
+      state.avatarPosition = {
+        logicalX: Number(payload.logicalX),
+        logicalY: Number(payload.logicalY),
+      };
+      break;
+
     case 'LexemeFormObserved':
       if (payload.lexemeRef === 'LEX-013') state.lexemeObserved = true;
       break;
