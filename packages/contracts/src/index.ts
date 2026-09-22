@@ -246,6 +246,12 @@ export type AvatarRestedPayload = {
   worldTimeAfter: string;
 };
 
+export type AvatarPositionCheckpointedPayload = {
+  avatarId: string;
+  logicalX: number;
+  logicalY: number;
+};
+
 export const ZERO_IDS = {
   hnkIdentity: 'HNKID-ZERO-001',
   verse: 'VERSE-ZERO-001',
