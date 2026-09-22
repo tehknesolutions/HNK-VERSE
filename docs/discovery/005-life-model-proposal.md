@@ -1,87 +1,77 @@
 # DISCOVERY 005 — LIFE MODEL
 
-**Status:** PROPOSAL — awaiting Creator lock  
+**Status:** REVISED PROPOSAL — awaiting Creator lock  
 **Date:** 2026-09-22  
-**Depends on:** DISCOVERY 002–004
+**Depends on:** DISCOVERY 002–004 + LEGACY CONVERGENCE AUDIT V1
 
 ## 1. Design question
 
 What does it mean to **live** inside HNK-VERSE?
 
-The Life Model defines the relationship between avatar embodiment, time, daily routine, home, needs, work, relationships, autonomy, Agents, creatures and life events.
+The Life Model defines embodiment, time, routine, home, needs, work, relationships, memory, autonomy, perception, consequences, Agents, creatures and persistent personal history.
 
-Its purpose is not to turn HNK-VERSE into a needs-management simulator. Its purpose is to make the Verse feel inhabited, persistent and consequential.
+Its purpose is not to turn HNK-VERSE into a needs-management simulator. Its purpose is to make the Verse feel inhabited, causally coherent, persistent and consequential.
 
 ## 2. Core principle
 
-> **LIFE IS NOT A TIMER BAR. LIFE IS A NETWORK OF STATES, ROUTINES, RELATIONSHIPS AND CONSEQUENCES.**
+> **LIFE IS NOT A TIMER BAR. LIFE IS A NETWORK OF STATES, ROUTINES, RELATIONSHIPS, PERCEPTIONS, MEMORIES AND CONSEQUENCES.**
 
-The Sims informs simulation readability, Stardew informs rhythm and home, Habbo informs social inhabitation, Westworld informs persistent character continuity, and HNK provides the deeper experiential/metaphysical structure.
+Reference inheritance is now split into two layers:
 
-## 3. Embodiment model
+- external inspirations: The Sims, Stardew Valley, Habbo, Westworld and related Discovery references;
+- internal Tehkné/HNK legacy: AFTERWORLD, Crônicas da Obra Viva, Athanor and Nova Aurora.
 
-A playable avatar is an embodied presence inside a specific world.
+## 3. Life truth model
 
-`HNK_IDENTITY → PERSONAL_VERSE → AVATAR → BODY_STATE + MIND_STATE + SOCIAL_STATE + PRACTICE_STATE + WORLD_CONTEXT`
+The audited legacy requires a stronger separation than the first proposal.
 
-These are runtime state categories, not claims about the real-world body, psychology or spirituality of the human user.
+`WORLD_EVENT → WORLD_STATE`
+
+is not the same as:
+
+`PERCEPTION → MEMORY → TESTIMONY → CLAIM → INTERPRETATION`
+
+Therefore:
+
+`WORLD TRUTH ≠ AVATAR/PERSONA KNOWLEDGE`
+
+and:
+
+`EVENT ≠ PERCEPTION ≠ MEMORY ≠ TESTIMONY ≠ CLAIM ≠ EVIDENCE ≠ INTERPRETATION ≠ CANON`
+
+This extends the existing Lucidity invariant.
+
+The renderer and narrative UI are projections of state; neither becomes authoritative merely by displaying something.
+
+## 4. Embodiment model
+
+`HNK_IDENTITY → PERSONAL_VERSE → AVATAR → BODY_STATE + MIND_STATE + SOCIAL_STATE + PRACTICE_STATE + KNOWLEDGE_STATE + WORLD_CONTEXT`
+
+These are runtime categories, not automatic assertions about the real-world human.
 
 ### BODY_STATE
-
-May include:
-
-- energy;
-- rest;
-- nourishment;
-- comfort;
-- movement;
-- environmental exposure;
-- temporary conditions defined by the local WORLD_RULESET.
+Energy, rest, nourishment, comfort, movement, exposure and local conditions.
 
 ### MIND_STATE
-
-May include:
-
-- focus;
-- stress/load;
-- curiosity;
-- confidence;
-- attention;
-- learned knowledge;
-- active goals.
+Focus, current load, curiosity, confidence, attention and active goals.
 
 ### SOCIAL_STATE
-
-May include:
-
-- familiarity;
-- trust;
-- affinity;
-- obligations;
-- group membership;
-- shared history;
-- reputation.
+Familiarity, trust, respect, affection/affinity, fear, suspicion, obligation, reputation, role and shared history.
 
 ### PRACTICE_STATE
+Current practices, reflections, symbolic correspondences, Codex-linked activity and HNK-Idioma usage.
 
-May include:
-
-- current practices;
-- rituals/quests completed;
-- reflections;
-- symbolic correspondences;
-- HNK-language usage;
-- progression records.
+### KNOWLEDGE_STATE
+What this embodied Persona/avatar has perceived, learned, hypothesized, supported, contradicted or not yet discovered.
 
 ### WORLD_CONTEXT
+The WORLD_RULESET and LOCAL_PHENOMENON_RULESET currently affecting the avatar.
 
-Defines which local laws currently affect the avatar.
+## 5. Needs model
 
-## 4. Needs model
+AFTERWORLD already proves needs/schedules technically, but HNK-VERSE changes the product philosophy.
 
-HNK-VERSE should avoid constantly punishing the player with rapidly draining bars.
-
-Needs should operate as **soft simulation pressures** and contextual states.
+Needs are **soft simulation pressures**, not constant punishment.
 
 Candidate needs:
 
@@ -90,64 +80,40 @@ Candidate needs:
 - safety/shelter;
 - comfort;
 - social connection;
-- focus/mental bandwidth;
+- focus;
 - purpose/meaningful activity.
 
-Needs may influence efficiency, available actions, animation, dialogue and routine, but should rarely hard-lock the player.
+Needs may influence action quality, efficiency, dialogue, routine and availability. Ordinary play should rarely hard-lock because a bar emptied.
 
-Different worlds may define different needs or disable some entirely.
+World Creators may redefine, disable or replace need families through local rules.
 
-## 5. Life rhythm
+## 6. Time and consequence
 
-The Verse needs time because time creates routine, anticipation and history.
-
-Each world defines:
+Each world owns:
 
 `WORLD_TIME = CALENDAR + DAY_CYCLE + SEASONS + LOCAL_EVENTS + TIME_SCALE`
 
-The Personal Verse additionally records provenance in real-world timestamps.
+Real-world timestamps remain separate provenance.
 
-World time and real-world time must remain distinguishable.
+Important actions may also create delayed consequences:
 
-### Proposed default
+`ACTION → EVENT → SCHEDULED CONSEQUENCE → FUTURE EVENT → STATE CHANGE`
 
-HNK-official worlds should use an accelerated day cycle suitable for gameplay while preserving optional links to real-world date/time for specific practices, events or seasonal content.
+This is adopted from Crônicas da Obra Viva's consequence model.
 
-Real-world synchronization must never be required for ordinary play.
+Real-world synchronization is optional for ordinary play.
 
-## 6. Daily loop
+## 7. Daily life loop
 
-A healthy baseline daily loop is:
+`WAKE / ARRIVE → ORIENT → CHOOSE → LEARN / WORK / EXPLORE / CREATE / SOCIALIZE / PRACTICE → OBSERVE CONSEQUENCES → RETURN → RECORD / REFLECT → REST`
 
-`WAKE → ORIENT → CHOOSE → LEARN / WORK / EXPLORE / CREATE / SOCIALIZE → RETURN → REFLECT → REST`
+A player is free to specialize by repeated choices rather than by mandatory class selection.
 
-The player is not required to perform all branches each day.
+## 8. Home as first life anchor
 
-The goal is agency plus rhythm.
+HOME is:
 
-A player may spend an entire day:
-
-- building;
-- studying;
-- farming;
-- exploring;
-- trading;
-- socializing;
-- crafting;
-- training;
-- governing;
-- caring for creatures;
-- doing nothing productive.
-
-The system should allow lifestyle identity to emerge from repeated choices.
-
-## 7. Home as life anchor
-
-HOME is the first persistent center of life.
-
-A home is simultaneously:
-
-- spawn/return point;
+- return/spawn point;
 - shelter;
 - storage;
 - identity expression;
@@ -155,347 +121,251 @@ A home is simultaneously:
 - creation surface;
 - practice space;
 - memory container;
+- research/knowledge surface;
 - progression anchor.
 
-The home should visibly evolve as the user learns, creates and forms relationships.
+The home should visibly change through action, learning, creation and relationship history.
 
-Objects inside the home may carry both gameplay function and symbolic/metaphysical correspondence.
+## 9. Functional object interaction
 
-## 8. Object interaction
+`AVAILABLE_ACTIONS = OBJECT_PROPERTIES + AVATAR_CAPABILITY + PERCEPTION + KNOWLEDGE + WORLD_RULES + CONTEXT`
 
-Life simulation depends on objects doing things.
+Objects may support use, storage, reading, research, crafting, processing, practice, communication, repair, upgrade, automation, trade, gifting and canonically defined symbolic/metaphysical operations.
 
-Objects should expose actions according to:
+This extends the original object model with Crônicas-style perception/knowledge requirements.
 
-`OBJECT_PROPERTIES + AVATAR_CAPABILITY + WORLD_RULES + CONTEXT`
+## 10. Relationship model
 
-An object may support:
+A relationship is not one friendship number.
 
-- use;
-- sit/rest;
-- store;
-- inspect;
-- read;
-- craft;
-- cook/process;
-- research;
-- practice;
-- communicate;
-- decorate;
-- repair;
-- upgrade;
-- automate;
-- trade;
-- gift;
-- activate symbolic/metaphysical interactions when canonically defined.
+Canonical candidate vector:
 
-The interaction system should be data-driven rather than hard-coded object by object.
+`RELATIONSHIP = FAMILIARITY + TRUST + RESPECT + AFFECTION/AFFINITY + FEAR + SUSPICION + OBLIGATION + ROLE + HISTORY + CURRENT_STATE`
 
-## 9. Relationship model
+Crônicas proves that relationship state can control what an Agent is willing to disclose.
 
-Relationships must not collapse to a single "friendship points" number.
+AFTERWORLD proves that social memory and reputation can propagate imperfectly through communities.
 
-Proposed relationship vector:
+Therefore relationship change must preserve **causal history**, not only final scores.
 
-`RELATIONSHIP = FAMILIARITY + TRUST + AFFINITY + HISTORY + OBLIGATION + ROLE + CURRENT_STATE`
+## 11. Testimony and social knowledge
 
-Examples:
+Agents may:
 
-Two characters may have high familiarity but low trust.
+- know something;
+- believe something;
+- remember something;
+- refuse to disclose something;
+- repeat something learned elsewhere;
+- be mistaken;
+- fabricate;
+- provide contaminated/non-independent testimony.
 
-Two may disagree often but hold strong mutual respect.
+Agent speech is therefore never automatically world truth.
 
-An Agent may remember a promise even after affinity changes.
+Multiple Agents repeating the same source do not automatically create independent corroboration.
 
-A creature may have high bond but no human-style dialogue.
+## 12. Relationship targets
 
-Relationship state must preserve significant events that caused change.
-
-## 10. Relationship targets
-
-The same foundational model can support:
+The foundational model may support:
 
 - human ↔ human;
-- human ↔ Agent;
 - avatar ↔ Agent;
-- avatar ↔ creature;
 - Agent ↔ Agent;
+- avatar ↔ creature;
 - Agent ↔ creature;
 - organization ↔ individual;
 - community ↔ individual.
 
-The UI and available mechanics differ by relationship type.
+UI and permitted actions vary by target type.
 
-## 11. Household and group life
+## 13. Household and group life
 
-A HOME may eventually become a shared household.
+A HOME may become a shared household containing avatars, invited humans, persistent Agents, creatures, rooms, schedules, shared inventory, responsibilities, permissions and production.
 
-A household may include:
+Household membership never implies equal ownership or canonical authority.
 
-- multiple avatars;
-- invited humans;
-- persistent Agents;
-- creatures;
-- shared inventories;
-- permissions;
-- responsibilities;
-- schedules;
-- rooms;
-- production.
-
-Household membership must not imply equal ownership or canonical authority.
-
-## 12. Autonomy
-
-HNK-VERSE should combine direct control with configurable autonomy.
+## 14. Autonomy
 
 ### Player avatars
+Direct control by default.
 
-Default to direct player control.
+Optional automation/routines may execute explicitly delegated low-risk actions.
 
-Optional routines/automation may allow the player to schedule or delegate repetitive actions.
-
-The game must never fabricate consequential player choices while the player is absent.
+The game must not fabricate consequential player decisions while absent.
 
 ### Agents
-
-Persistent Agents may act autonomously within goals, permissions, memory and WORLD_RULESET constraints.
+May act autonomously according to identity, goals, capabilities, needs, memory, relationships, permissions, knowledge and world rules.
 
 ### Creatures
+May possess routines, needs, habitat preferences, bonds, learned behaviors and work/companion roles according to species/world rules.
 
-Creatures may exhibit needs, routines, habitat preferences, work capability and relationships depending on species/world rules.
+## 15. Offline simulation
 
-## 13. Offline simulation
+Permitted offline progression may include:
 
-The world may continue to progress while the user is offline, but only within explicit bounded rules.
+- time;
+- allowed production;
+- crops/ecology;
+- scheduled consequences;
+- Agent routines;
+- bounded markets;
+- low-risk logistics.
 
-Offline simulation may:
+It must not silently:
 
-- advance clocks;
-- complete permitted production;
-- run Agent routines;
-- change markets within limits;
-- progress crops/ecology;
-- record scheduled events.
+- make high-stakes human decisions;
+- spend protected resources outside delegated policy;
+- erase protected creations;
+- convert interpretation into evidence;
+- modify HNK canon.
 
-Offline simulation must not:
+## 16. Work and professions
 
-- make irreversible high-stakes choices for the human;
-- spend protected resources without authorization;
-- reinterpret user experience as evidence;
-- alter HNK canon;
-- destroy protected creations without explicit world rules and safeguards.
+`ACTIVITY → SKILL → EVIDENCED EXPERIENCE → MASTERY CLUSTER → PROFESSION`
 
-## 14. Work and professions
+Professions emerge through demonstrated practice.
 
-A profession is learned through practice and knowledge, not selected as a permanent class at character creation.
+Examples include builder, farmer, gatherer, alchemist, researcher, engineer, merchant, linguist, explorer, educator, artist, architect, Agent designer, creature handler and governor.
 
-`ACTIVITY → SKILL → MASTERY CLUSTER → PROFESSION`
+Combat is one possible specialization.
 
-Examples may include:
+## 17. Economy of life
 
-- builder;
-- farmer;
-- gatherer;
-- alchemist;
-- researcher;
-- engineer;
-- merchant;
-- linguist;
-- explorer;
-- educator;
-- healer/support role within game fiction;
-- artist;
-- architect;
-- Agent designer;
-- creature handler;
-- governor.
+Nova Aurora provides validated design DNA for household-to-city economy.
 
-Combat proficiency is one possible specialization, not the default measure of value.
+Life-scale flow:
 
-## 15. Economy of life
+`TIME + KNOWLEDGE + LABOR + RESOURCE + TOOL → PRODUCT / SERVICE → USE / TRADE / GIFT / INVEST`
 
-The Life Model needs household-scale economics before civilization-scale economics.
+The Life Model only owns household/person-level participation. Civilization-level market/governance remains a later bounded context.
 
-Candidate flow:
+## 18. Personal history and Chronicle
 
-`TIME + KNOWLEDGE + LABOR + RESOURCE → PRODUCT / SERVICE → USE / TRADE / GIFT / INVEST`
+Life events must be preserved as causal history.
 
-Economic systems should recognize:
+Examples include meeting someone, learning, building, receiving/giving, joining, founding, traveling, bonding, conflict, reconciliation, practice, profession change and portal crossing.
 
-- production;
-- consumption;
-- maintenance;
-- scarcity;
-- value;
-- trade;
-- services;
-- ownership;
-- commons;
-- taxation/policy at higher scales.
-
-## 16. Life events
-
-Life becomes history through events.
-
-Examples:
-
-- meeting someone;
-- learning a skill;
-- receiving a gift;
-- building a room;
-- discovering a place;
-- joining a group;
-- adopting/bonding with a creature;
-- completing a practice;
-- founding an organization;
-- conflict/reconciliation;
-- changing profession;
-- moving home;
-- crossing a portal.
-
-Significant events become part of:
+Significant records feed:
 
 `PERSONAL_HISTORY + RELATIONSHIP_HISTORY + WORLD_HISTORY`
 
-## 17. Event correspondence
+HNK-VERSE should additionally maintain a Chronicle-like derived history over the authoritative event ledger.
 
-A life event may simultaneously produce:
-
-- runtime state change;
-- narrative meaning;
-- symbolic meaning;
-- HNK metaphysical correspondence;
-- experience record;
-- interpretation;
-- evidence record.
-
-The Lucidity invariant remains mandatory.
-
-## 18. Mortality, defeat and continuity
-
-Mortality is a local WORLD_RULESET decision.
-
-Some worlds may support:
-
-- no death;
-- incapacitation;
-- respawn;
-- permadeath;
-- reincarnation;
-- body replacement;
-- avatar loss with HNK Identity continuity.
-
-The HNK Identity and Personal Verse exist above any one avatar's local mortality rules.
-
-Therefore:
-
-`AVATAR_DEATH ≠ HNK_IDENTITY_DELETION`
-
-unless an exceptional platform-level account action explicitly occurs.
+The Chronicle is a projection/record; it does not replace the event ledger.
 
 ## 19. Memory
 
-Memory is central to life simulation.
-
-Three memories must remain distinguishable:
-
-### Human record
-What the human explicitly records or consents to preserve.
+Four categories must remain distinguishable:
 
 ### Runtime history
-Verified events that occurred in the Verse.
+What the world ledger verifies occurred.
+
+### Human-authored record
+What the human intentionally writes or preserves.
+
+### Persona/avatar memory
+What an embodied game identity has retained or inferred.
 
 ### Agent memory
-What a specific Agent stores/remembers according to its architecture.
+What a specific Agent retains according to its architecture.
 
-Agent memory may be incomplete, mistaken or interpretive.
+Memory may be partial, mistaken, influenced or contaminated.
 
-It is not equivalent to runtime truth.
+## 20. Perception
 
-## 20. Social spaces
+Not every entity/state must be automatically visible to every avatar.
 
-Social design should support both intimate and public scales:
+Perception may depend on:
 
-`HOME → SHARED_ROOM → GUILD / INSTITUTION → VILLAGE → CITY → INTER-VERSE SPACE`
+- physical presence;
+- illumination;
+- capability;
+- knowledge;
+- instruments;
+- local phenomena;
+- learned language;
+- context.
 
-Habbo-style legibility and personalization can inform shared spaces, while the deeper world model preserves function and persistence.
+This enables investigation and discovery without hidden omniscient UI.
 
 ## 21. Institutions
 
-Life becomes richer when knowledge and professions have places.
+Institutions connect life, knowledge, professions and relationships:
 
-Candidate institutions:
-
-- schools;
-- academies;
-- workshops;
-- guilds;
+- schools/academies;
 - libraries;
+- workshops;
 - laboratories;
 - markets;
 - farms;
-- temples/ritual spaces;
+- guilds;
+- Taijifu dojos;
+- ritual/practice spaces;
 - governance buildings;
 - creature centers;
-- portals/transit hubs.
+- transit/portal hubs.
 
-Institutions combine structures, Agents, professions, quests and social identity.
+Institutions may own Agents, schedules, rules, inventories, knowledge surfaces and services.
 
-## 22. Family and generations
+## 22. Mortality and continuity
 
-Family/generational simulation is architecturally allowed but is **not required for ZERO or the first release**.
+Mortality is local WORLD_RULESET.
 
-If implemented later, the system must distinguish:
+Possible worlds may use no death, incapacitation, respawn, permadeath, reincarnation, body replacement or other local continuity models.
 
-- biological relation;
-- legal/social relation;
-- household relation;
-- chosen/found family;
-- Agent/created-being relation.
+`AVATAR_DEATH ≠ HNK_IDENTITY_DELETION`
 
-No single relationship model should force every world to reproduce real-world human family structures.
+Personal Verse continuity exists above local avatar mortality.
 
-## 23. Life and player freedom
+## 23. Family and generations
 
-The player should not be punished for choosing a non-optimal life.
+Architecturally supported but outside ZERO/initial release.
 
-A central design value is:
+Future implementation must distinguish biological, legal/social, household, chosen/found-family and created-being relations.
+
+## 24. Lifestyle freedom
 
 > **The Verse recognizes how you choose to live without forcing one correct lifestyle.**
 
-A builder, explorer, scholar, farmer, merchant, creator or social player should each have meaningful progression paths.
+Scholar, builder, explorer, social player, artisan, farmer, merchant, martial practitioner or creator must all have meaningful progression surfaces.
 
-## 24. ZERO life proof
+## 25. ZERO life proof — revised
 
-ZERO must prove only:
+ZERO proves only:
 
-1. one avatar wakes/appears in one home;
+1. one avatar exists in one HOME;
 2. world time advances;
-3. one soft life state changes over time;
-4. one object supports a functional interaction;
-5. one learning/activity choice can be performed;
-6. one resource/work action changes state;
-7. one Agent interaction creates persistent relationship history;
-8. one home object can be created/placed;
-9. one reflection/record can be stored;
-10. rest/end-of-day advances the cycle;
-11. logout/login preserves life and relationship state;
-12. no metaphysical interpretation auto-promotes itself to evidence/canon.
+3. one soft life state changes;
+4. one object exposes an interaction through capability/context;
+5. one observation becomes Persona knowledge;
+6. one action produces an authoritative domain event;
+7. one delayed or immediate consequence changes world state;
+8. one Agent interaction creates relationship history;
+9. Agent testimony remains distinct from world truth;
+10. one resource/work action changes persistent state;
+11. one created object can be placed at HOME;
+12. one reflection/record can be stored;
+13. logout/login preserves life, event and relationship state;
+14. narrative/perception never silently promote interpretation to evidence/canon.
 
-## 25. Candidate lock decisions
+## 26. Revised candidate lock decisions
 
-1. Life is modeled as state + routine + relationship + consequence, not needs bars alone.
-2. Needs are soft pressures rather than constant punishment.
-3. Every world owns its local time model; real-world time remains separately recorded.
-4. HOME is the first life anchor and must be mechanically functional.
-5. Object interactions are data-driven and capability-aware.
-6. Relationships are multidimensional and history-backed.
-7. Direct control and bounded autonomy coexist.
-8. Offline simulation is permitted only within explicit safe/authorized bounds.
-9. Professions emerge from practiced mastery rather than fixed character classes.
-10. Combat is optional specialization, not the universal measure of progression.
-11. Avatar mortality is governed locally and does not erase HNK Identity/Personal Verse continuity.
-12. Significant life events feed persistent personal, relationship and world history.
-13. Family/generational simulation remains future-compatible but outside ZERO.
-14. Different lifestyles must remain viable forms of progression.
+1. Life is state + routine + relationship + perception + memory + consequence.
+2. World truth and Persona knowledge are independent layers.
+3. Needs are soft pressures rather than constant punishment.
+4. Every world owns local time; real-world time remains separate provenance.
+5. HOME is the first mechanically functional life anchor.
+6. Object interactions are property-, capability-, perception- and context-aware.
+7. Relationships are multidimensional and backed by causal history.
+8. Agent knowledge, belief, memory and testimony are distinct from runtime truth.
+9. Direct control and bounded autonomy coexist.
+10. Offline simulation is permitted only inside explicit delegated bounds.
+11. Professions emerge from evidenced practice rather than fixed class choice.
+12. Combat is optional specialization.
+13. Significant actions enter an event ledger and may create delayed consequences.
+14. A Chronicle/history projection may be derived from events without replacing world truth.
+15. Avatar mortality is local and cannot erase HNK Identity/Personal Verse by implication.
+16. Family/generational systems remain future-compatible but outside ZERO.
+17. Different lifestyles remain viable progression paths.
+18. The existing Lucidity invariant is extended by explicit EVENT/PERCEPTION/MEMORY/TESTIMONY/CLAIM/EVIDENCE separation.
