@@ -1,6 +1,6 @@
 # HNK-VERSE — ZERO TECHNICAL ARCHITECTURE + CONTRACTS V1
 
-**Status:** PROPOSAL — implementation bootstrap present, awaiting Creator lock  
+**Status:** LOCKED — Creator-approved ZERO technical architecture + contracts V1  
 **Date:** 2026-09-22  
 **Parent:** HNK-VERSE GDD V0.1 / ZERO Persistence Schema + Fixture V1 LOCK  
 **Scope:** technical boundaries and first executable TypeScript contracts
@@ -526,7 +526,7 @@ Not yet claimed green:
 
 Those require the next implementation pass and must not be reported as complete until actually executed.
 
-## 24. Candidate lock decisions
+## 24. Locked decisions
 
 1. TypeScript contracts are the first executable boundary derived from the GDD locks.
 2. CodexRef is a resolved/pending union; pending Malkuth uses canonicalId = null.

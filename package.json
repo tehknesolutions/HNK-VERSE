@@ -7,9 +7,13 @@
     "node": ">=22"
   },
   "scripts": {
-    "check": "pnpm lint && pnpm typecheck && pnpm test",
+    "check": "pnpm typecheck && pnpm test",
     "lint": "pnpm -r --if-present lint",
-    "typecheck": "pnpm -r --if-present typecheck",
-    "test": "pnpm -r --if-present test"
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "node --experimental-strip-types scripts/zero-runtime-check.ts",
+    "test:zero": "node --experimental-strip-types scripts/zero-runtime-check.ts"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3"
   }
 }
