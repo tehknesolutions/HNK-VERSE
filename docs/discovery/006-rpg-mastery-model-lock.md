@@ -1,7 +1,8 @@
-# DISCOVERY 006 — RPG + MASTERY MODEL
+# DISCOVERY 006 — RPG + MASTERY MODEL LOCK
 
-**Status:** PROPOSAL — awaiting Creator lock  
+**Status:** LOCKED  
 **Date:** 2026-09-22  
+**Authority:** Creator-approved HNK-VERSE product canon  
 **Depends on:** DISCOVERY 002–005 + LEGACY CONVERGENCE AUDIT V2
 
 ## 1. Design question
@@ -464,7 +465,7 @@ ZERO should prove only:
 
 No full class system, full combat tree, full dungeon system or full Taijifu curriculum is required for ZERO.
 
-## 33. Candidate lock decisions
+## 33. Locked decisions
 
 1. HNK-VERSE uses practice-based, capability-oriented progression rather than mandatory starting classes.
 2. Knowledge, skill, profession, relationship, authority and manifestation are distinct progression layers.
