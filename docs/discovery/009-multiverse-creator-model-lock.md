@@ -1,7 +1,8 @@
-# DISCOVERY 009 — MULTIVERSE + CREATOR MODEL
+# DISCOVERY 009 — MULTIVERSE + CREATOR MODEL LOCK
 
-**Status:** PROPOSAL — awaiting Creator lock  
+**Status:** LOCKED  
 **Date:** 2026-09-22  
+**Authority:** Creator-approved HNK-VERSE product canon  
 **Depends on:** DISCOVERY 002–008 + LEGACY CONVERGENCE AUDIT V2 + CREATOR SYSTEM LEGACY ADDENDUM
 
 ## 1. Design question
@@ -871,7 +872,7 @@ ZERO does not require:
 - creator scripting;
 - multiverse UI.
 
-## 45. Candidate lock decisions
+## 45. Locked decisions
 
 1. Personal Verse exists from the beginning; progression expands access and creator authority rather than awarding a Verse at endgame.
 2. World Template and persistent World Instance are separate concepts.
