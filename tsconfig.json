@@ -33,6 +33,9 @@
       ],
       "@hnk-verse/chronicle": [
         "packages/chronicle/src/index.ts"
+      ],
+      "@hnk-verse/world": [
+        "packages/world/src/index.ts"
       ]
     }
   },
