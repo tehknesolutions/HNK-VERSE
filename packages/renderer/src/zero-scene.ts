@@ -1,19 +1,26 @@
 import { ZERO_IDS } from '@hnk-verse/contracts';
 import type { ZeroWorldState } from '@hnk-verse/domain';
+import {
+  ZERO_HOME_FOOTPRINT,
+  ZERO_HOME_THRESHOLD,
+  ZERO_HOME_WALL_CELLS,
+  ZERO_WORLD_GRID,
+  ZERO_WORLD_POSITIONS,
+  insideZeroLand,
+  isHomeThresholdCell,
+  isHomeWallCell,
+  type ZeroLogicalPoint,
+} from '@hnk-verse/world';
 
 export const ZERO_GRID = {
-  width: 18,
-  height: 14,
+  ...ZERO_WORLD_GRID,
   tileWidth: 64,
   tileHeight: 32,
   originX: 576,
   originY: 72,
 } as const;
 
-export type LogicalPoint = {
-  x: number;
-  y: number;
-};
+export type LogicalPoint = ZeroLogicalPoint;
 
 export type ScreenPoint = {
   x: number;
@@ -66,32 +73,10 @@ export function snapLogical(point: LogicalPoint): LogicalPoint {
   };
 }
 
-export function insideZeroLand(point: LogicalPoint): boolean {
-  return (
-    point.x >= 1 &&
-    point.x <= ZERO_GRID.width &&
-    point.y >= 1 &&
-    point.y <= ZERO_GRID.height
-  );
-}
+export { insideZeroLand, isHomeThresholdCell, isHomeWallCell };
 
-export const ZERO_HOME_FOOTPRINT = {
-  minX: 2,
-  maxX: 9,
-  minY: 2,
-  maxY: 7,
-} as const;
-
-export const ZERO_SCENE_POSITIONS = {
-  avatarSpawn: { x: 4, y: 4 },
-  bed: { x: 3, y: 3 },
-  workbench: { x: 10, y: 5 },
-  valiSurface: { x: 8, y: 4 },
-  metatron: { x: 12, y: 6 },
-  cartographyTable: { x: 12, y: 5 },
-  woodNode: { x: 15, y: 9 },
-  storageZone: { x: 5, y: 5 },
-} as const satisfies Record<string, LogicalPoint>;
+export { ZERO_HOME_FOOTPRINT, ZERO_HOME_THRESHOLD, ZERO_HOME_WALL_CELLS };
+export const ZERO_SCENE_POSITIONS = ZERO_WORLD_POSITIONS;
 
 export function buildZeroScene(state: ZeroWorldState): ZeroSceneFixture[] {
   const fixtures: ZeroSceneFixture[] = [
@@ -151,7 +136,7 @@ export function buildZeroScene(state: ZeroWorldState): ZeroSceneFixture[] {
       state: `${state.woodNodeRemaining}/4`,
     },
     {
-      id: 'ZONE-ZERO-HOME-STORAGE-001',
+      id: ZERO_IDS.storageZone,
       kind: 'storage-zone',
       label: 'Zona de armazenamento',
       logical: ZERO_SCENE_POSITIONS.storageZone,
