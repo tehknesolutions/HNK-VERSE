@@ -848,3 +848,28 @@ Important epistemic rule:
 `EVENT LEDGER != CHRONICLE PROSE != HUMAN INTERPRETATION != CANON`.
 
 Movement checkpoints remain auditable in the Event Inspector but are intentionally filtered from the readable Chronicle.
+
+
+## 42. ZERO interaction range + collision state
+
+`ZERO-INTERACTION-RANGE-COLLISION-V1.md` introduces the first authoritative logical topology layer.
+
+Implemented:
+
+- `@hnk-verse/world`;
+- shared 18×14 ZERO topology;
+- Home footprint and explicit east threshold;
+- static Home-wall and fixture collision;
+- dynamic collision from placed entities;
+- single-cardinal-step `MoveAvatar`;
+- domain `OUT_OF_RANGE` interaction gating;
+- proximity-aware Web affordances;
+- visual resync after rejected movement;
+- path-aware golden runtime preparation;
+- dedicated `zero-spatial-check.ts`.
+
+Authority invariant:
+
+`WORLD TOPOLOGY != RENDERER GEOMETRY`.
+
+The renderer consumes logical topology and projects it isometrically; it does not define collision truth.
