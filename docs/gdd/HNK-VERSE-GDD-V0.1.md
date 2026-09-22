@@ -936,3 +936,32 @@ Current classification:
 This does not change the separate Postgres state:
 
 `REMOTE_DB_PENDING`.
+
+
+## 45. ZERO remote Postgres acceptance gate
+
+`ZERO-REMOTE-POSTGRES-ACCEPTANCE-V1.md` is the active infrastructure gate after the first live Web/PWA release.
+
+Target:
+
+`STATIC_IMPLEMENTED / REMOTE_DB_PENDING → REMOTE_DB_GREEN`.
+
+A dedicated HNK-VERSE Supabase/PostgreSQL project is required. Existing product databases must not be reused.
+
+Acceptance covers:
+
+- tracked real migration;
+- private-schema security;
+- atomic append;
+- idempotency;
+- optimistic concurrency;
+- rollback;
+- immutable Event Ledger;
+- browser-role isolation;
+- snapshot restore;
+- full ZERO golden runtime on Postgres;
+- restart durability;
+- generated DB types;
+- security/performance advisor review.
+
+Project creation requires explicit organization and cost confirmation before execution.
