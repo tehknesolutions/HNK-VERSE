@@ -1,0 +1,10 @@
+{
+  "name": "HNK-VERSE ZERO",
+  "short_name": "HNK-VERSE",
+  "description": "Vertical slice jogável de Malkuth.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07100d",
+  "theme_color": "#0d1714",
+  "orientation": "any"
+}
