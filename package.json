@@ -7,12 +7,14 @@
     "node": ">=22"
   },
   "scripts": {
-    "check": "pnpm typecheck && pnpm test",
+    "check": "pnpm typecheck && pnpm test && pnpm web:build",
     "lint": "pnpm -r --if-present lint",
     "typecheck": "tsc -p tsconfig.json",
     "test": "pnpm test:zero && pnpm test:persistence-schema",
     "test:zero": "node --experimental-strip-types scripts/zero-runtime-check.ts",
-    "test:persistence-schema": "node scripts/zero-persistence-schema-check.mjs"
+    "test:persistence-schema": "node scripts/zero-persistence-schema-check.mjs",
+    "web:dev": "pnpm --filter @hnk-verse/web dev",
+    "web:build": "pnpm --filter @hnk-verse/web build"
   },
   "devDependencies": {
     "typescript": "5.8.3"
