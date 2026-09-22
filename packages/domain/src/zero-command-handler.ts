@@ -6,6 +6,15 @@ import {
   type HnkEvent,
   type ZeroRejectionCode,
 } from '@hnk-verse/contracts';
+import {
+  ZERO_WORLD_POSITIONS,
+  insideZeroLand,
+  isHomeThresholdCell,
+  isStaticSolidCell,
+  isWithinInteractionRange,
+  manhattanDistance,
+  type ZeroLogicalPoint,
+} from '@hnk-verse/world';
 import type { ZeroWorldState } from './zero-state.ts';
 
 export type ZeroCommandDecision =
@@ -88,16 +97,62 @@ function getBox(state: ZeroWorldState) {
   return state.entities[ZERO_IDS.woodenBox];
 }
 
-function withinZeroLand(x: number, y: number): boolean {
-  return x >= 1 && x <= 18 && y >= 1 && y <= 14;
+function point(x: number, y: number): ZeroLogicalPoint {
+  return { x, y };
 }
 
-function occupied(state: ZeroWorldState, x: number, y: number): boolean {
-  return Object.values(state.entities).some(
-    (entity) =>
-      entity.spatialBinding?.logicalX === x &&
-      entity.spatialBinding?.logicalY === y,
+function avatarPoint(state: ZeroWorldState): ZeroLogicalPoint {
+  return {
+    x: state.avatarPosition.logicalX,
+    y: state.avatarPosition.logicalY,
+  };
+}
+
+function dynamicEntityAt(
+  state: ZeroWorldState,
+  logical: ZeroLogicalPoint,
+): string | null {
+  for (const entity of Object.values(state.entities)) {
+    if (
+      entity.spatialBinding?.logicalX === logical.x &&
+      entity.spatialBinding?.logicalY === logical.y
+    ) {
+      return entity.entityInstanceId;
+    }
+  }
+
+  return null;
+}
+
+function occupied(
+  state: ZeroWorldState,
+  x: number,
+  y: number,
+): boolean {
+  const logical = point(x, y);
+  return (
+    isStaticSolidCell(logical) ||
+    dynamicEntityAt(state, logical) !== null ||
+    (state.avatarPosition.logicalX === x &&
+      state.avatarPosition.logicalY === y)
   );
+}
+
+function rejectOutOfRange(
+  state: ZeroWorldState,
+  target: ZeroLogicalPoint,
+  targetId: string,
+): ZeroCommandDecision | null {
+  const from = avatarPoint(state);
+  if (isWithinInteractionRange(from, target)) return null;
+
+  return reject('OUT_OF_RANGE', {
+    targetId,
+    distance: manhattanDistance(from, target),
+    maxDistance: 1,
+    avatarPosition: from,
+    targetPosition: target,
+  });
 }
 
 function addWorldHours(
@@ -147,6 +202,13 @@ export function handleZeroCommand(
       };
 
     case 'ObserveLexeme': {
+      const rangeRejection = rejectOutOfRange(
+        state,
+        ZERO_WORLD_POSITIONS.valiSurface,
+        ZERO_IDS.valiSurface,
+      );
+      if (rangeRejection) return rangeRejection;
+
       if (state.lexemeObserved) {
         return { accepted: true, events: [], data: { alreadyObserved: true } };
       }
@@ -172,6 +234,13 @@ export function handleZeroCommand(
     }
 
     case 'RequestLexemeTeaching': {
+      const rangeRejection = rejectOutOfRange(
+        state,
+        ZERO_WORLD_POSITIONS.metatron,
+        ZERO_IDS.metatron,
+      );
+      if (rangeRejection) return rangeRejection;
+
       if (!state.lexemeObserved) return reject('MILESTONE_REQUIRED');
       if (state.valiKnown) {
         return { accepted: true, events: [], data: { alreadyKnown: true } };
@@ -213,6 +282,13 @@ export function handleZeroCommand(
     }
 
     case 'DiscoverKnowledge': {
+      const rangeRejection = rejectOutOfRange(
+        state,
+        ZERO_WORLD_POSITIONS.metatron,
+        ZERO_IDS.metatron,
+      );
+      if (rangeRejection) return rangeRejection;
+
       if (!state.valiKnown) return reject('KNOWLEDGE_REQUIRED');
       if (state.practicalKnowledgeDiscovered) {
         return { accepted: true, events: [], data: { alreadyKnown: true } };
@@ -229,6 +305,13 @@ export function handleZeroCommand(
     }
 
     case 'GatherResource': {
+      const rangeRejection = rejectOutOfRange(
+        state,
+        ZERO_WORLD_POSITIONS.woodNode,
+        ZERO_IDS.woodNode,
+      );
+      if (rangeRejection) return rangeRejection;
+
       if (!state.practicalKnowledgeDiscovered) {
         return reject('KNOWLEDGE_REQUIRED');
       }
@@ -261,6 +344,13 @@ export function handleZeroCommand(
     }
 
     case 'AttemptPractice': {
+      const rangeRejection = rejectOutOfRange(
+        state,
+        ZERO_WORLD_POSITIONS.workbench,
+        ZERO_IDS.workbench,
+      );
+      if (rangeRejection) return rangeRejection;
+
       if (!state.practicalKnowledgeDiscovered) {
         return reject('KNOWLEDGE_REQUIRED');
       }
@@ -323,6 +413,13 @@ export function handleZeroCommand(
     }
 
     case 'CraftEntity': {
+      const rangeRejection = rejectOutOfRange(
+        state,
+        ZERO_WORLD_POSITIONS.workbench,
+        ZERO_IDS.workbench,
+      );
+      if (rangeRejection) return rangeRejection;
+
       if (!state.practicalKnowledgeDiscovered) {
         return reject('KNOWLEDGE_REQUIRED');
       }
@@ -384,11 +481,19 @@ export function handleZeroCommand(
       const x = Number(payload.logicalX);
       const y = Number(payload.logicalY);
       const box = getBox(state);
+      const target = point(x, y);
+
+      if (!insideZeroLand(target)) return reject('OUT_OF_BOUNDS');
+      const rangeRejection = rejectOutOfRange(
+        state,
+        target,
+        ZERO_IDS.storageZone,
+      );
+      if (rangeRejection) return rangeRejection;
 
       if (!box || box.ownerId !== ZERO_IDS.avatar) {
         return reject('ENTITY_NOT_OWNED');
       }
-      if (!withinZeroLand(x, y)) return reject('OUT_OF_BOUNDS');
       if (occupied(state, x, y)) return reject('CELL_OCCUPIED');
 
       return {
@@ -409,6 +514,15 @@ export function handleZeroCommand(
       const y = Number(payload.logicalY);
       const landId = String(payload.landId ?? ZERO_IDS.land);
       const orientation = Number(payload.orientation ?? 0);
+      const target = point(x, y);
+
+      if (!insideZeroLand(target)) return reject('OUT_OF_BOUNDS');
+      const rangeRejection = rejectOutOfRange(
+        state,
+        target,
+        ZERO_IDS.storageZone,
+      );
+      if (rangeRejection) return rangeRejection;
 
       if (!box || box.ownerId !== ZERO_IDS.avatar) {
         return reject('ENTITY_NOT_OWNED');
@@ -417,7 +531,6 @@ export function handleZeroCommand(
       if (box.spatialBinding) {
         return reject('MILESTONE_REQUIRED', { reason: 'BOX_ALREADY_PLACED' });
       }
-      if (!withinZeroLand(x, y)) return reject('OUT_OF_BOUNDS');
       if (occupied(state, x, y)) return reject('CELL_OCCUPIED');
 
       const placed = event(
@@ -473,6 +586,13 @@ export function handleZeroCommand(
     }
 
     case 'OfferTransfer': {
+      const rangeRejection = rejectOutOfRange(
+        state,
+        ZERO_WORLD_POSITIONS.metatron,
+        ZERO_IDS.metatron,
+      );
+      if (rangeRejection) return rangeRejection;
+
       const offer = event(
         command,
         1,
@@ -524,6 +644,13 @@ export function handleZeroCommand(
     }
 
     case 'TransferOwnership': {
+      const rangeRejection = rejectOutOfRange(
+        state,
+        ZERO_WORLD_POSITIONS.metatron,
+        ZERO_IDS.metatron,
+      );
+      if (rangeRejection) return rangeRejection;
+
       if (!getBox(state)?.spatialBinding) return reject('MILESTONE_REQUIRED');
 
       const quantity = Number(payload.quantity ?? 1);
@@ -613,6 +740,13 @@ export function handleZeroCommand(
     }
 
     case 'Rest': {
+      const rangeRejection = rejectOutOfRange(
+        state,
+        ZERO_WORLD_POSITIONS.bed,
+        ZERO_IDS.bed,
+      );
+      if (rangeRejection) return rangeRejection;
+
       const advanced = addWorldHours(state.worldTime, 8);
       const rested = event(
         command,
@@ -667,13 +801,20 @@ export function handleZeroCommand(
     case 'MoveAvatar': {
       const logicalX = Number(payload.logicalX);
       const logicalY = Number(payload.logicalY);
+      const target = point(logicalX, logicalY);
 
-      if (
-        !Number.isInteger(logicalX) ||
-        !Number.isInteger(logicalY) ||
-        !withinZeroLand(logicalX, logicalY)
-      ) {
+      if (!insideZeroLand(target)) {
         return reject('OUT_OF_BOUNDS');
+      }
+
+      const blockingEntityId = dynamicEntityAt(state, target);
+      if (isStaticSolidCell(target) || blockingEntityId) {
+        return reject('CELL_OCCUPIED', {
+          logicalX,
+          logicalY,
+          blockingEntityId,
+          staticCollision: isStaticSolidCell(target),
+        });
       }
 
       if (
@@ -698,6 +839,7 @@ export function handleZeroCommand(
               avatarId: ZERO_IDS.avatar,
               logicalX,
               logicalY,
+              homeThreshold: isHomeThresholdCell(target),
             },
             { targetId: ZERO_IDS.avatar },
           ),
@@ -705,8 +847,15 @@ export function handleZeroCommand(
       };
     }
 
-    case 'InteractWithAgent':
+    case 'InteractWithAgent': {
+      const rangeRejection = rejectOutOfRange(
+        state,
+        ZERO_WORLD_POSITIONS.metatron,
+        ZERO_IDS.metatron,
+      );
+      if (rangeRejection) return rangeRejection;
       return { accepted: true, events: [] };
+    }
 
     case 'MoveEntity':
     case 'RemoveEntity':
