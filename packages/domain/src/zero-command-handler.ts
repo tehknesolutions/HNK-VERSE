@@ -807,6 +807,18 @@ export function handleZeroCommand(
         return reject('OUT_OF_BOUNDS');
       }
 
+      const from = avatarPoint(state);
+      const stepDistance = manhattanDistance(from, target);
+      if (stepDistance > 1) {
+        return reject('OUT_OF_RANGE', {
+          reason: 'MOVE_STEP_TOO_LARGE',
+          distance: stepDistance,
+          maxDistance: 1,
+          avatarPosition: from,
+          targetPosition: target,
+        });
+      }
+
       const blockingEntityId = dynamicEntityAt(state, target);
       if (isStaticSolidCell(target) || blockingEntityId) {
         return reject('CELL_OCCUPIED', {
