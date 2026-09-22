@@ -826,3 +826,25 @@ Local verification:
 - movement checkpoint + restore: PASS.
 
 Collision, pathing, terrain costs and interaction-range rules remain later gameplay gates.
+
+
+## 41. ZERO Chronicle + Event Inspector state
+
+`ZERO-CHRONICLE-EVENT-INSPECTOR-V1.md` makes the Event Ledger visible through two distinct projections.
+
+Implemented:
+
+- `@hnk-verse/chronicle`;
+- rebuildable player-facing Chronicle milestones;
+- explicit `WORLD_EVENT_DERIVED` vs `HUMAN_AUTHORED_INTERPRETATION`;
+- source Event refs + World timestamps;
+- complete Event Inspector projection;
+- Web Chronicle panel;
+- escaped human reflection / payload rendering;
+- deterministic Chronicle projection test.
+
+Important epistemic rule:
+
+`EVENT LEDGER != CHRONICLE PROSE != HUMAN INTERPRETATION != CANON`.
+
+Movement checkpoints remain auditable in the Event Inspector but are intentionally filtered from the readable Chronicle.
