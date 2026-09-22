@@ -1,8 +1,9 @@
-# DISCOVERY 005 — LIFE MODEL
+# DISCOVERY 005 — LIFE MODEL LOCK
 
-**Status:** REVISED PROPOSAL — awaiting Creator lock  
+**Status:** LOCKED  
 **Date:** 2026-09-22  
-**Depends on:** DISCOVERY 002–004 + LEGACY CONVERGENCE AUDIT V1
+**Authority:** Creator-approved HNK-VERSE product canon  
+**Depends on:** DISCOVERY 002–004 + LEGACY CONVERGENCE AUDIT V2
 
 ## 1. Design question
 
@@ -349,7 +350,7 @@ ZERO proves only:
 13. logout/login preserves life, event and relationship state;
 14. narrative/perception never silently promote interpretation to evidence/canon.
 
-## 26. Revised candidate lock decisions
+## 26. Locked decisions
 
 1. Life is state + routine + relationship + perception + memory + consequence.
 2. World truth and Persona knowledge are independent layers.
