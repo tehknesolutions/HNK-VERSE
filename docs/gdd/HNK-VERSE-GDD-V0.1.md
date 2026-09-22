@@ -216,7 +216,9 @@ Required bridge fields:
 - context of use;
 - runtime effect or perception relevance.
 
-**OPEN CONTENT QUESTION:** which approved HNK-Idioma element anchors ZERO?
+**SELECTED SOURCE ASSET — PROPOSAL:** `VALI` / `LEX-013` — FROZEN recovered lexeme, "trabalho / trabalhar".
+
+ZERO binding is transversal and does **not** claim an L07/Malkuth curriculum binding. See `ZERO-CONTENT-SELECTION-V0.1.md`.
 
 The game must not coin a word to fill the slot.
 
@@ -234,7 +236,9 @@ Required:
 - inventory representation;
 - provenance event.
 
-**OPEN CONTENT QUESTION:** exact Malkuth resource.
+**SELECTED CONTENT CANDIDATE:** WOOD / MADEIRA.
+
+Source rationale and authority boundary are recorded in `ZERO-CONTENT-SELECTION-V0.1.md`.
 
 ## 13. Practice and Skill
 
@@ -589,15 +593,23 @@ Not in ZERO:
 12. Define asset status/promotional gates for ZERO.
 13. Produce ZERO technical architecture and sprint plan.
 
-## 31. Open content questions
+## 31. Content selection state
 
-The GDD intentionally does not invent:
+A source-grounded first selection is now documented in `ZERO-CONTENT-SELECTION-V0.1.md`:
 
-- the exact canonical Malkuth lesson/knowledge;
-- the exact HNK-Idioma element;
-- the exact first resource;
-- the exact functional creation;
-- the exact first Agent identity/name/lore;
-- the exact visual palette/art assets.
+- Malkuth knowledge theme → **Manifestação Concreta** — SOURCE-SUPPORTED DERIVATION;
+- CODEX-HNK canonical Malkuth ID → **PENDING_CANONICAL_ID**;
+- HNK-Idioma → **VALI / LEX-013** — FROZEN source asset, proposed transversal ZERO binding;
+- Resource → **Wood / Madeira** — CONTENT CANDIDATE;
+- Functional creation → **Wooden Box / Caixa de Madeira** — CONTENT CANDIDATE;
+- Skill → **Basic Practical Work / Trabalho Prático** — DERIVED GAME SYSTEM CANDIDATE;
+- Agent role → **Cartographer / Witness / Investigation Companion / Builder** — CONTENT CANDIDATE;
+- Agent display name → **Metatron** — CONTENT CANDIDATE awaiting Creator lock.
 
-These should be selected from approved project sources or separately Creator-approved during GDD authoring.
+Still open/blocking:
+
+- exact published CODEX-HNK Malkuth canonical ID/version;
+- exact Home/Land layout;
+- exact visual palette/art assets.
+
+The GDD must preserve each item's authority state rather than flattening candidate content into canon.
