@@ -1,6 +1,6 @@
 # HNK-VERSE — ZERO CONTENT SELECTION V0.1
 
-**Status:** PROPOSAL — source-grounded, awaiting Creator lock  
+**Status:** LOCKED — Creator-approved ZERO content selection  
 **Date:** 2026-09-22  
 **Parent:** HNK-VERSE GDD V0.1 / DISCOVERY 011 ZERO Scope Lock
 
@@ -86,7 +86,7 @@ When CODEX-HNK publishes an approved Malkuth canonical object, the bridge must m
 
 ### ZERO binding status
 
-**ZERO use:** CONTENT BINDING CANDIDATE  
+**ZERO use:** LOCKED TRANSVERSAL ZERO BINDING  
 **L07/Malkuth curriculum binding:** NOT CLAIMED
 
 SimpleWay HNK currently reports L07/Malkuth with zero recovered/governed language assets. ZERO must not pretend that VALI is a recovered L07 lexeme.
@@ -122,7 +122,7 @@ Legacy labels in older repositories must not be used to silently collapse them i
 
 **Resource:** MADEIRA / WOOD  
 **Internal ID:** RESOURCE-WOOD-ZERO-V0  
-**Authority:** CONTENT CANDIDATE
+**Authority:** ZERO CONTENT LOCK
 
 ### Source basis
 
@@ -153,7 +153,7 @@ WOOD is game-world content, not a claim that CODEX-HNK has canonically designate
 
 **Object:** CAIXA DE MADEIRA / WOODEN BOX  
 **Internal ID:** ENTITY-WOODEN-BOX-ZERO-V0  
-**Authority:** CONTENT CANDIDATE
+**Authority:** ZERO CONTENT LOCK
 
 ### Function
 
@@ -205,7 +205,7 @@ Any later symbolic/metaphysical layer must be separately source-bound and govern
 
 **Skill:** TRABALHO PRÁTICO / BASIC PRACTICAL WORK  
 **Internal ID:** SKILL-PRACTICAL-WORK-ZERO-V0  
-**Authority:** DERIVED GAME SYSTEM CANDIDATE
+**Authority:** ZERO DERIVED GAMEPLAY LOCK
 
 ### Evidence loop
 
@@ -229,11 +229,11 @@ It is not a replacement for the CODEX attribute DIS (Disciplina Prática), nor d
 
 ### Technical identity
 
-**Stable technical ID candidate:** AGENT-ZERO-CARTOGRAPHER-001  
+**Stable technical ID:** AGENT-ZERO-CARTOGRAPHER-001  
 **Role:** Cartographer / Witness / Investigation Companion / Builder  
-**Authority:** CONTENT CANDIDATE
+**Authority:** ZERO CONTENT LOCK
 
-### Display-name candidate
+### Locked display name
 
 **METATRON**
 
@@ -284,10 +284,10 @@ It does not by itself assert that the Agent is the theological/angelic Metatron,
 
 ### Promotion state
 
-**Technical role:** READY AS ZERO CANDIDATE  
-**Display name METATRON:** AWAITING CREATOR LOCK
+**Technical role:** LOCKED FOR ZERO  
+**Display name METATRON:** LOCKED FOR ZERO
 
-If the name is not promoted, the exact same Agent contract can ship under another display identity without changing its stable system role.
+Any future rename requires an explicit GDD/content amendment; the stable technical Agent identity remains independent from display name.
 
 ## 9. First Home/Land implication
 
@@ -335,12 +335,12 @@ The exact layout remains the next GDD task.
 | Knowledge theme | Manifestação Concreta | SOURCE-SUPPORTED DERIVATION |
 | CODEX canonical ID | — | BLOCKED: PENDING_CANONICAL_ID |
 | HNK-Idioma lexeme | VALI / LEX-013 | FROZEN SOURCE ASSET |
-| Malkuth language binding | VALI → ZERO | PROPOSED TRANSVERSAL BINDING, NOT L07 CANON |
-| Resource | Wood | CONTENT CANDIDATE |
-| Creation | Wooden Box | CONTENT CANDIDATE |
-| Skill | Basic Practical Work | DERIVED GAME SYSTEM CANDIDATE |
-| Agent role | Cartographer/Witness/Investigation Companion/Builder | CONTENT CANDIDATE |
-| Agent display name | Metatron | CONTENT CANDIDATE / AWAITING CREATOR LOCK |
+| Malkuth language binding | VALI → ZERO | LOCKED TRANSVERSAL ZERO BINDING, NOT L07 CANON |
+| Resource | Wood | ZERO CONTENT LOCK |
+| Creation | Wooden Box | ZERO CONTENT LOCK |
+| Skill | Basic Practical Work | ZERO DERIVED GAMEPLAY LOCK |
+| Agent role | Cartographer/Witness/Investigation Companion/Builder | ZERO CONTENT LOCK |
+| Agent display name | Metatron | ZERO CONTENT LOCK |
 
 ## 12. What is deliberately not claimed
 
@@ -355,15 +355,16 @@ This proposal does not claim:
 - that the game Skill equals the spiritual/RPG attribute DIS;
 - that any candidate becomes HNK canon by entering the GDD.
 
-## 13. Next GDD task after Creator lock
+## 13. Next GDD task after lock
 
-Once this selection is approved:
+The selection is now Creator-approved for ZERO.
 
-1. lock ZERO content selection;
-2. design the exact Home/Land layout;
-3. specify the VALI discovery/perception interaction;
-4. specify Wood gather/process rules;
-5. specify Wooden Box entity + storage + placement contract;
-6. specify Agent profile/memory/goals;
-7. define the exact Event Ledger sequence;
-8. build the deterministic ZERO fixture.
+Next sequence:
+
+1. design and lock the exact Home/Land layout;
+2. specify the VALI discovery/perception interaction;
+3. specify Wood gather/process rules;
+4. specify Wooden Box entity + storage + placement contract;
+5. specify Metatron profile/memory/goals;
+6. define the exact Event Ledger sequence;
+7. build the deterministic ZERO fixture.
