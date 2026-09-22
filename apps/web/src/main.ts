@@ -25,8 +25,9 @@ import {
 } from '@hnk-verse/renderer';
 import { ZeroCommandRuntime } from '@hnk-verse/simulation';
 
-const app = document.querySelector<HTMLElement>('#app');
-if (!app) throw new Error('HNK_VERSE_WEB_ROOT_MISSING');
+const appNode = document.querySelector<HTMLElement>('#app');
+if (!appNode) throw new Error('HNK_VERSE_WEB_ROOT_MISSING');
+const app: HTMLElement = appNode;
 
 const persistence = new BrowserLocalPersistence<ZeroWorldState>();
 const ports = {
