@@ -10,8 +10,9 @@
     "check": "pnpm typecheck && pnpm test",
     "lint": "pnpm -r --if-present lint",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "node --experimental-strip-types scripts/zero-runtime-check.ts",
-    "test:zero": "node --experimental-strip-types scripts/zero-runtime-check.ts"
+    "test": "pnpm test:zero && pnpm test:persistence-schema",
+    "test:zero": "node --experimental-strip-types scripts/zero-runtime-check.ts",
+    "test:persistence-schema": "node scripts/zero-persistence-schema-check.mjs"
   },
   "devDependencies": {
     "typescript": "5.8.3"
