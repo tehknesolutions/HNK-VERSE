@@ -61,12 +61,22 @@ export function stableRequestHash(command: HnkCommand<unknown>): string {
 }
 
 export class ZeroCommandRuntime {
+  private readonly ports: PersistencePorts<ZeroWorldState>;
+  private readonly emptyState: ZeroWorldState;
+  private currentState: ZeroWorldState;
+  private sequenceNo: number;
+
   private constructor(
-    private readonly ports: PersistencePorts<ZeroWorldState>,
-    private readonly emptyState: ZeroWorldState,
-    private currentState: ZeroWorldState,
-    private sequenceNo: number,
-  ) {}
+    ports: PersistencePorts<ZeroWorldState>,
+    emptyState: ZeroWorldState,
+    currentState: ZeroWorldState,
+    sequenceNo: number,
+  ) {
+    this.ports = ports;
+    this.emptyState = emptyState;
+    this.currentState = currentState;
+    this.sequenceNo = sequenceNo;
+  }
 
   static async create(
     ports: PersistencePorts<ZeroWorldState>,
