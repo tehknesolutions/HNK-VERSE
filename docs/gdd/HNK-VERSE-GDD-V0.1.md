@@ -747,4 +747,29 @@ The proposal keeps the durable core intentionally small:
 
 It requires atomic event+receipt append, idempotency, optimistic concurrency, RLS/ownership isolation when exposed through Supabase, and the same ZERO golden-path integration tests against real Postgres.
 
-The production adapter remains **PROPOSAL** until Creator lock.
+The production adapter design is **LOCKED**. `ZERO-PRODUCTION-PERSISTENCE-IMPLEMENTATION-V1.md` records the current implementation as `STATIC_IMPLEMENTED / REMOTE_DB_PENDING`.
+
+
+## 38. ZERO Production Persistence implementation state
+
+`ZERO-PRODUCTION-PERSISTENCE-IMPLEMENTATION-V1.md` records the first durable Postgres implementation.
+
+Implemented:
+
+- private declarative PostgreSQL schema under `supabase/schemas/hnk_verse_private.sql`;
+- append-only Event Ledger protections;
+- private browser-role boundary;
+- RLS defense in depth;
+- `PostgresPersistence` implementing existing persistence ports;
+- atomic World-stream / idempotency / event-batch transaction logic;
+- shared persistence conflict errors;
+- schema security contract check.
+
+Current verification:
+
+- runtime core: `LOCAL_RUNTIME_GREEN`;
+- Postgres implementation: `STATIC_IMPLEMENTED`;
+- dedicated HNK-VERSE Supabase project: `NOT_PROVISIONED`;
+- remote DB integration: `REMOTE_DB_PENDING`.
+
+Existing Supabase projects belonging to other products are not reused automatically.
