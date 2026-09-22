@@ -33,9 +33,12 @@ import {
 } from '@hnk-verse/renderer';
 import { ZeroCommandRuntime } from '@hnk-verse/simulation';
 import {
+  findZeroInteractionRoute,
+  findZeroPath,
   isStaticSolidCell,
   isWithinInteractionRange,
   manhattanDistance,
+  zeroPointKey,
 } from '@hnk-verse/world';
 
 const appNode = document.querySelector<HTMLElement>('#app');
@@ -59,7 +62,8 @@ let avatarVisual: LogicalPoint = {
   x: runtime.state.avatarPosition.logicalX,
   y: runtime.state.avatarPosition.logicalY,
 };
-let moveCheckpointTimer: number | null = null;
+let activeRoute: LogicalPoint[] = [];
+let routeTargetLabel: string | null = null;
 let cameraZoom = 1;
 let chronicleEntries: ChronicleEntry[] = [];
 let eventInspectorRows: EventInspectorRow[] = [];
@@ -91,6 +95,172 @@ function metatronWood(state = runtime.state): number {
   return (
     state.inventories[ZERO_IDS.metatronInventory]?.['RESOURCE-WOOD-ZERO-V0'] ?? 0
   );
+}
+
+
+function dynamicCellBlocked(point: LogicalPoint): boolean {
+  return Object.values(runtime.state.entities).some(
+    (entity) =>
+      entity.spatialBinding?.logicalX === point.x &&
+      entity.spatialBinding?.logicalY === point.y,
+  );
+}
+
+function routeDelayMs(): number {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 90;
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function routePreviewKeys(): Set<string> {
+  return new Set(activeRoute.map(zeroPointKey));
+}
+
+function renderRoutePreview(): string {
+  if (activeRoute.length === 0) return '';
+
+  const logicalPoints = [avatarVisual, ...activeRoute];
+  const screenPoints = logicalPoints.map(logicalToIso);
+  const polyline = screenPoints.map((point) => `${point.x},${point.y}`).join(' ');
+
+  return `
+    <g class="route-preview" aria-hidden="true">
+      <polyline class="route-preview__line" points="${polyline}" />
+      ${screenPoints
+        .slice(1)
+        .map(
+          (point, index) =>
+            `<circle class="route-preview__node${index === screenPoints.length - 2 ? ' route-preview__node--goal' : ''}" cx="${point.x}" cy="${point.y}" r="5" />`,
+        )
+        .join('')}
+    </g>
+  `;
+}
+
+async function walkRoute(
+  steps: readonly LogicalPoint[],
+  label: string,
+): Promise<boolean> {
+  if (busy) return false;
+
+  if (steps.length === 0) {
+    routeTargetLabel = null;
+    activeRoute = [];
+    notice = `Você já está em posição para ${label}.`;
+    render();
+    return true;
+  }
+
+  busy = true;
+  routeTargetLabel = label;
+  activeRoute = steps.map((step) => ({ ...step }));
+  notice = `Rota para ${label}: ${steps.length} passo(s).`;
+  render();
+
+  await wait(routeDelayMs());
+
+  try {
+    for (const step of steps) {
+      const result = await runtime.execute(
+        command(
+          'MoveAvatar',
+          {
+            logicalX: step.x,
+            logicalY: step.y,
+          },
+          ZERO_IDS.avatar,
+        ),
+      );
+
+      if (!result.accepted) {
+        if (result.needsReload) {
+          await runtime.reload();
+        }
+
+        avatarVisual = {
+          x: runtime.state.avatarPosition.logicalX,
+          y: runtime.state.avatarPosition.logicalY,
+        };
+        activeRoute = [];
+        routeTargetLabel = null;
+        notice = `Rota interrompida: ${result.rejectionCode ?? 'WORLD_CHANGED'}.`;
+        await refreshChronicle();
+        render();
+        return false;
+      }
+
+      avatarVisual = {
+        x: runtime.state.avatarPosition.logicalX,
+        y: runtime.state.avatarPosition.logicalY,
+      };
+      activeRoute = activeRoute.slice(1);
+
+      if (isHomeThresholdCell(avatarVisual)) {
+        notice = 'Você atravessou o threshold da Home.';
+      }
+
+      render();
+      await wait(routeDelayMs());
+    }
+
+    await refreshChronicle();
+    routeTargetLabel = null;
+    notice = `Destino alcançado: ${label}.`;
+    return true;
+  } finally {
+    busy = false;
+    activeRoute = [];
+    routeTargetLabel = null;
+    render();
+  }
+}
+
+async function routeToFixture(fixture: ZeroSceneFixture): Promise<void> {
+  selectedId = fixture.id;
+
+  if (!fixture.interactive) {
+    notice = `${fixture.label}: elemento de cenário/observação.`;
+    render();
+    return;
+  }
+
+  const route = findZeroInteractionRoute(
+    avatarVisual,
+    fixture.logical,
+    dynamicCellBlocked,
+  );
+
+  if (!route) {
+    activeRoute = [];
+    routeTargetLabel = null;
+    notice = `Não existe rota caminhável até ${fixture.label} no estado atual.`;
+    render();
+    return;
+  }
+
+  await walkRoute(route.steps, fixture.label);
+}
+
+async function routeToTile(destination: LogicalPoint): Promise<void> {
+  selectedId = null;
+
+  const route = findZeroPath(
+    avatarVisual,
+    destination,
+    dynamicCellBlocked,
+  );
+
+  if (!route) {
+    activeRoute = [];
+    routeTargetLabel = null;
+    notice = `A célula (${destination.x}, ${destination.y}) não possui rota caminhável.`;
+    render();
+    return;
+  }
+
+  await walkRoute(route.steps, `(${destination.x}, ${destination.y})`);
 }
 
 
@@ -280,6 +450,8 @@ function fixtureClass(kind: ZeroSceneFixture['kind']): string {
 
 function renderTiles(): string {
   const tiles: string[] = [];
+  const routeKeys = routePreviewKeys();
+  const routeGoal = activeRoute.at(-1);
   for (let y = 1; y <= ZERO_GRID.height; y += 1) {
     for (let x = 1; x <= ZERO_GRID.width; x += 1) {
       const classes = ['tile'];
@@ -287,6 +459,8 @@ function renderTiles(): string {
       if (isHomeWallCell({ x, y })) classes.push('tile--wall');
       if (isHomeThresholdCell({ x, y })) classes.push('tile--threshold');
       if (x === 5 && y === 5) classes.push('tile--storage');
+      if (routeKeys.has(zeroPointKey({ x, y }))) classes.push('tile--route');
+      if (routeGoal?.x === x && routeGoal.y === y) classes.push('tile--route-goal');
 
       tiles.push(
         `<polygon class="${classes.join(' ')}" points="${tilePolygon({ x, y })}" data-tile-x="${x}" data-tile-y="${y}" />`,
@@ -531,12 +705,8 @@ async function runPrimaryAction(): Promise<void> {
 }
 
 async function synchronizeAvatarCheckpoint(): Promise<boolean> {
-  if (moveCheckpointTimer !== null) {
-    window.clearTimeout(moveCheckpointTimer);
-    moveCheckpointTimer = null;
-  }
-
   const authoritative = runtime.state.avatarPosition;
+
   if (
     authoritative.logicalX === avatarVisual.x &&
     authoritative.logicalY === avatarVisual.y
@@ -544,61 +714,27 @@ async function synchronizeAvatarCheckpoint(): Promise<boolean> {
     return true;
   }
 
-  const checkpoint = { ...avatarVisual };
-  const result = await execute(
-    'MoveAvatar',
-    {
-      logicalX: checkpoint.x,
-      logicalY: checkpoint.y,
-    },
-    ZERO_IDS.avatar,
-  );
-
-  if (!result?.accepted) {
-    avatarVisual = {
-      x: runtime.state.avatarPosition.logicalX,
-      y: runtime.state.avatarPosition.logicalY,
-    };
-    notice = `Movimento rejeitado: ${result?.rejectionCode ?? 'UNKNOWN'}.`;
-    render();
-    return false;
-  }
-
-  notice = `Posição segura registrada em (${checkpoint.x}, ${checkpoint.y}).`;
-  return true;
-}
-
-function scheduleAvatarCheckpoint(): void {
-  if (moveCheckpointTimer !== null) {
-    window.clearTimeout(moveCheckpointTimer);
-  }
-
-  moveCheckpointTimer = window.setTimeout(async () => {
-    moveCheckpointTimer = null;
-
-    if (busy) {
-      scheduleAvatarCheckpoint();
-      return;
-    }
-
-    await synchronizeAvatarCheckpoint();
-  }, 240);
+  avatarVisual = {
+    x: authoritative.logicalX,
+    y: authoritative.logicalY,
+  };
+  activeRoute = [];
+  routeTargetLabel = null;
+  notice = 'A posição visual foi ressincronizada com o estado autoritativo.';
+  render();
+  return false;
 }
 
 function visualCellBlocked(next: LogicalPoint): boolean {
-  if (isStaticSolidCell(next)) return true;
-
-  return Object.values(runtime.state.entities).some(
-    (entity) =>
-      entity.spatialBinding?.logicalX === next.x &&
-      entity.spatialBinding?.logicalY === next.y,
-  );
+  return isStaticSolidCell(next) || dynamicCellBlocked(next);
 }
 
-function moveAvatar(dx: number, dy: number): void {
+async function moveAvatar(dx: number, dy: number): Promise<void> {
+  if (busy) return;
+
   const next = {
-    x: Math.max(1, Math.min(ZERO_GRID.width, avatarVisual.x + dx)),
-    y: Math.max(1, Math.min(ZERO_GRID.height, avatarVisual.y + dy)),
+    x: avatarVisual.x + dx,
+    y: avatarVisual.y + dy,
   };
 
   if (!insideZeroLand(next)) {
@@ -613,14 +749,7 @@ function moveAvatar(dx: number, dy: number): void {
     return;
   }
 
-  avatarVisual = next;
-
-  if (isHomeThresholdCell(next)) {
-    notice = 'Você atravessou o threshold da Home.';
-  }
-
-  scheduleAvatarCheckpoint();
-  render();
+  await walkRoute([next], 'movimento manual');
 }
 
 function render(): void {
@@ -668,6 +797,7 @@ function render(): void {
                 </filter>
               </defs>
               <g class="tiles">${renderTiles()}</g>
+              ${renderRoutePreview()}
               <g class="fixtures">${renderFixtures(state)}</g>
               <g class="avatar" transform="translate(${avatar.x} ${avatar.y - 15})">
                 <ellipse class="avatar__shadow" cx="0" cy="17" rx="15" ry="6" />
@@ -691,8 +821,9 @@ function render(): void {
             <h2>${selected?.label ?? 'Mundo'}</h2>
             <p class="muted">${selected?.state ?? 'Selecione um elemento do mundo.'}</p>
             ${selected ? `<p class="distance-readout">Distância: ${manhattanDistance(avatarVisual, selected.logical)} · alcance: 1</p>` : ''}
+            ${routeTargetLabel ? `<p class="route-status">Rota ativa → ${escapeHtml(routeTargetLabel)} · ${activeRoute.length} passo(s) restante(s)</p>` : ''}
             <button class="primary-action" data-primary-action ${action.enabled && !busy ? '' : 'disabled'}>
-              ${busy ? 'Processando…' : action.label}
+              ${busy ? 'Caminhando…' : action.label}
             </button>
           </section>
 
@@ -743,21 +874,51 @@ function render(): void {
       </section>
 
       <footer class="footer">
-        <span>WASD / setas: movimento visual + checkpoint autoritativo</span>
-        <span>Toque/clique: selecionar · botão contextual: agir</span>
+        <span>WASD / setas: passo autoritativo</span>
+        <span>Toque/clique: rota até célula ou alvo · botão contextual: agir</span>
         <span>PWA · localStorage · sem LLM obrigatório</span>
       </footer>
     </div>
   `;
 
   document.querySelectorAll<SVGGElement>('[data-fixture-id]').forEach((element) => {
-    const select = () => {
-      selectedId = element.dataset.fixtureId ?? null;
-      render();
+    const selectAndRoute = async (event?: Event) => {
+      event?.stopPropagation();
+      if (busy) return;
+
+      const fixtureId = element.dataset.fixtureId ?? null;
+      selectedId = fixtureId;
+      const fixture = selectedFixture(runtime.state);
+
+      if (!fixture) {
+        render();
+        return;
+      }
+
+      await routeToFixture(fixture);
     };
-    element.addEventListener('click', select);
+
+    element.addEventListener('click', (event) => {
+      void selectAndRoute(event);
+    });
     element.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') select();
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        void selectAndRoute(event);
+      }
+    });
+  });
+
+  document.querySelectorAll<SVGPolygonElement>('[data-tile-x][data-tile-y]').forEach((element) => {
+    element.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (busy) return;
+
+      const x = Number(element.dataset.tileX);
+      const y = Number(element.dataset.tileY);
+
+      if (!Number.isInteger(x) || !Number.isInteger(y)) return;
+      void routeToTile({ x, y });
     });
   });
 
@@ -767,7 +928,7 @@ function render(): void {
   document.querySelectorAll<HTMLButtonElement>('[data-move]').forEach((button) => {
     button.addEventListener('click', () => {
       const [dx, dy] = (button.dataset.move ?? '0,0').split(',').map(Number);
-      moveAvatar(dx, dy);
+      void moveAvatar(dx, dy);
     });
   });
 
@@ -803,11 +964,14 @@ function render(): void {
   document.querySelector<HTMLButtonElement>('[data-reset]')?.addEventListener(
     'click',
     async () => {
+      if (busy) return;
       const confirmed = globalThis.confirm(
         'Reiniciar o ZERO local? O estado persistido neste navegador será apagado.',
       );
       if (!confirmed) return;
       persistence.clear(ZERO_IDS.world);
+      activeRoute = [];
+      routeTargetLabel = null;
       chronicleEntries = [];
       eventInspectorRows = [];
       eventInspectorOpen = false;
@@ -834,10 +998,10 @@ window.addEventListener('keydown', (event) => {
   if (target?.matches('textarea, input, button')) return;
 
   const key = event.key.toLowerCase();
-  if (key === 'w' || key === 'arrowup') moveAvatar(0, -1);
-  if (key === 's' || key === 'arrowdown') moveAvatar(0, 1);
-  if (key === 'a' || key === 'arrowleft') moveAvatar(-1, 0);
-  if (key === 'd' || key === 'arrowright') moveAvatar(1, 0);
+  if (key === 'w' || key === 'arrowup') void moveAvatar(0, -1);
+  if (key === 's' || key === 'arrowdown') void moveAvatar(0, 1);
+  if (key === 'a' || key === 'arrowleft') void moveAvatar(-1, 0);
+  if (key === 'd' || key === 'arrowright') void moveAvatar(1, 0);
 });
 
 render();

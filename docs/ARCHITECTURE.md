@@ -183,14 +183,13 @@ The Web renderer may animate/move the Avatar immediately, but durable position i
 
 ```text
 input
-→ avatarVisual
-→ immediate render
-→ debounce
+→ route / one logical tile
 → MoveAvatar
 → validation
 → AvatarPositionCheckpointed
 → reducer
 → persistence
+→ renderer advances
 ```
 
 This avoids both failure modes:
@@ -198,7 +197,7 @@ This avoids both failure modes:
 - renderer position as truth;
 - one permanent Event Ledger event per animation frame.
 
-The current checkpoint validates the 18×14 Land bounds. Collision/pathing is a future World capability layer.
+The movement contract is now integrated with the shared 18×14 topology, collision and deterministic routing layers.
 
 
 ## Chronicle projection boundary — ZERO V1
@@ -251,3 +250,40 @@ Spatial rules:
 - interaction range is Manhattan distance <= 1.
 
 This removes duplicated topology from the renderer and prevents remote interactions from bypassing spatial play.
+
+
+## Path planning boundary — ZERO V1
+
+Path planning is owned by `@hnk-verse/world`, while command authorization remains in `@hnk-verse/domain`.
+
+```text
+input target
+   ↓
+@hnk-verse/world
+   ↓
+deterministic route proposal
+   ↓
+apps/web preview
+   ↓
+MoveAvatar step 1
+   ↓
+domain validation
+   ↓
+World event / state
+   ↓
+MoveAvatar step 2
+   ↓
+...
+```
+
+Two routing modes are available:
+
+- exact free-cell click-to-walk;
+- route to a walkable adjacent cell for interaction targets.
+
+Static blockers come from logical topology.
+Dynamic blockers come from current World entity state.
+
+A stale plan cannot force movement: every step is revalidated by the domain before the route continues.
+
+Route preview and route destination are session/presentation state only and are not persisted as World truth.

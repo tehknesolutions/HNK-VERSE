@@ -212,6 +212,47 @@ h2 {
   stroke-dasharray: 4 3;
 }
 
+.tile[data-tile-x] {
+  cursor: pointer;
+}
+
+.tile--route {
+  fill: #26372c;
+  stroke: rgba(224, 198, 119, 0.72);
+  stroke-width: 2;
+}
+
+.tile--route-goal {
+  fill: #514422;
+  stroke: rgba(255, 226, 139, 0.96);
+  stroke-width: 2.5;
+}
+
+.route-preview {
+  pointer-events: none;
+}
+
+.route-preview__line {
+  fill: none;
+  stroke: rgba(240, 211, 128, 0.72);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 7 6;
+}
+
+.route-preview__node {
+  fill: #d7bd70;
+  stroke: #fff0b8;
+  stroke-width: 1.5;
+}
+
+.route-preview__node--goal {
+  fill: #fff0b8;
+  stroke-width: 2;
+  filter: url(#glow);
+}
+
 .fixture {
   cursor: pointer;
   transform-box: fill-box;
@@ -347,6 +388,13 @@ h2 {
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.04em;
+}
+
+.route-status {
+  margin: -2px 0 10px;
+  color: #e0c875;
+  font-size: 0.7rem;
+  line-height: 1.4;
 }
 
 .primary-action {

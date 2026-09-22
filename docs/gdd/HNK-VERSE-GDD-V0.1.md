@@ -816,7 +816,7 @@ Implemented:
 - real `MoveAvatar` validation;
 - `AvatarPositionCheckpointed` reducer support;
 - duplicate-position checkpoint suppression;
-- Web visual movement with 240 ms debounced safe-position persistence;
+- logical tile movement persisted through one-cardinal-step `MoveAvatar`;
 - restore/resync from authoritative state after runtime recreation.
 
 Local verification:
@@ -825,7 +825,7 @@ Local verification:
 - ZERO runtime regression: PASS;
 - movement checkpoint + restore: PASS.
 
-Collision, pathing, terrain costs and interaction-range rules remain later gameplay gates.
+Collision and interaction range are implemented. Deterministic click-to-walk/path routing is implemented in `ZERO-CLICK-TO-WALK-PATH-ROUTING-V1.md`; terrain costs remain later gameplay gates.
 
 
 ## 41. ZERO Chronicle + Event Inspector state
@@ -873,3 +873,29 @@ Authority invariant:
 `WORLD TOPOLOGY != RENDERER GEOMETRY`.
 
 The renderer consumes logical topology and projects it isometrically; it does not define collision truth.
+
+
+## 43. ZERO click-to-walk + path routing state
+
+`ZERO-CLICK-TO-WALK-PATH-ROUTING-V1.md` adds deterministic navigation on top of the authoritative spatial layer.
+
+Implemented:
+
+- deterministic BFS in `@hnk-verse/world`;
+- exact free-tile `findZeroPath()`;
+- adjacent-target `findZeroInteractionRoute()`;
+- static + dynamic blocker support;
+- route preview tiles/polyline/nodes;
+- click/touch fixture routing;
+- click-to-walk on free Land cells;
+- keyboard/mobile movement through the same one-tile runtime contract;
+- step-by-step `MoveAvatar` authorization;
+- route interruption/resync on rejected World state;
+- reduced-motion timing support;
+- dedicated `zero-path-routing-check.ts`.
+
+Authority invariant:
+
+`PATH PLAN != WORLD MUTATION`.
+
+The planner proposes a sequence. The domain authorizes each logical step.
