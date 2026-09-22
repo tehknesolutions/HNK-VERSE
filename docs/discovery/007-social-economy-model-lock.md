@@ -1,7 +1,8 @@
-# DISCOVERY 007 — SOCIAL + ECONOMY MODEL
+# DISCOVERY 007 — SOCIAL + ECONOMY MODEL LOCK
 
-**Status:** PROPOSAL — awaiting Creator lock  
+**Status:** LOCKED  
 **Date:** 2026-09-22  
+**Authority:** Creator-approved HNK-VERSE product canon  
 **Depends on:** DISCOVERY 002–006 + LEGACY CONVERGENCE AUDIT V2
 
 ## 1. Design question
@@ -412,7 +413,7 @@ ZERO should prove only:
 
 No global market, business simulation, taxation, city economy or inter-Verse trade is required for ZERO.
 
-## 38. Candidate lock decisions
+## 38. Locked decisions
 
 1. Society is modeled as persistent relationships, groups, ownership, obligations, institutions and history.
 2. Groups are first-class persistent entities with roles, property, rules and shared history.
