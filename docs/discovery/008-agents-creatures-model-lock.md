@@ -1,7 +1,8 @@
-# DISCOVERY 008 — AGENTS + CREATURES MODEL
+# DISCOVERY 008 — AGENTS + CREATURES MODEL LOCK
 
-**Status:** PROPOSAL — awaiting Creator lock  
+**Status:** LOCKED  
 **Date:** 2026-09-22  
+**Authority:** Creator-approved HNK-VERSE product canon  
 **Depends on:** DISCOVERY 002–007 + LEGACY CONVERGENCE AUDIT V2
 
 ## 1. Design question
@@ -860,7 +861,7 @@ If one creature is included, prove only:
 5. one non-combat world interaction;
 6. persistence.
 
-## 45. Candidate lock decisions
+## 45. Locked decisions
 
 1. A persistent Agent is a world individual; the AI model/runtime is not the Agent identity.
 2. Stable identity, memory, history, relationships, goals, world state and continuity are minimum Agent requirements.
