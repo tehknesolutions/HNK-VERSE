@@ -30,6 +30,9 @@
       ],
       "@hnk-verse/renderer": [
         "packages/renderer/src/index.ts"
+      ],
+      "@hnk-verse/chronicle": [
+        "packages/chronicle/src/index.ts"
       ]
     }
   },
