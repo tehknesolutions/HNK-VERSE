@@ -588,7 +588,7 @@ Not in ZERO:
 7. Define ZERO event contracts.
 8. Define persistence schema.
 9. Define first world/entity/placement contracts.
-10. Define deterministic ZERO fixture.
+10. Define deterministic ZERO fixture. **ACTIVE in ZERO-PERSISTENCE-SCHEMA-FIXTURE-V1.md.**
 11. Define visual target/reference board.
 12. Define asset status/promotional gates for ZERO.
 13. Produce ZERO technical architecture and sprint plan.
@@ -609,7 +609,7 @@ It proposes one continuous 18×14 logical Land/Home scene containing:
 - fixed/controlled isometric camera with bounded zoom;
 - deterministic persistence matrix for reload validation.
 
-The spatial design is LOCKED. `ZERO-INTERACTION-EVENT-CONTRACT-V0.1.md` is now the active proposal translating this space into commands, events, validation gates and deterministic persistence.
+The spatial design is LOCKED. `ZERO-INTERACTION-EVENT-CONTRACT-V0.1.md` is now **Creator-locked** as the authoritative interaction/event design for ZERO.
 
 ## 31. Content selection state
 
@@ -658,3 +658,29 @@ Explicitly deferred until post-ZERO:
 - broad recipe catalogs.
 
 The reference does not change the locked HD 2D/2.5D isometric visual identity and does not add punitive hunger/thirst systems.
+
+
+## 34. ZERO Persistence + Fixture state
+
+`ZERO-PERSISTENCE-SCHEMA-FIXTURE-V1.md` is the active persistence proposal.
+
+It defines:
+
+- Event Ledger as historical authority;
+- snapshots as restore acceleration;
+- stable IDs for Identity, Verse, World, Home, Avatar, Metatron and entities;
+- explicit pending CODEX reference semantics with `canonicalId = null`;
+- transactional resource conservation;
+- idempotency receipts;
+- Skill Evidence persistence;
+- Agent-memory and relationship-history provenance;
+- separate Wooden Box identity and spatial binding;
+- deterministic `HNK-ZERO-MALKUTH-FIXTURE-V1`;
+- fixed initial/golden states;
+- replay, reload, concurrency, idempotency and crash-after-commit tests.
+
+Important implementation gap discovered:
+
+the current contracts package still requires `CodexRef.canonicalId: string`. ZERO requires a truthful pending-reference union before runtime implementation; fake canonical IDs are forbidden.
+
+The persistence schema/fixture remains PROPOSAL until Creator lock.
