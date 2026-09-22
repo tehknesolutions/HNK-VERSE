@@ -70,3 +70,31 @@ The first verified executable path is:
 5. Canonical references carry explicit authority/version provenance.
 6. Creator permissions and epistemic/canonical authority are separate dimensions.
 7. Malkuth ZERO must remain deterministic enough for end-to-end verification.
+
+
+## ZERO technical bootstrap — V1 proposal
+
+The GDD now has an executable bootstrap aligned to the locked ZERO contracts:
+
+```text
+@hnk-verse/contracts
+        ↓
+@hnk-verse/domain
+        ↓
+@hnk-verse/fixtures
+
+@hnk-verse/persistence
+        ↑
+future command handlers / adapters
+```
+
+Current branch-level implementation introduces:
+
+- resolved vs pending CODEX references;
+- explicit ZERO command/event/rejection registries;
+- deterministic ZERO IDs;
+- pure event reducer and milestone predicates;
+- vendor-neutral Event/Snapshot/CommandReceipt persistence ports;
+- deterministic Malkuth fixture event stream and golden-state assertions.
+
+Important: this is a bootstrap, not yet a claim of CI-green runtime implementation. Compilation, unit tests, command handlers and storage adapters remain the next execution gate.
