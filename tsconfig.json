@@ -7,15 +7,35 @@
     "noEmit": true,
     "allowImportingTsExtensions": true,
     "skipLibCheck": true,
-    "lib": ["ES2023", "DOM"],
+    "lib": [
+      "ES2023",
+      "DOM"
+    ],
     "baseUrl": ".",
     "paths": {
-      "@hnk-verse/contracts": ["packages/contracts/src/index.ts"],
-      "@hnk-verse/domain": ["packages/domain/src/index.ts"],
-      "@hnk-verse/persistence": ["packages/persistence/src/index.ts"],
-      "@hnk-verse/fixtures": ["packages/fixtures/src/index.ts"],
-      "@hnk-verse/simulation": ["packages/simulation/src/index.ts"]
+      "@hnk-verse/contracts": [
+        "packages/contracts/src/index.ts"
+      ],
+      "@hnk-verse/domain": [
+        "packages/domain/src/index.ts"
+      ],
+      "@hnk-verse/persistence": [
+        "packages/persistence/src/index.ts"
+      ],
+      "@hnk-verse/fixtures": [
+        "packages/fixtures/src/index.ts"
+      ],
+      "@hnk-verse/simulation": [
+        "packages/simulation/src/index.ts"
+      ],
+      "@hnk-verse/renderer": [
+        "packages/renderer/src/index.ts"
+      ]
     }
   },
-  "include": ["packages/**/*.ts", "scripts/**/*.ts"]
+  "include": [
+    "packages/**/*.ts",
+    "apps/**/*.ts",
+    "scripts/**/*.ts"
+  ]
 }

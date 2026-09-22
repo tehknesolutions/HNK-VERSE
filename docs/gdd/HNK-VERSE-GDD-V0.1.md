@@ -773,3 +773,33 @@ Current verification:
 - remote DB integration: `REMOTE_DB_PENDING`.
 
 Existing Supabase projects belonging to other products are not reused automatically.
+
+
+## 39. ZERO Web Playable V1 state
+
+`ZERO-WEB-PLAYABLE-V1.md` records the first visible browser/PWA projection of the locked ZERO runtime.
+
+Implemented:
+
+- `@hnk-verse/renderer` deterministic 18×14 isometric projection;
+- `BrowserLocalPersistence` using the existing persistence ports;
+- `apps/web` Vite/TypeScript PWA shell;
+- Home, Bed, Workbench, VALI, Metatron, Cartography, Wood Node and storage placement zone;
+- contextual ZERO actions wired to `ZeroCommandRuntime`;
+- persistent local reload through the browser adapter;
+- desktop keyboard and mobile directional presentation movement;
+- bounded fixed-orientation isometric zoom;
+- Chronicle reflection input;
+- PWA manifest/service worker.
+
+Verification classification:
+
+- TypeScript: `LOCAL PASS`;
+- deterministic ZERO runtime: `LOCAL PASS`;
+- browser-local persistence: `LOCAL PASS`;
+- Vite production build: `PENDING_EXTERNAL_RUNNER`;
+- visual desktop/mobile QA: `PENDING`.
+
+Important authority boundary:
+
+visual Avatar movement in V1 is presentation-only until `MoveAvatar` produces an authoritative persisted position/checkpoint event.

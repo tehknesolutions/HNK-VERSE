@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'packages/**'
+      - 'apps/**'
       - 'scripts/**'
       - 'package.json'
       - 'pnpm-workspace.yaml'
@@ -36,5 +37,5 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: ZERO runtime check
-        run: pnpm test:zero
+      - name: ZERO runtime + persistence + Web checks
+        run: pnpm check
