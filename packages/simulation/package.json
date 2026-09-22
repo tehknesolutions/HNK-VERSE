@@ -1,0 +1,14 @@
+{
+  "name": "@hnk-verse/simulation",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@hnk-verse/contracts": "workspace:*",
+    "@hnk-verse/domain": "workspace:*",
+    "@hnk-verse/persistence": "workspace:*"
+  }
+}
