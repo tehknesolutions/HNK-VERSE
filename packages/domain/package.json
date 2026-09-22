@@ -7,6 +7,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
-    "@hnk-verse/contracts": "workspace:*"
+    "@hnk-verse/contracts": "workspace:*",
+    "@hnk-verse/world": "workspace:*"
   }
 }
