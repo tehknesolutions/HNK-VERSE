@@ -1,7 +1,8 @@
 # HNK-VERSE — LEGACY CONVERGENCE AUDIT V2
 
-**Status:** DISCOVERY INPUT  
+**Status:** LOCKED DISCOVERY INPUT  
 **Date:** 2026-09-22  
+**Authority:** Creator-approved donor/convergence map; implementation remains subject to later Discovery locks.  
 **Supersedes:** LEGACY CONVERGENCE AUDIT V1 only as the latest donor map; V1 remains valid historical evidence.
 
 ## 1. New repositories added in V2
