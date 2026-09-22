@@ -908,6 +908,71 @@ Telemetry may record:
 
 Telemetry is not domain truth.
 
+
+## 44A. Rest / Bed interaction — Survival RPG reference absorption
+
+The locked ZERO Bed becomes a real domain verb rather than scenery.
+
+Command:
+
+Rest
+
+Target:
+
+ENTITY-BED-ZERO-001
+
+Validation:
+
+- Avatar has access to Home;
+- Bed is usable;
+- Avatar is within valid interaction context;
+- no World rule blocks Rest.
+
+Accepted result:
+
+1. AvatarRested
+2. WorldDayAdvanced only when the configured time advance crosses the day boundary.
+
+Reducer effects:
+
+- Energy/Rest moves toward the configured recovered state;
+- World Time advances by a deterministic configured amount;
+- Avatar remains at a valid Home/Bed context;
+- state persists.
+
+Important boundaries:
+
+- Rest is optional for ordinary ZERO progression;
+- no mandatory hunger/thirst loop is added;
+- no survival punishment is created by refusing to Rest;
+- the exact time advance and recovery amount are balancing values, not canon;
+- Rest does not invent dreams, visions or metaphysical evidence.
+
+This absorbs the useful Survival RPG pattern of sleeping as time/recovery utility while preserving the HNK-VERSE soft-needs lock.
+
+## 44B. Workbench as capability-bearing World fixture
+
+The Workbench is not a menu portal.
+
+ENTITY-WORKBENCH-ZERO-001 must expose a capability equivalent to:
+
+PRACTICAL_WOODWORK_CONTEXT
+
+The Wooden Box process requires:
+
+- practical knowledge gate;
+- 3 Wood;
+- valid Workbench capability/context;
+- player permission;
+- World rule permission.
+
+Therefore:
+
+RECIPE KNOWN ≠ PROCESS EXECUTABLE EVERYWHERE.
+
+This becomes the first seed of the post-ZERO Tool Capability model.
+
+
 ## 44. Golden final assertions
 
 ### Knowledge
@@ -972,6 +1037,7 @@ Telemetry is not domain truth.
 - OwnershipTransferred
 - RelationshipHistoryAppended
 - HumanReflectionAppended
+- AvatarRested
 - WorldDayAdvanced
 - IdentitySessionEnded
 
@@ -1035,3 +1101,6 @@ Queries/read models remain separate from commands.
 18. Stable domain rejection codes are separate from UI wording.
 19. Atomic transactions, idempotency and concurrency protection are required in ZERO.
 20. Golden E2E validates knowledge, conservation, mastery evidence, creation, placement, Agent memory, relationship history, Chronicle and reload persistence.
+21. Rest is an optional authoritative Bed interaction that recovers the soft Energy/Rest state and advances World Time without adding punitive survival meters.
+22. Workbench capability/context is required for the first Wooden Box process; recipe knowledge alone does not make the process executable anywhere.
+23. Survival RPG-inspired mining, farming, fishing, combat, biomes, dungeons and tool chains remain post-ZERO.
