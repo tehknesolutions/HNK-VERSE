@@ -287,3 +287,52 @@ Dynamic blockers come from current World entity state.
 A stale plan cannot force movement: every step is revalidated by the domain before the route continues.
 
 Route preview and route destination are session/presentation state only and are not persisted as World truth.
+
+
+## First live deployment boundary — ZERO V1
+
+The public ZERO Web/PWA is deployed at:
+
+`https://hnk-verse.vercel.app`
+
+Deployment path:
+
+```text
+GitHub main
+   ↓
+Vercel Git Integration
+   ↓
+pnpm install --frozen-lockfile
+   ↓
+pnpm web:build
+   ↓
+apps/web/dist
+   ↓
+public static deployment
+```
+
+Current deployed client persistence:
+
+```text
+ZeroCommandRuntime
+   ↓
+BrowserLocalPersistence
+   ↓
+localStorage
+```
+
+The existing Postgres adapter remains a separate production-data gate and is not implied by the public Web deployment.
+
+First-live verification used three independent layers:
+
+1. full Windows `pnpm check`;
+2. Vercel production build;
+3. Playwright + Microsoft Edge against the public production alias.
+
+The final production browser automation covers the complete ZERO loop and reload persistence.
+
+Deployment authority remains separate from domain authority:
+
+`DEPLOYED UI != WORLD TRUTH`.
+
+World changes still require domain commands and persisted events.
