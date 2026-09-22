@@ -107,9 +107,7 @@ function dynamicCellBlocked(point: LogicalPoint): boolean {
 }
 
 function routeDelayMs(): number {
-  return globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    ? 0
-    : 90;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 90;
 }
 
 function wait(ms: number): Promise<void> {
@@ -966,6 +964,7 @@ function render(): void {
   document.querySelector<HTMLButtonElement>('[data-reset]')?.addEventListener(
     'click',
     async () => {
+      if (busy) return;
       const confirmed = globalThis.confirm(
         'Reiniciar o ZERO local? O estado persistido neste navegador será apagado.',
       );
