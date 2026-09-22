@@ -42,7 +42,11 @@ let runtime = await ZeroCommandRuntime.create(
 );
 
 let selectedId: string | null = ZERO_IDS.valiSurface;
-let avatarVisual: LogicalPoint = { ...ZERO_SCENE_POSITIONS.avatarSpawn };
+let avatarVisual: LogicalPoint = {
+  x: runtime.state.avatarPosition.logicalX,
+  y: runtime.state.avatarPosition.logicalY,
+};
+let moveCheckpointTimer: number | null = null;
 let cameraZoom = 1;
 let notice = 'Observe o mundo. O ZERO deriva progresso do estado real.';
 let busy = false;
@@ -112,13 +116,17 @@ async function execute(
 
     if (result.needsReload) {
       await runtime.reload();
+      avatarVisual = {
+        x: runtime.state.avatarPosition.logicalX,
+        y: runtime.state.avatarPosition.logicalY,
+      };
       notice = 'O mundo foi recarregado após conflito de versão.';
     }
 
     return result;
   } finally {
     busy = false;
-    render();
+    window.setTimeout(render, 0);
   }
 }
 
@@ -384,12 +392,46 @@ async function runPrimaryAction(): Promise<void> {
   }
 }
 
+function scheduleAvatarCheckpoint(): void {
+  if (moveCheckpointTimer !== null) {
+    window.clearTimeout(moveCheckpointTimer);
+  }
+
+  moveCheckpointTimer = window.setTimeout(async () => {
+    moveCheckpointTimer = null;
+
+    if (busy) {
+      scheduleAvatarCheckpoint();
+      return;
+    }
+
+    const checkpoint = { ...avatarVisual };
+    const result = await execute(
+      'MoveAvatar',
+      {
+        logicalX: checkpoint.x,
+        logicalY: checkpoint.y,
+      },
+      ZERO_IDS.avatar,
+    );
+
+    if (result?.accepted) {
+      notice = `Posição segura registrada em (${checkpoint.x}, ${checkpoint.y}).`;
+    }
+  }, 240);
+}
+
 function moveAvatar(dx: number, dy: number): void {
   const next = {
     x: Math.max(1, Math.min(ZERO_GRID.width, avatarVisual.x + dx)),
     y: Math.max(1, Math.min(ZERO_GRID.height, avatarVisual.y + dy)),
   };
-  if (insideZeroLand(next)) avatarVisual = next;
+
+  if (insideZeroLand(next)) {
+    avatarVisual = next;
+    scheduleAvatarCheckpoint();
+  }
+
   render();
 }
 
@@ -494,7 +536,7 @@ function render(): void {
       </section>
 
       <footer class="footer">
-        <span>WASD / setas: movimento visual V1</span>
+        <span>WASD / setas: movimento visual + checkpoint autoritativo</span>
         <span>Toque/clique: selecionar · botão contextual: agir</span>
         <span>PWA · localStorage · sem LLM obrigatório</span>
       </footer>
@@ -557,7 +599,10 @@ function render(): void {
         ports,
         structuredClone(ZERO_FIXTURE_V1_INITIAL_STATE),
       );
-      avatarVisual = { ...ZERO_SCENE_POSITIONS.avatarSpawn };
+      avatarVisual = {
+        x: runtime.state.avatarPosition.logicalX,
+        y: runtime.state.avatarPosition.logicalY,
+      };
       selectedId = ZERO_IDS.valiSurface;
       notice = 'ZERO local reiniciado.';
       await execute('StartSession');
