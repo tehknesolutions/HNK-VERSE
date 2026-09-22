@@ -1,6 +1,6 @@
 # HNK-VERSE — ZERO PERSISTENCE SCHEMA + DETERMINISTIC FIXTURE V1
 
-**Status:** PROPOSAL — awaiting Creator lock  
+**Status:** LOCKED — Creator-approved ZERO persistence schema + deterministic fixture  
 **Date:** 2026-09-22  
 **Parent:** HNK-VERSE GDD V0.1 / ZERO Interaction + Event Contract LOCK  
 **Scope:** persistence, restore, snapshots and deterministic fixture for ZERO
@@ -1058,7 +1058,7 @@ Persistence diagnostics should expose:
 
 Observability cannot mutate truth.
 
-## 50. Candidate lock decisions
+## 50. Locked decisions
 
 1. Event Ledger is the historical authority; snapshots accelerate restore.
 2. Durable accepted events must survive session/browser failure before success is acknowledged.
