@@ -1,6 +1,6 @@
 # HNK-VERSE — ZERO REMOTE POSTGRES ACCEPTANCE V1
 
-**Status:** REMOTE_DB_CORE_GREEN / DIRECT_ADAPTER_CONNECTION_PENDING  
+**Status:** GREEN  
 **Date:** 2026-09-22  
 **Parent:** ZERO Production Persistence Adapter V1 + FIRST DEPLOY/BROWSER QA V1  
 **Target:** dedicated HNK-VERSE PostgreSQL/Supabase project
@@ -210,14 +210,44 @@ Until then:
 `STATIC_IMPLEMENTED != REMOTE_DB_GREEN`.
 
 
-## 11. Current execution evidence
+## 11. Final execution evidence
 
-See `ZERO-REMOTE-POSTGRES-EVIDENCE-V1.md`.
+See:
 
-The dedicated HNK-VERSE Supabase project is live and the remote core has passed migration, security, atomicity, rollback, concurrency, immutable-ledger, snapshot and exact canonical-ledger replay tests.
+- `ZERO-REMOTE-POSTGRES-EVIDENCE-V1.md`;
+- `ZERO-DIRECT-POSTGRES-PERSISTENCE-EVIDENCE-V1.md`.
 
-The only remaining item before strict `REMOTE_DB_GREEN` is executing the actual `PostgresPersistence` TypeScript class over a direct Postgres driver connection.
+The dedicated HNK-VERSE Supabase project has passed the full remote acceptance gate.
 
-An Edge Function path using the automatic `SUPABASE_DB_URL` was prepared but blocked by the platform security layer before deployment.
+In addition to schema/security/atomicity/rollback/concurrency/ledger/snapshot/replay proofs, the actual repository class:
 
-No database password was exposed or reset to bypass this boundary.
+`PostgresPersistence`
+
+was executed against the real remote PostgreSQL database using `pg 8.16.3`.
+
+The direct adapter proof covered:
+
+- `latestSequence()`;
+- `append()`;
+- same-hash idempotent retry;
+- different-hash `IdempotencyConflictError`;
+- concurrent writers with exactly one `ConcurrencyConflictError`;
+- `readAfter()`;
+- `find()`;
+- `save()`;
+- `loadLatest()`;
+- new connection / new adapter instance durability.
+
+Independent SQL inspection verified:
+
+`jsonb_typeof(payload) = object`
+
+and:
+
+`jsonb_typeof(state_payload) = object`.
+
+The temporary QA execution route was disabled after the proof.
+
+Therefore:
+
+`REMOTE_DB_GREEN = GREEN`.
