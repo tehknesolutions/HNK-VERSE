@@ -88,6 +88,6 @@ HNK-VERSE consumes canonical/versioned sources. It must not silently invent HNK 
 
 ---
 
-**Current state:** `ZERO_FIRST_LIVE_GREEN`
+**Current state:** `ZERO_FIRST_LIVE_GREEN + REMOTE_DB_GREEN`
 
-Production database integration remains a separate gate: `REMOTE_DB_PENDING`.
+The dedicated HNK-VERSE Supabase/Postgres persistence core and the real `PostgresPersistence` adapter have passed remote integration, concurrency, idempotency, snapshot and restart verification.
