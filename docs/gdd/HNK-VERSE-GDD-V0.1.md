@@ -965,3 +965,43 @@ Acceptance covers:
 - security/performance advisor review.
 
 Project creation requires explicit organization and cost confirmation before execution.
+
+
+## 46. ZERO remote Postgres core state
+
+`ZERO-REMOTE-POSTGRES-EVIDENCE-V1.md` records the real remote database execution on the dedicated HNK-VERSE Supabase project.
+
+Project:
+
+- name: `HNK-VERSE`;
+- ref: `gbhfhbtbwyxjdnkvdufj`;
+- region: `sa-east-1`;
+- status: `ACTIVE_HEALTHY`;
+- Postgres: `17.6.1.166`.
+
+Verified remotely:
+
+- tracked migration applied;
+- seven-table private schema;
+- RLS enabled;
+- no schema USAGE for `anon`, `authenticated` or `public`;
+- no browser RLS policies;
+- SECURITY INVOKER mutation guard;
+- immutable Event Ledger;
+- atomic append;
+- transaction rollback;
+- optimistic concurrency with exactly one winner;
+- receipt uniqueness/readback;
+- snapshot + later-event restore contract;
+- canonical 24-event ZERO ledger round-trip;
+- real reducer replay to exact golden state;
+- private-schema TypeScript catalog snapshot;
+- security/performance advisors reviewed.
+
+Classification:
+
+`REMOTE_DB_CORE_GREEN`.
+
+Strict `REMOTE_DB_GREEN` remains withheld until the actual `PostgresPersistence` TypeScript class is executed over an approved direct Postgres driver connection.
+
+An Edge Function path using Supabase's automatic `SUPABASE_DB_URL` was prepared but blocked by platform security before deployment. No credential bypass was attempted.
