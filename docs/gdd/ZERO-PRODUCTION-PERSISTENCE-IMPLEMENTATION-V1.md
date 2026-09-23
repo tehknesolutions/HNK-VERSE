@@ -1,6 +1,6 @@
 # HNK-VERSE — ZERO PRODUCTION PERSISTENCE IMPLEMENTATION V1
 
-**Status:** STATIC_IMPLEMENTED / REMOTE_DB_PENDING  
+**Status:** REMOTE_DB_CORE_GREEN / DIRECT_ADAPTER_CONNECTION_PENDING  
 **Date:** 2026-09-22  
 **Parent:** ZERO Production Persistence Adapter V1 LOCK  
 **Target:** PostgreSQL / Supabase-compatible durable adapter
@@ -222,3 +222,14 @@ Continue ZERO toward the first Web/PWA projection:
 - visual state derived from authoritative runtime.
 
 The product track does not need to wait for final production database hosting to begin.
+
+
+## 9. Remote execution update
+
+The project is now provisioned and the remote persistence core has been exercised.
+
+Evidence:
+
+`ZERO-REMOTE-POSTGRES-EVIDENCE-V1.md`.
+
+The remaining gap is intentionally narrow: direct execution of the actual `PostgresPersistence` class over an approved direct Postgres driver connection.
