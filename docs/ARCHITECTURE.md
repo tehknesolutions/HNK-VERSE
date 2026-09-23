@@ -122,8 +122,9 @@ Current implementation status:
 - private declarative schema: present;
 - Postgres persistence port implementation: present;
 - static schema security gate: present;
-- dedicated HNK-VERSE remote Supabase project: not provisioned;
-- remote Postgres integration tests: pending.
+- dedicated HNK-VERSE remote Supabase project: ACTIVE_HEALTHY;
+- remote Postgres integration tests: GREEN;
+- direct PostgresPersistence execution with node-postgres: GREEN.
 
 Other product databases must not be reused implicitly.
 
@@ -340,7 +341,7 @@ World changes still require domain commands and persisted events.
 
 ## Remote Postgres verification boundary — ZERO V1
 
-The dedicated HNK-VERSE Supabase project now hosts the private authoritative persistence schema.
+The dedicated HNK-VERSE Supabase project hosts the private authoritative persistence schema.
 
 ```text
 hnk_verse_private
@@ -353,7 +354,7 @@ hnk_verse_private
 └─ world_snapshots
 ```
 
-Remote proof chain:
+Verified chain:
 
 ```text
 tracked migration
@@ -369,14 +370,34 @@ tracked migration
 → semantic equality
 → real reducer
 → exact golden state
+→ actual PostgresPersistence
+→ node-postgres driver
+→ idempotent retry
+→ idempotency conflict
+→ concurrent adapter writers
+→ snapshot save/load
+→ new connection / new adapter instance
+→ durable state retained
 ```
 
-Current boundary:
+Final boundary:
 
-`REMOTE_DB_CORE = GREEN`
+`REMOTE_DB_GREEN = GREEN`.
 
-but:
+Approved direct-driver proof:
 
-`DIRECT PostgresPersistence INSTANCE → DIRECT DRIVER = PENDING`.
+`PostgresPersistence + pg 8.16.3`.
 
-The database password was not exposed or reset to force this final proof. A server-side Edge Function route using the automatically managed `SUPABASE_DB_URL` was preferred, but deployment of that QA function was blocked by the platform security layer before reaching Supabase.
+Rejected compatibility experiment:
+
+`PostgresPersistence + postgres-js.unsafe wrapper`
+
+because the tested wrapper encoded JSON payload/state as JSONB strings rather than objects.
+
+That rejection is specific to the tested wrapper shape; it is not a universal statement about postgres-js.
+
+The production browser remains outside this private schema. Future server integration must preserve:
+
+`CLIENT / AI OUTPUT != AUTHORIZED WORLD MUTATION`.
+
+No database password was exposed or reset during verification.
