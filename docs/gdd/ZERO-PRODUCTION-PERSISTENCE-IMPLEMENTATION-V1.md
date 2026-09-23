@@ -1,6 +1,6 @@
 # HNK-VERSE — ZERO PRODUCTION PERSISTENCE IMPLEMENTATION V1
 
-**Status:** REMOTE_DB_CORE_GREEN / DIRECT_ADAPTER_CONNECTION_PENDING  
+**Status:** REMOTE_DB_GREEN  
 **Date:** 2026-09-22  
 **Parent:** ZERO Production Persistence Adapter V1 LOCK  
 **Target:** PostgreSQL / Supabase-compatible durable adapter
@@ -142,26 +142,28 @@ The Postgres adapter deliberately avoids TypeScript parameter properties.
 
 This preserves compatibility with the Node 22 native strip-types runner after the earlier runtime defect discovered in PR #21.
 
-## 5. What is not yet verified
+## 5. Remote verification status
 
-No dedicated HNK-VERSE Supabase project currently exists in the connected account.
+A dedicated HNK-VERSE Supabase project now exists and is `ACTIVE_HEALTHY`.
 
-Therefore the following are still pending:
+Verified on real Postgres:
 
-- applying the schema to real Postgres;
-- generating a real migration from the declarative schema;
-- database integration test against Postgres;
-- real transaction rollback proof;
-- real concurrent writer proof;
-- Auth/RLS isolation with two test identities;
-- advisor scan after DDL;
-- database-generated TypeScript types;
-- production connection/driver selection;
-- crash/restart proof against remote durable storage.
+- tracked migration;
+- private schema and grants;
+- RLS defense-in-depth;
+- append-only Event Ledger;
+- atomic append;
+- rollback;
+- optimistic concurrency;
+- idempotency;
+- snapshot restore;
+- canonical ZERO ledger round-trip;
+- exact reducer replay;
+- real `PostgresPersistence` execution;
+- restart/new-connection durability;
+- advisor review.
 
-No existing `codex-hnk-app` or `tehkne-storyforge` project was reused.
-
-That boundary is intentional.
+No existing product database was reused.
 
 ## 6. Remote acceptance gate
 
@@ -191,45 +193,37 @@ When a dedicated HNK-VERSE Supabase project/dev branch is available:
 Current:
 
 - deterministic domain runtime: `LOCAL_RUNTIME_GREEN`;
-- production schema: `STATIC_IMPLEMENTED`;
-- Postgres port adapter: `STATIC_IMPLEMENTED`;
-- schema security contract: `IMPLEMENTED, execution pending hosted/local runner`;
-- dedicated remote database: `NOT_PROVISIONED`;
-- real Postgres integration: `REMOTE_DB_PENDING`.
+- production schema: `REMOTE_VERIFIED`;
+- Postgres port adapter: `REMOTE_VERIFIED`;
+- schema security contract: `REMOTE_VERIFIED`;
+- dedicated remote database: `ACTIVE_HEALTHY`;
+- real Postgres integration: `REMOTE_DB_GREEN`;
+- approved direct driver for this adapter proof: `pg 8.16.3`.
 
-Therefore:
+Driver compatibility lock:
 
-`STATIC_IMPLEMENTED != REMOTE_DB_GREEN`
+`PostgresPersistence + node-postgres (pg) = APPROVED`.
 
-and:
-
-`LOCAL_RUNTIME_GREEN != GITHUB_ACTIONS_GREEN`.
+The tested `postgres-js.unsafe()` wrapper is rejected unless its JSON parameter encoding is explicitly adapted.
 
 ## 8. Next gate
 
-After this implementation is merged, there are two parallel tracks:
+Database correctness is no longer the blocking gate.
 
-### Infrastructure track
-Provision/choose a dedicated HNK-VERSE Supabase development project and execute the remote DB acceptance gate.
+The next product/infrastructure task is to connect a trusted server-side application boundary to `PostgresPersistence` without exposing database credentials or private tables to the browser.
 
-### Product track
-Continue ZERO toward the first Web/PWA projection:
-
-- renderer contract;
-- Home/Land isometric projection;
-- contextual interactions;
-- domain-command adapter;
-- visual state derived from authoritative runtime.
-
-The product track does not need to wait for final production database hosting to begin.
+The existing Web/PWA remains client-local until that server integration is intentionally introduced.
 
 
 ## 9. Remote execution update
 
-The project is now provisioned and the remote persistence core has been exercised.
-
 Evidence:
 
-`ZERO-REMOTE-POSTGRES-EVIDENCE-V1.md`.
+- `ZERO-REMOTE-POSTGRES-EVIDENCE-V1.md`;
+- `ZERO-DIRECT-POSTGRES-PERSISTENCE-EVIDENCE-V1.md`.
 
-The remaining gap is intentionally narrow: direct execution of the actual `PostgresPersistence` class over an approved direct Postgres driver connection.
+The actual `PostgresPersistence` class has now executed successfully against remote Postgres using `pg 8.16.3`.
+
+Strict classification:
+
+`REMOTE_DB_GREEN`.
