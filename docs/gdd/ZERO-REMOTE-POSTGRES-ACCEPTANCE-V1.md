@@ -1,6 +1,6 @@
 # HNK-VERSE — ZERO REMOTE POSTGRES ACCEPTANCE V1
 
-**Status:** GATE OPEN  
+**Status:** REMOTE_DB_CORE_GREEN / DIRECT_ADAPTER_CONNECTION_PENDING  
 **Date:** 2026-09-22  
 **Parent:** ZERO Production Persistence Adapter V1 + FIRST DEPLOY/BROWSER QA V1  
 **Target:** dedicated HNK-VERSE PostgreSQL/Supabase project
@@ -208,3 +208,16 @@ Performance findings may be fixed or explicitly deferred with rationale if they 
 Until then:
 
 `STATIC_IMPLEMENTED != REMOTE_DB_GREEN`.
+
+
+## 11. Current execution evidence
+
+See `ZERO-REMOTE-POSTGRES-EVIDENCE-V1.md`.
+
+The dedicated HNK-VERSE Supabase project is live and the remote core has passed migration, security, atomicity, rollback, concurrency, immutable-ledger, snapshot and exact canonical-ledger replay tests.
+
+The only remaining item before strict `REMOTE_DB_GREEN` is executing the actual `PostgresPersistence` TypeScript class over a direct Postgres driver connection.
+
+An Edge Function path using the automatic `SUPABASE_DB_URL` was prepared but blocked by the platform security layer before deployment.
+
+No database password was exposed or reset to bypass this boundary.
