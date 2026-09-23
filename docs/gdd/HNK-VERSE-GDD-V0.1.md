@@ -770,7 +770,7 @@ Current verification:
 - runtime core: `LOCAL_RUNTIME_GREEN`;
 - Postgres implementation: `STATIC_IMPLEMENTED`;
 - dedicated HNK-VERSE Supabase project: `NOT_PROVISIONED`;
-- remote DB integration: `REMOTE_DB_PENDING`.
+- remote DB integration: `REMOTE_DB_GREEN`.
 
 Existing Supabase projects belonging to other products are not reused automatically.
 
@@ -1000,8 +1000,48 @@ Verified remotely:
 
 Classification:
 
-`REMOTE_DB_CORE_GREEN`.
+`REMOTE_DB_GREEN`.
 
-Strict `REMOTE_DB_GREEN` remains withheld until the actual `PostgresPersistence` TypeScript class is executed over an approved direct Postgres driver connection.
+The actual `PostgresPersistence` TypeScript class was executed against the dedicated remote Postgres database using `pg 8.16.3`, including append, idempotency, conflict, concurrency, readback, snapshot and new-connection durability. Independent SQL inspection confirmed JSONB payload/state are stored as objects.
 
-An Edge Function path using Supabase's automatic `SUPABASE_DB_URL` was prepared but blocked by platform security before deployment. No credential bypass was attempted.
+
+## 47. ZERO direct PostgresPersistence strict-green state
+
+`ZERO-DIRECT-POSTGRES-PERSISTENCE-EVIDENCE-V1.md` closes Issue #37 and the strict remote database gate.
+
+The actual repository class:
+
+`packages/persistence/src/postgres.ts → PostgresPersistence`
+
+was executed server-side against the dedicated HNK-VERSE Supabase PostgreSQL database.
+
+Approved proof driver:
+
+`pg 8.16.3`.
+
+Verified through the real class:
+
+- `latestSequence()`;
+- `append()`;
+- `find()`;
+- same-hash idempotent retry;
+- different-hash `IdempotencyConflictError`;
+- concurrent writers with exactly one `ConcurrencyConflictError`;
+- `readAfter()`;
+- `save()`;
+- `loadLatest()`;
+- new driver pool + new adapter instance durability.
+
+Independent SQL inspection verified:
+
+- event `payload` = JSONB object;
+- event `provenance` = JSONB object;
+- snapshot `state_payload` = JSONB object.
+
+A `postgres-js.unsafe()` wrapper experiment was rejected because its tested parameter encoding stored JSON as JSONB strings.
+
+The temporary QA Edge Function was disabled after the proof and redeployed as an inert authenticated HTTP 410 endpoint.
+
+Final classification:
+
+`REMOTE_DB_GREEN = GREEN`.

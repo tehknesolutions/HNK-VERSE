@@ -1,6 +1,6 @@
 # HNK-VERSE — ZERO REMOTE POSTGRES EVIDENCE V1
 
-**Status:** REMOTE_DB_CORE_GREEN / DIRECT_ADAPTER_CONNECTION_PENDING  
+**Status:** GREEN  
 **Date:** 2026-09-23  
 **Supabase project:** HNK-VERSE  
 **Project ref:** `gbhfhbtbwyxjdnkvdufj`  
@@ -320,52 +320,44 @@ https://supabase.com/docs/guides/database/database-linter?lint=0005_unused_index
 
 ## 17. Direct PostgresPersistence execution
 
-A direct Edge Function QA was prepared using:
+The final direct-adapter proof is recorded in:
 
-- the real `PostgresPersistence` source;
-- `SUPABASE_DB_URL`;
-- postgres-js;
-- closed append/idempotency/concurrency/snapshot tests.
+`ZERO-DIRECT-POSTGRES-PERSISTENCE-EVIDENCE-V1.md`.
 
-The platform security layer blocked deployment before the function reached Supabase.
+The actual repository class:
 
-The official CLI path also requires the project database password for `supabase link`.
+`packages/persistence/src/postgres.ts → PostgresPersistence`
 
-No database password was requested, extracted, reset or exposed.
+was executed against the dedicated remote Postgres database using:
 
-Therefore the following single acceptance item remains open:
+`pg 8.16.3`.
 
-`ACTUAL PostgresPersistence INSTANCE → DIRECT POSTGRES CONNECTION`.
+Verified through the real class:
 
-Important: the SQL contract of that adapter has already been exercised remotely through the same statements and invariants, and its returned ledger has been replayed through the real domain reducer.
+- `latestSequence()`;
+- `append()`;
+- same-hash idempotent retry;
+- different-hash `IdempotencyConflictError`;
+- concurrent writers with exactly one `ConcurrencyConflictError`;
+- `readAfter()`;
+- `find()`;
+- `save()`;
+- `loadLatest()`;
+- new connection / new adapter instance durability.
+
+A first experimental `postgres-js.unsafe()` wrapper was rejected because independent SQL inspection showed JSON payload/state stored as JSONB strings.
+
+The approved node-postgres execution independently verified:
+
+`jsonb_typeof(payload) = object`
+
+`jsonb_typeof(provenance) = object`
+
+`jsonb_typeof(state_payload) = object`.
+
+The temporary QA Edge Function was disabled after completion and redeployed as an inert authenticated HTTP 410 endpoint.
 
 ## 18. Classification
-
-Green:
-
-- dedicated project;
-- real tracked migration;
-- private schema;
-- RLS;
-- no browser schema access;
-- SECURITY INVOKER mutation guard;
-- Event UPDATE/DELETE rejection;
-- atomic append;
-- rollback;
-- concurrency;
-- receipt uniqueness/readback;
-- snapshot + later-event restore contract;
-- canonical 24-event remote round-trip;
-- exact reducer golden state;
-- live private-schema type snapshot;
-- security advisor reviewed;
-- performance advisor reviewed.
-
-Still pending:
-
-- one direct runtime execution of the `PostgresPersistence` class against a direct Postgres driver connection.
-
-Therefore:
 
 ```text
 REMOTE_DB_SCHEMA        = GREEN
@@ -378,9 +370,10 @@ REMOTE_DB_SNAPSHOT      = GREEN
 REMOTE_LEDGER_ROUNDTRIP = GREEN
 REMOTE_REDUCER_REPLAY   = GREEN
 REMOTE_ADVISORS         = REVIEWED
-DIRECT_TS_ADAPTER       = PENDING_CONNECTION_PATH
+DIRECT_TS_ADAPTER       = GREEN
 REMOTE_DB_CORE          = GREEN
-REMOTE_DB_STRICT        = NOT_YET_GREEN
+REMOTE_DB_STRICT        = GREEN
+REMOTE_DB_GREEN         = GREEN
 ```
 
-No stricter green claim should be made until the final direct-adapter item executes.
+The remaining work is application integration, not database-correctness proof.
