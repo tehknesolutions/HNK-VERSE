@@ -1,1 +1,136 @@
 lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .:
+    devDependencies:
+      '@hnk-verse/chronicle':
+        specifier: workspace:*
+        version: link:packages/chronicle
+      '@hnk-verse/contracts':
+        specifier: workspace:*
+        version: link:packages/contracts
+      '@hnk-verse/domain':
+        specifier: workspace:*
+        version: link:packages/domain
+      '@hnk-verse/fixtures':
+        specifier: workspace:*
+        version: link:packages/fixtures
+      '@hnk-verse/persistence':
+        specifier: workspace:*
+        version: link:packages/persistence
+      '@hnk-verse/renderer':
+        specifier: workspace:*
+        version: link:packages/renderer
+      '@hnk-verse/simulation':
+        specifier: workspace:*
+        version: link:packages/simulation
+      '@hnk-verse/world':
+        specifier: workspace:*
+        version: link:packages/world
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
+  apps/web:
+    dependencies:
+      '@hnk-verse/chronicle':
+        specifier: workspace:*
+        version: link:../../packages/chronicle
+      '@hnk-verse/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@hnk-verse/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@hnk-verse/fixtures':
+        specifier: workspace:*
+        version: link:../../packages/fixtures
+      '@hnk-verse/persistence':
+        specifier: workspace:*
+        version: link:../../packages/persistence
+      '@hnk-verse/renderer':
+        specifier: workspace:*
+        version: link:../../packages/renderer
+      '@hnk-verse/simulation':
+        specifier: workspace:*
+        version: link:../../packages/simulation
+      '@hnk-verse/world':
+        specifier: workspace:*
+        version: link:../../packages/world
+      '@supabase/supabase-js':
+        specifier: 2.57.4
+        version: 2.57.4
+    devDependencies:
+      vite:
+        specifier: 8.3.0
+        version: 8.3.0(@types/node@26.6.2)(esbuild@0.28.2)
+      vitest:
+        specifier: 3.2.4
+        version: 3.2.4(@types/node@26.6.2)(lightningcss@1.33.0)
+
+  packages/chronicle:
+    dependencies:
+      '@hnk-verse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+
+  packages/contracts: {}
+
+  packages/domain:
+    dependencies:
+      '@hnk-verse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@hnk-verse/world':
+        specifier: workspace:*
+        version: link:../world
+
+  packages/fixtures:
+    dependencies:
+      '@hnk-verse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@hnk-verse/domain':
+        specifier: workspace:*
+        version: link:../domain
+
+  packages/persistence:
+    dependencies:
+      '@hnk-verse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+
+  packages/renderer:
+    dependencies:
+      '@hnk-verse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@hnk-verse/domain':
+        specifier: workspace:*
+        version: link:../domain
+      '@hnk-verse/world':
+        specifier: workspace:*
+        version: link:../world
+
+  packages/simulation:
+    dependencies:
+      '@hnk-verse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@hnk-verse/domain':
+        specifier: workspace:*
+        version: link:../domain
+      '@hnk-verse/persistence':
+        specifier: workspace:*
+        version: link:../persistence
+
+  packages/world:
+    dependencies:
+      '@hnk-verse/contracts':
+        specifier: workspace:*
+        version: link:../contracts
