@@ -1045,3 +1045,46 @@ The temporary QA Edge Function was disabled after the proof and redeployed as an
 Final classification:
 
 `REMOTE_DB_GREEN = GREEN`.
+
+
+## 48. ZERO authenticated remote runtime bridge
+
+`ZERO-AUTHENTICATED-REMOTE-RUNTIME-BRIDGE-V1.md` opens the next production gate after `REMOTE_DB_GREEN`.
+
+The database is verified. The remaining authority boundary is:
+
+```text
+WEB/PWA
+→ authenticated user
+→ trusted Edge Function
+→ HNK Identity / Verse / World resolution
+→ domain validation
+→ PostgresPersistence
+→ private Event Ledger
+```
+
+Current production Web persistence remains:
+
+`BrowserLocalPersistence → localStorage`.
+
+A real Auth probe against the HNK-VERSE Supabase project returned:
+
+```text
+422
+anonymous_provider_disabled
+```
+
+Therefore remote browser authority is intentionally not enabled yet.
+
+Before public anonymous Auth activation:
+
+- enable Anonymous Sign-Ins intentionally;
+- configure/review CAPTCHA or equivalent abuse protection;
+- keep private DB credentials server-only;
+- prove user isolation and server-bound actor/World authority.
+
+Current state:
+
+`REMOTE_DB_GREEN = true`
+
+`REMOTE_WEB_AUTHORITY = false`.

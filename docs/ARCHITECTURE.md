@@ -401,3 +401,51 @@ The production browser remains outside this private schema. Future server integr
 `CLIENT / AI OUTPUT != AUTHORIZED WORLD MUTATION`.
 
 No database password was exposed or reset during verification.
+
+
+## Authenticated remote runtime boundary — ZERO V1
+
+After `REMOTE_DB_GREEN`, the browser still does not become database authority.
+
+Target path:
+
+```text
+Browser
+  │ publishable key + user JWT only
+  ▼
+Supabase Auth
+  ▼
+JWT-authenticated Edge Function
+  ▼
+resolve auth.user.id
+  ▼
+HNK Identity
+  ▼
+Personal Verse / World
+  ▼
+restore authoritative World state
+  ▼
+handleZeroCommand()
+  ▼
+PostgresPersistence + pg
+  ▼
+hnk_verse_private
+```
+
+The browser must never choose its own authoritative actor/World scope.
+
+The browser may propose command intent. The server binds identity and authority before domain validation.
+
+Current live Web path remains:
+
+```text
+ZeroCommandRuntime
+→ BrowserLocalPersistence
+→ localStorage
+```
+
+A real anonymous Auth probe returned `anonymous_provider_disabled`.
+
+Remote Web authority therefore remains disabled until Auth and abuse-prevention prerequisites are intentionally configured and verified.
+
+No direct browser grants are added to `hnk_verse_private`.
