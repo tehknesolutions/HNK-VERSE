@@ -336,3 +336,47 @@ Deployment authority remains separate from domain authority:
 `DEPLOYED UI != WORLD TRUTH`.
 
 World changes still require domain commands and persisted events.
+
+
+## Remote Postgres verification boundary — ZERO V1
+
+The dedicated HNK-VERSE Supabase project now hosts the private authoritative persistence schema.
+
+```text
+hnk_verse_private
+├─ hnk_identities
+├─ personal_verses
+├─ worlds
+├─ world_streams
+├─ world_events
+├─ command_receipts
+└─ world_snapshots
+```
+
+Remote proof chain:
+
+```text
+tracked migration
+→ real Postgres
+→ private schema / RLS / grants audit
+→ atomic append
+→ rollback
+→ concurrent writers
+→ immutable ledger
+→ snapshot + tail
+→ canonical ZERO fixture upload
+→ ordered readback
+→ semantic equality
+→ real reducer
+→ exact golden state
+```
+
+Current boundary:
+
+`REMOTE_DB_CORE = GREEN`
+
+but:
+
+`DIRECT PostgresPersistence INSTANCE → DIRECT DRIVER = PENDING`.
+
+The database password was not exposed or reset to force this final proof. A server-side Edge Function route using the automatically managed `SUPABASE_DB_URL` was preferred, but deployment of that QA function was blocked by the platform security layer before reaching Supabase.
