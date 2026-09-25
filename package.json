@@ -10,7 +10,7 @@
     "check": "pnpm typecheck && pnpm test && pnpm web:build",
     "lint": "pnpm -r --if-present lint",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "pnpm test:zero && pnpm test:persistence-schema && pnpm test:web-local && pnpm test:chronicle && pnpm test:spatial && pnpm test:path-routing",
+    "test": "pnpm test:zero && pnpm test:persistence-schema && pnpm test:web-local && pnpm test:chronicle && pnpm test:spatial && pnpm test:path-routing && pnpm test:reference-avatar",
     "test:zero": "node --experimental-strip-types scripts/zero-runtime-check.ts",
     "test:persistence-schema": "node scripts/zero-persistence-schema-check.mjs",
     "web:dev": "pnpm --filter @hnk-verse/web dev",
@@ -18,7 +18,8 @@
     "test:web-local": "node --experimental-strip-types scripts/zero-web-local-persistence-check.ts",
     "test:chronicle": "node --experimental-strip-types scripts/zero-chronicle-check.ts",
     "test:spatial": "node --experimental-strip-types scripts/zero-spatial-check.ts",
-    "test:path-routing": "node --experimental-strip-types scripts/zero-path-routing-check.ts"
+    "test:path-routing": "node --experimental-strip-types scripts/zero-path-routing-check.ts",
+    "test:reference-avatar": "node --experimental-strip-types scripts/reference-avatar-check.ts"
   },
   "devDependencies": {
     "typescript": "5.8.3",
