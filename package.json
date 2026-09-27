@@ -3,14 +3,12 @@
   "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@10.17.1",
-  "engines": {
-    "node": ">=22"
-  },
+  "engines": { "node": ">=22" },
   "scripts": {
     "check": "pnpm typecheck && pnpm test && pnpm web:build",
     "lint": "pnpm -r --if-present lint",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "pnpm test:zero && pnpm test:persistence-schema && pnpm test:web-local && pnpm test:chronicle && pnpm test:spatial && pnpm test:path-routing && pnpm test:reference-avatar",
+    "test": "pnpm test:zero && pnpm test:persistence-schema && pnpm test:web-local && pnpm test:chronicle && pnpm test:spatial && pnpm test:path-routing && pnpm test:reference-avatar && pnpm test:knowledge && pnpm test:codex-sync",
     "test:zero": "node --experimental-strip-types scripts/zero-runtime-check.ts",
     "test:persistence-schema": "node scripts/zero-persistence-schema-check.mjs",
     "web:dev": "pnpm --filter @hnk-verse/web dev",
@@ -19,7 +17,9 @@
     "test:chronicle": "node --experimental-strip-types scripts/zero-chronicle-check.ts",
     "test:spatial": "node --experimental-strip-types scripts/zero-spatial-check.ts",
     "test:path-routing": "node --experimental-strip-types scripts/zero-path-routing-check.ts",
-    "test:reference-avatar": "node --experimental-strip-types scripts/reference-avatar-check.ts"
+    "test:reference-avatar": "node --experimental-strip-types scripts/reference-avatar-check.ts",
+    "test:knowledge": "node --experimental-strip-types scripts/knowledge-architecture-check.ts",
+    "test:codex-sync": "node --experimental-strip-types scripts/codex-sync-agent-context-check.ts"
   },
   "devDependencies": {
     "typescript": "5.8.3",
