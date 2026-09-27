@@ -5,3 +5,4 @@ export * from './codex-resolver.ts';
 export * from './provenance-ledger.ts';
 export * from './evidence-bridge.ts';
 export * from './agent-knowledge-context.ts';
+export * from './codex-sync.ts';
