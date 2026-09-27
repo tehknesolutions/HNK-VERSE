@@ -8,4 +8,5 @@ export * from './agent-knowledge-context.ts';
 export * from './system-knowledge-context.ts';
 export * from './knowledge-query-policy.ts';
 export * from './knowledge-access.ts';
+export * from './knowledge-memory.ts';
 export * from './codex-sync.ts';
