@@ -12,11 +12,15 @@ export type ProvenanceRecord = {
 export class ProvenanceLedger {
   readonly #records: ProvenanceRecord[] = [];
 
+  has(id: string): boolean {
+    return this.#records.some((entry) => entry.id === id);
+  }
+
   append(record: ProvenanceRecord): ProvenanceRecord {
     if (!record.id || !record.subjectRef || !record.sourceRef || !record.sourceSystem || !record.recordedAt) {
       throw new Error('PROVENANCE_IDENTITY_REQUIRED');
     }
-    if (this.#records.some((entry) => entry.id === record.id)) throw new Error('PROVENANCE_ID_ALREADY_EXISTS');
+    if (this.has(record.id)) throw new Error('PROVENANCE_ID_ALREADY_EXISTS');
     this.#records.push(Object.freeze({ ...record }));
     return record;
   }
