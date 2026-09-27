@@ -11,9 +11,21 @@ export type KnowledgeRegistrySnapshot = {
 export class KnowledgeRegistry {
   readonly #objects = new Map<string, HnkKnowledgeObject>();
 
-  ingest<T>(object: HnkKnowledgeObject<T>): HnkKnowledgeObject<T> {
+  validateIngest<T>(object: HnkKnowledgeObject<T>): void {
     assertKnowledgeObject(object);
     if (this.#objects.has(object.id)) throw new Error('KNOWLEDGE_ID_ALREADY_EXISTS');
+  }
+
+  validateReplace<T>(object: HnkKnowledgeObject<T>): void {
+    assertKnowledgeObject(object);
+    const previous = this.require(object.id);
+    if (previous.lifecycle === 'CANON' && object.lifecycle !== 'CANON' && object.lifecycle !== 'SUPERSEDED' && object.lifecycle !== 'ARCHIVED') {
+      throw new Error('CANON_DOWNGRADE_FORBIDDEN');
+    }
+  }
+
+  ingest<T>(object: HnkKnowledgeObject<T>): HnkKnowledgeObject<T> {
+    this.validateIngest(object);
     this.#objects.set(object.id, object);
     return object;
   }
@@ -37,11 +49,7 @@ export class KnowledgeRegistry {
   }
 
   replace<T>(object: HnkKnowledgeObject<T>): HnkKnowledgeObject<T> {
-    assertKnowledgeObject(object);
-    const previous = this.require(object.id);
-    if (previous.lifecycle === 'CANON' && object.lifecycle !== 'CANON' && object.lifecycle !== 'SUPERSEDED' && object.lifecycle !== 'ARCHIVED') {
-      throw new Error('CANON_DOWNGRADE_FORBIDDEN');
-    }
+    this.validateReplace(object);
     this.#objects.set(object.id, object);
     return object;
   }
