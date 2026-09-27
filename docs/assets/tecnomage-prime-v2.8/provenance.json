@@ -1,0 +1,22 @@
+{
+  "schema": "hnk-verse.asset-provenance.v1",
+  "assetFamily": "tecnomage-prime-v2.8",
+  "classification": "KEEP_CANDIDATE",
+  "source": {
+    "repository": "tehknesolutions/alakazam-strangeverse",
+    "ref": "main",
+    "sourceTreeSha": "c51709d4481ec3763de42fb1cbdd52aa4d8d82eb"
+  },
+  "runtimeTarget": "apps/web/public/assets/characters",
+  "files": [
+    {"name":"tecnomage-prime-v2.8-runtime-q.glb","gitBlobSha":"e5526c92f2e6c92b885b072f5a6cbefa92405f3d","sha256":"c521867422f071f69855087c0495a47f11cc907601951e10f525bef55999be7c","bytes":1508728,"role":"runtime-primary"},
+    {"name":"tecnomage-prime-v2.8-runtime-optimized.glb","gitBlobSha":"fe432217dbcb0eea251ee1c151f7d4b777ef0b87","sha256":"d617262ff8d0f89a488ba0d1caab5fb81cb9bb8dfb9600ec8fe74c95f5458543","bytes":2068312,"role":"runtime-fallback"},
+    {"name":"tecnomage.gltf","gitBlobSha":"cacae0e6a70490400e25bb72a13aff0b4358cc9d","sha256":"9f20d7243d692b42dfcda7512410651e3ce19170c77978e0c2458c83fc9e4a61","bytes":22239,"role":"source"},
+    {"name":"tecnomage.bin","gitBlobSha":"54309de6c6ccad823a8ced11056f4013b197b1c6","sha256":"459003f9745853ae562a85506a2b94dd56515c1f37728f9fa3d2ce1a3e4cd92f","bytes":720076,"role":"source"},
+    {"name":"body.png","gitBlobSha":"689c763c43307553bece3d1b4e590ce04c1f8709","sha256":"a9ae7dc02fcc6c9f85d1a33c7c2fedecd86d3d5d69cd111f045eb7d05a65940d","bytes":534002,"role":"source-texture"},
+    {"name":"hair.png","gitBlobSha":"da8623d369c8dcbe739568696763d8eba5b92fad","sha256":"58527bae8a0caad910572e1215a007e7d7726fcb642a852158bd4cf0bd960158","bytes":730461,"role":"source-texture"},
+    {"name":"eye.png","gitBlobSha":"39c186b881da24d2faf73edfa4be58f1db02d1ca","sha256":"3eb5ea4e8dc0cf1d0b2d774c0665e8418e3963039b7278d4c7ebd9aba4e9045d","bytes":33024,"role":"source-texture"}
+  ],
+  "migrationState": "PROVENANCE_LOCKED_BINARY_COPY_PENDING",
+  "note": "Binary source blobs are confirmed in GitHub, but this connector cannot decode/fetch binary GLB/PNG blobs for cross-repository copying. Do not substitute or regenerate them. Copy must preserve the recorded SHA-256 values."
+}

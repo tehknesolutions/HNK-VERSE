@@ -1,0 +1,10 @@
+{
+  "schema": "hnk-verse.runtime-asset-gate.v1",
+  "family": "tecnomage-prime-v2.8",
+  "status": "BLOCKED_BINARY_COPY",
+  "primary": "/assets/characters/tecnomage-prime-v2.8-runtime-q.glb",
+  "fallback": "/assets/characters/tecnomage-prime-v2.8-runtime-optimized.glb",
+  "manifest": "docs/assets/tecnomage-prime-v2.8/MANIFEST.source.sha256",
+  "provenance": "docs/assets/tecnomage-prime-v2.8/provenance.json",
+  "promotionRequires": ["exact-source-bytes", "sha256-verification"]
+}
