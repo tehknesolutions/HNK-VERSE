@@ -1,53 +1,69 @@
-# HNK-VERSE — CODEX / TEHKNE-OS Alignment Phase
+# HNK-VERSE — CODEX / TEHKNÉ-OS Technology Alignment Phase
 
 Status: ACTIVE
 Date: 2026-09-27
 
 ## Intent
-While Asset Forge binary transport is blocked, HNK-VERSE advances through knowledge architecture, contracts, code architecture and implementation-ready specifications.
+While Asset Forge binary transport is blocked, HNK-VERSE advances through knowledge architecture, contracts and executable code.
 
-## Authority chain
-1. `codex-hnk` — ROOT_CANON and fundamental HNK contract publisher.
-2. `HNK-KODE` — linguistic DOMAIN_CANON target.
-3. `tehkne-os` — ecosystem registry, memory, archaeology, evidence and process-intelligence source; not HNK semantic owner.
-4. `HNK-VERSE` — manifestation runtime, canon consumer and experience/evidence producer.
+## Governing hierarchy
 
-## Synthesized architecture
-HNK-VERSE consumes versioned canonical references and emits typed runtime evidence. It MUST distinguish authority lifecycle from evidence maturity.
+```text
+HNK
+├── CODEX-HNK — registry / grimoire / training
+├── HNK-KODE  — HNK spiritual language + MAGIC physical manifestation language
+└── HNK-VERSE — digital / astral / mental manifestation
 
-Knowledge lifecycle: `RAW → OBSERVED → EXPERIMENTAL → REVIEWED → APPROVED → CANON` plus `REJECTED | SUPERSEDED | DEPRECATED | ARCHIVED`.
+CODEX-HNK
+└── TECNOLOGIA
+    └── TEHKNÉ SOLUTIONS
+        └── TEHKNÉ-OS
+```
 
-Evidence maturity: `UNVERIFIED → OBSERVED → TESTED → VALIDATED → CERTIFIED`.
+TEHKNÉ-OS is the Codex of Tehkné Solutions and enters CODEX-HNK through the TECNOLOGIA vertent. It is not a peer HNK root or HNK metacenter.
 
-Authority levels: `ROOT_CANON | DOMAIN_CANON | PRODUCT_CANON | IMPLEMENTATION_AUTHORITY | PROJECTION | EVIDENCE_SOURCE | HISTORICAL_SOURCE`.
+## Runtime knowledge architecture
 
-These dimensions MUST NOT be collapsed into one status.
+The executable bridge is split into five responsibilities:
 
-## Runtime invariant
+1. `@hnk-verse/contracts` — hierarchy, Knowledge Object, lifecycle, evidence and authority contracts.
+2. `KnowledgeRegistry` — runtime registry for typed knowledge/evidence objects.
+3. `CodexResolver` — turns pending CODEX references into resolved canonical references only when an explicit resolution exists.
+4. `ProvenanceLedger` — append-only lineage for ingest/derive/validate/project/export operations.
+5. `EvidenceBridge` — converts HNK-VERSE runtime observations into evidence objects targeted back to `CODEX-HNK/TECNOLOGIA` review.
+
+## Invariants
+
 `SOURCE != CLAIM != EVIDENCE != DECISION != CANON`
+
 `IMPLEMENTED != EXECUTED != APPROVED`
-`EXPERIENCE != INTERPRETATION != EVIDENCE != CANON`
-`CONSUMER != AUTHORITY_OWNER`
 
-## Knowledge bridge
-The runtime bridge uses typed Knowledge Objects carrying identity, lifecycle, scoped authority, evidence state, sources, evidence references, typed relations, temporal scope and payload.
+`TEHKNE_OS != HNK_ROOT`
 
-HNK-VERSE may create `EVIDENCE_SOURCE`, `PRODUCT_CANON` and `IMPLEMENTATION_AUTHORITY` objects within its own declared scope. It may reference ROOT/DOMAIN canon but MUST NOT manufacture those authorities.
+`TEHKNE_OS -> CODEX-HNK/TECNOLOGIA`
 
-## GIP execution mapping
-- Discovery → intent/scope/product requirement.
-- Architecture → contracts, schemas, world/system boundaries.
-- Development → bounded implementation increments.
-- Validation → tests/evidence before checkpoint.
-- Deploy → manifestation of a validated release.
+`HNK_VERSE_OUTPUT -> EVIDENCE -> REVIEW -> POSSIBLE_CANON`
 
-This is an engineering workflow, not a metaphysical/canonical ontology.
+Derived authority cannot manufacture root/domain canon. Pending references remain pending until an explicit CODEX resolution is registered.
 
-## RAG/retrieval mapping
-For knowledge-assisted runtime/tooling, retrieval priority is `CANONICAL > CODEX > SOURCE > HISTORY > EXPERIMENTAL`, after domain/intention routing. Every derived answer/projection should remain rebuildable from authoritative sources.
+## TEHKNÉ-OS absorption
 
-## Code target
-`@hnk-verse/contracts/knowledge` implements the first machine-readable bridge. Next layers: knowledge registry, provenance ledger adapter, CODEX resolver integration, evidence exporter to TKN-OS, and contract tests.
+TEHKNÉ-OS contributes engineering knowledge, architecture, AI/agents, RAG, DevOps, governance, archaeology, provenance, evidence and GIP process patterns. Their lineage remains Tehkné provenance while CODEX-HNK governs their HNK-level synthesis.
 
-## Asset Forge relation
-Asset provenance is a specialization of the same model: physical asset identity + source + hash + authority + evidence + runtime projection. Binary transport remains a separate gate and does not block architecture work.
+The relationship is therefore not federation between equal roots. It is governed technological ingestion and feedback:
+
+```text
+TEHKNÉ-OS
+   ↓ technological source/evidence
+CODEX-HNK / TECNOLOGIA
+   ↓ governed contracts
+HNK-VERSE
+   ↓ runtime observations/evidence
+CODEX-HNK / TECNOLOGIA review
+```
+
+## Validation gate
+
+`scripts/knowledge-architecture-check.ts` exercises hierarchy placement, anti-auto-canon behavior, knowledge registry identity, CODEX resolution and runtime evidence provenance.
+
+Asset provenance remains a specialization of the same architecture. Binary transport is an independent physical gate and does not block this code path.

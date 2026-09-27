@@ -1,4 +1,5 @@
 export * from './hierarchy';
+export * from './knowledge';
 
 export type AuthorityStatus = 'approved' | 'candidate' | 'fixture';
 
@@ -96,19 +97,13 @@ export type CommandReceipt = {
   createdAt: string;
 };
 
-export const ZERO_COMMAND_TYPES = [
-  'StartSession','MoveAvatar','ObserveLexeme','RequestLexemeTeaching','DiscoverKnowledge','GatherResource','AttemptPractice','CraftEntity','ValidatePlacement','PlaceEntity','MoveEntity','RemoveEntity','InteractWithAgent','OfferTransfer','TransferOwnership','AppendReflection','Rest','EndSession',
-] as const;
+export const ZERO_COMMAND_TYPES = ['StartSession','MoveAvatar','ObserveLexeme','RequestLexemeTeaching','DiscoverKnowledge','GatherResource','AttemptPractice','CraftEntity','ValidatePlacement','PlaceEntity','MoveEntity','RemoveEntity','InteractWithAgent','OfferTransfer','TransferOwnership','AppendReflection','Rest','EndSession'] as const;
 export type ZeroCommandType = (typeof ZERO_COMMAND_TYPES)[number];
 
-export const ZERO_EVENT_TYPES = [
-  'IdentitySessionStarted','AvatarPositionCheckpointed','LexemeFormObserved','AgentTeachingOffered','LexemeMeaningLearned','KnowledgeUnitDiscovered','ResourceGathered','PracticeAttempted','PracticeSucceeded','PracticeFailed','SkillEvidenceRecorded','ResourceConsumed','EntityCreated','EntityPlaced','EntityMoved','EntityRemoved','AgentPerceivedWorldEvent','AgentMemoryCreated','TransferOffered','TransferRefused','OwnershipTransferred','RelationshipHistoryAppended','HumanReflectionAppended','AvatarRested','WorldDayAdvanced','IdentitySessionEnded','CanonicalReferenceResolved',
-] as const;
+export const ZERO_EVENT_TYPES = ['IdentitySessionStarted','AvatarPositionCheckpointed','LexemeFormObserved','AgentTeachingOffered','LexemeMeaningLearned','KnowledgeUnitDiscovered','ResourceGathered','PracticeAttempted','PracticeSucceeded','PracticeFailed','SkillEvidenceRecorded','ResourceConsumed','EntityCreated','EntityPlaced','EntityMoved','EntityRemoved','AgentPerceivedWorldEvent','AgentMemoryCreated','TransferOffered','TransferRefused','OwnershipTransferred','RelationshipHistoryAppended','HumanReflectionAppended','AvatarRested','WorldDayAdvanced','IdentitySessionEnded','CanonicalReferenceResolved'] as const;
 export type ZeroEventType = (typeof ZERO_EVENT_TYPES)[number];
 
-export const ZERO_REJECTION_CODES = [
-  'KNOWLEDGE_REQUIRED','RESOURCE_INSUFFICIENT','NODE_DEPLETED','OUT_OF_RANGE','NO_PERMISSION','CELL_OCCUPIED','INVALID_TRANSFER','MILESTONE_REQUIRED','CANON_LOCKED','OUT_OF_BOUNDS','INVALID_FOOTPRINT','ENTITY_NOT_OWNED','WORLD_RULE_DENIED','CONCURRENCY_CONFLICT','IDEMPOTENCY_CONFLICT',
-] as const;
+export const ZERO_REJECTION_CODES = ['KNOWLEDGE_REQUIRED','RESOURCE_INSUFFICIENT','NODE_DEPLETED','OUT_OF_RANGE','NO_PERMISSION','CELL_OCCUPIED','INVALID_TRANSFER','MILESTONE_REQUIRED','CANON_LOCKED','OUT_OF_BOUNDS','INVALID_FOOTPRINT','ENTITY_NOT_OWNED','WORLD_RULE_DENIED','CONCURRENCY_CONFLICT','IDEMPOTENCY_CONFLICT'] as const;
 export type ZeroRejectionCode = (typeof ZERO_REJECTION_CODES)[number];
 
 export type LexemeFormObservedPayload = { lexemeRef: 'LEX-013'; form: 'VALI'; meaningRevealed: false; sourceAuthority: '@hnk/linguas'; languageAuthority: 'FROZEN' };
