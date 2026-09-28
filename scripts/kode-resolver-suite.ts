@@ -90,3 +90,12 @@ let invalidRejected = false;
 try { new KodeTypeSystem(cyclicTypes); } catch { invalidRejected = true; }
 if (!invalidRejected) throw new Error('Invalid type hierarchy was not rejected at initialization.');
 console.log('PASS type hierarchy validation');
+
+const invalidCategoryTypes = {
+  Path: { id: 'Path' as const, category: 'value' as const, parents: [] as const },
+  OperatorResultPath: { id: 'OperatorResultPath' as const, category: 'operator-result' as const, parents: ['Path'] as const },
+  SpecialPath: { id: 'SpecialPath' as const, category: 'value' as const, parents: ['OperatorResultPath'] as const },
+};
+const categoryResult = validateKodeTypeDefinitions(invalidCategoryTypes);
+if (categoryResult.ok || !categoryResult.errors.some((error) => error.includes('cannot inherit'))) throw new Error('Invalid type category inheritance was not detected.');
+console.log('PASS type category validation');
