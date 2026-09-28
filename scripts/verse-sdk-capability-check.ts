@@ -1,0 +1,17 @@
+import { INTEROP_OUTCOMES } from '@hnk-verse/contracts';
+import { EXPERIENCE_A_MANIFEST, EXPERIENCE_B_MANIFEST, HUB_MANIFEST, negotiateCapabilities } from '@hnk-verse/sdk';
+const assert=(x:unknown,m:string):asserts x=>{if(!x)throw new Error('VERSE_SDK_CAPABILITY_CHECK_FAILED: '+m)};
+const base={requiredContracts:[{name:'verse-sdk',version:'0.1'}],grantedPermissions:[],correlationId:'CORR-TASK2'};
+const supported=negotiateCapabilities(HUB_MANIFEST,{...base,verseId:HUB_MANIFEST.verseId,requestedCapabilities:['portal.travel']});
+assert(supported.accepted,'supported capability must succeed');
+const unknown=negotiateCapabilities(HUB_MANIFEST,{...base,verseId:HUB_MANIFEST.verseId,requestedCapabilities:['does.not.exist']});
+assert(!unknown.accepted&&unknown.code==='UNSUPPORTED_CAPABILITY','unknown capability must reject');
+const incompatible=negotiateCapabilities(HUB_MANIFEST,{...base,verseId:HUB_MANIFEST.verseId,requiredContracts:[{name:'verse-sdk',version:'9.9'}],requestedCapabilities:['portal.travel']});
+assert(!incompatible.accepted&&incompatible.code==='INCOMPATIBLE_VERSION','incompatible contract must reject');
+const denied=negotiateCapabilities(HUB_MANIFEST,{...base,verseId:HUB_MANIFEST.verseId,requestedCapabilities:['creator.publish']});
+assert(!denied.accepted&&denied.code==='PERMISSION_DENIED','missing permission must reject');
+assert(HUB_MANIFEST.capabilities.length!==EXPERIENCE_A_MANIFEST.capabilities.length,'Hub/A must differ');
+assert(EXPERIENCE_A_MANIFEST.capabilities.some(c=>c.state==='UNSUPPORTED'),'A rejects external gameplay state');
+assert(EXPERIENCE_B_MANIFEST.capabilities.some(c=>c.capabilityId==='interop.cosmetic-projection'),'B exposes projection');
+assert(INTEROP_OUTCOMES.includes('PROJECT'),'projection outcome exists');
+console.log('VERSE_SDK_CAPABILITY_CHECK_PASS');
