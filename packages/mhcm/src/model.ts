@@ -34,7 +34,7 @@ export type Edge = {
   provenance: Provenance;
 };
 
-export type Path = {
+export type PathValue = {
   id: string;
   start: string;
   nodes: string[];
@@ -43,6 +43,8 @@ export type Path = {
   directed: boolean;
   provenance: Provenance;
 };
+
+export type Path = PathValue;
 
 export function createProvenance(
   source: string,
