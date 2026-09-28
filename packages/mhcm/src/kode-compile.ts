@@ -2,7 +2,7 @@ import { KodeSyntaxError, parseKode, type KodeProgram } from './kode.ts';
 import { astToIr, pathToAst } from './ast.ts';
 import { createProvenance, type Path } from './model.ts';
 import type { MhcmProgram } from './program.ts';
-import { KodeCompileError } from './kode-diagnostics.ts';
+import { KodeCompileError, diagnostic, sortDiagnostics } from './kode-diagnostics.ts';
 import { analyzeKode } from './kode-semantic.ts';
 import type { KodeCompileResult } from './kode-result.ts';
 
@@ -13,15 +13,11 @@ export function compileKode(source: string): MhcmProgram {
   try {
     ast = parseKode(source);
   } catch (error) {
-    throw new KodeCompileError([{
-      code: 'E_SYNTAX',
-      message: error instanceof Error ? error.message : String(error),
-      span: error instanceof KodeSyntaxError ? error.span : undefined,
-    }]);
+    throw new KodeCompileError([diagnostic('E_SYNTAX', error instanceof Error ? error.message : String(error), error instanceof KodeSyntaxError ? error.span : undefined)]);
   }
 
   const analysis = analyzeKode(ast);
-  if (!analysis.ok) throw new KodeCompileError(analysis.diagnostics);
+  if (!analysis.ok) throw new KodeCompileError(sortDiagnostics(analysis.diagnostics));
 
   const nodes: MhcmProgram['nodes'] = [];
   for (const statement of ast.statements) {
@@ -55,7 +51,7 @@ export function tryCompileKode(source: string): KodeCompileResult {
   try {
     return { ok: true, program: compileKode(source), diagnostics: [] };
   } catch (error) {
-    if (error instanceof KodeCompileError) return { ok: false, program: null, diagnostics: error.diagnostics };
+    if (error instanceof KodeCompileError) return { ok: false, program: null, diagnostics: sortDiagnostics(error.diagnostics) };
     return {
       ok: false,
       program: null,
