@@ -14,9 +14,14 @@ const symbol = {
 const diagnostics: KodeDiagnostic[] = [];
 const registry = new SemanticRegistry<KodeSymbol>();
 registry.register(symbol, 'path');
-const resolver = new SemanticResolver(registry, diagnostics);
+const paths = new SemanticRegistry<{ id: string; start: string; nodes: string[]; edges: string[]; end: string; directed: boolean; provenance: { source: string; schemaVersion: number; authorityStatus: 'EXPERIMENTAL'; sourceRefs: string[] } }>();
+const path = { id: 'PATH-A', start: 'A', nodes: ['A','B'], edges: ['A->B'], end: 'B', directed: true, provenance: { source: 'HNK-KODE', schemaVersion: 1, authorityStatus: 'EXPERIMENTAL' as const, sourceRefs: ['KODE-0'] } };
+paths.register(path, 'path');
+const resolver = new SemanticResolver(registry, paths, diagnostics);
 
 const resolved = resolver.resolve(createUnresolvedSemanticRef('path', 'A'), span, 'A');
+const pathResolved = resolver.resolvePath(createUnresolvedSemanticRef('path', 'A'), span, 'A');
+if (!pathResolved || pathResolved.path.id !== 'PATH-A') throw new Error('Atomic PathResolution failed.');
 if (!resolved || resolved.ref.kind !== 'resolved' || resolved.ref.namespace !== 'path' || resolved.ref.id !== 'A') {
   throw new Error('Valid semantic reference was not resolved.');
 }
@@ -36,3 +41,5 @@ console.log('SemanticResolver suite: PASS');
 console.log('PASS valid resolution');
 console.log('PASS missing symbol → E_SYMBOL');
 console.log('PASS wrong namespace → E_SYMBOL');
+
+console.log('PASS symbol + PathValue atomic resolution');
