@@ -1,0 +1,40 @@
+name: Verse SDK v0.1 Release Gate
+
+on:
+  pull_request:
+    paths:
+      - 'packages/sdk/**'
+      - 'packages/contracts/**'
+      - 'scripts/verse-sdk-*.ts'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'tsconfig.json'
+      - '.github/workflows/verse-sdk-release-gate.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'packages/sdk/**'
+      - 'packages/contracts/**'
+      - 'scripts/verse-sdk-*.ts'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'tsconfig.json'
+
+jobs:
+  release-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install reproducibly
+        run: pnpm install --frozen-lockfile
+      - name: Full repository gate
+        run: pnpm check
