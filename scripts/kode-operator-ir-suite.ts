@@ -43,7 +43,9 @@ console.log('PASS KODE reverse → PATH_REVERSE');
 console.log('PASS compile graph → MHCM program execution');
 console.log('PASS final composed/reversed Path IR');
 
-const semantic = analyzeKode(parseKode(source));
+const ast = parseKode(source);
+if (ast.statements[2].kind !== 'ComposeStatement' || ast.statements[2].left.ref.namespace !== 'path' || ast.statements[2].left.ref.id !== 'A' || ast.statements[2].right.ref.id !== 'B') throw new Error('AST SemanticRef contract failed.');
+const semantic = analyzeKode(ast);
 if (!semantic.ok) throw new Error('Semantic model failed for shared PathValue proof.');
 const semanticC = semantic.model.paths.get('C');
 if (!semanticC || semanticC.id !== 'PATH-C' || semanticC.nodes.join(',') !== 'A,B,C' || semanticC.edges.join(',') !== 'A->B,B->C') {
