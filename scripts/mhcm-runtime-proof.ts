@@ -96,18 +96,23 @@ const command: HnkCommand<Record<string, unknown>> = {
 const result = await runtime.execute(command);
 
 assert(result.accepted, `MHCM IR execution rejected: ${result.rejectionCode}`);
-assert(result.eventIds.length === 1, 'MHCM IR execution must emit one event.');
+assert(result.eventIds.length === 2, 'MHCM IR execution must emit execution + semantic event.');
 assert(result.data?.irId === glyphIr.id, 'Runtime result lost IR identity.');
 assert(result.state.mhcmExecutionIds?.includes(glyphIr.id), 'Runtime state did not record MHCM execution.');
 
 const events = await store.allEvents(ZERO_IDS.world);
 const executed = events.find((event) => event.eventType === 'MhcmIrExecuted');
+const semantic = events.find((event) => event.eventType === 'MhcmGlyphExecuted');
 assert(executed, 'Missing MhcmIrExecuted event.');
 assert((executed.payload as Record<string, unknown>).irId === glyphIr.id, 'Event lost IR identity.');
+assert(semantic, 'Missing semantic MHCM execution event.');
+assert(result.data?.executionMode === 'MHCM-GLYPH-V1', 'Runtime did not select Glyph semantics.');
+assert(result.state.mhcmGlyphExecutions?.includes(glyphIr.id), 'Runtime state did not record Glyph execution.');
 
 console.log('MHCM runtime proof: PASS');
 console.log('PASS MHCM Path → Glyph → AST → HNK-IR');
 console.log('PASS HNK-IR → ExecuteMhcmIr command');
 console.log('PASS runtime accepted IR');
 console.log('PASS MhcmIrExecuted event emitted');
+console.log('PASS semantic Glyph execution');
 console.log('PASS world state recorded MHCM execution');
