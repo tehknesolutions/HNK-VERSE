@@ -54,6 +54,12 @@ export type ZeroWorldState = {
   energyRest: number;
   worldTime: string;
   lastEventId: string | null;
+  mhcmExecutionIds?: string[];
+  mhcmPathExecutions?: Array<{ irId: string; nodes: string[]; edges: string[] }>;
+  mhcmGlyphExecutions?: string[];
+  mhcmOperatorExecutions?: Array<{ irId: string; operator: string; inputs: string[]; resultIrId?: string }>;
+  mhcmProgramExecutions?: Array<{ programId: string; nodeCount: number; outputIds: string[]; resultIrIds?: string[] }>;
+  mhcmProgramNodeExecutions?: Array<{ programId: string; nodeId: string; kind: string; resultIrId?: string }>;
 };
 
 type AnyPayload = Record<string, any>;
@@ -87,6 +93,63 @@ export function reduceZeroEvent(
   const payload = (event.payload ?? {}) as AnyPayload;
 
   switch (event.eventType) {
+    case 'MhcmPathExecuted': {
+      state.mhcmPathExecutions = [...(state.mhcmPathExecutions ?? []), {
+        irId: String(payload.irId),
+        nodes: Array.isArray(payload.nodes) ? payload.nodes.map(String) : [],
+        edges: Array.isArray(payload.edges) ? payload.edges.map(String) : [],
+      }];
+      break;
+    }
+
+    case 'MhcmProgramExecuted':
+      state.mhcmProgramExecutions = [...(state.mhcmProgramExecutions ?? []), {
+        programId: String(payload.programId),
+        nodeCount: Number(payload.nodeCount ?? 0),
+        outputIds: Array.isArray(payload.outputIds) ? payload.outputIds.map(String) : [],
+        resultIrIds: Array.isArray(payload.resultIrIds) ? payload.resultIrIds.map(String) : [],
+      }];
+      break;
+
+    case 'MhcmProgramNodeExecuted':
+      state.mhcmProgramNodeExecutions = [...(state.mhcmProgramNodeExecutions ?? []), {
+        programId: String(payload.programId),
+        nodeId: String(payload.nodeId),
+        kind: String(payload.kind),
+        resultIrId: payload.resultIrId ? String(payload.resultIrId) : undefined,
+      }];
+      break;
+
+    case 'MhcmOperatorExecuted':
+      state.mhcmOperatorExecutions = [...(state.mhcmOperatorExecutions ?? []), {
+        irId: String(payload.irId),
+        operator: String(payload.operator),
+        inputs: Array.isArray(payload.inputs) ? payload.inputs.map(String) : [],
+        resultIrId: payload.resultIrId ? String(payload.resultIrId) : undefined,
+      }];
+      break;
+
+    case 'MhcmGlyphExecuted':
+      state.mhcmGlyphExecutions = [...(state.mhcmGlyphExecutions ?? []), String(payload.irId)];
+      break;
+
+    case 'MhcmPathExecuted': {
+      state.mhcmPathExecutions = [...(state.mhcmPathExecutions ?? []), {
+        irId: String(payload.irId),
+        nodes: Array.isArray(payload.nodes) ? payload.nodes.map(String) : [],
+        edges: Array.isArray(payload.edges) ? payload.edges.map(String) : [],
+      }];
+      break;
+    }
+
+    case 'MhcmGlyphExecuted':
+      state.mhcmGlyphExecutions = [...(state.mhcmGlyphExecutions ?? []), String(payload.irId)];
+      break;
+
+    case 'MhcmIrExecuted':
+      state.mhcmExecutionIds = [...(state.mhcmExecutionIds ?? []), String(payload.irId)];
+      break;
+
     case 'AvatarPositionCheckpointed':
       state.avatarPosition = {
         logicalX: Number(payload.logicalX),
