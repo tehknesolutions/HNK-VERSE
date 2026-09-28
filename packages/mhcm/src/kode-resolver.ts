@@ -1,7 +1,8 @@
 import { diagnostic, type KodeDiagnostic } from './kode-diagnostics.ts';
 import { SemanticRegistry, semanticRefKey, type PathValue, type SemanticRef, type UnresolvedSemanticRef } from './model.ts';
 import type { KodeSpan } from './kode.ts';
-import type { KodeSymbol, KodeType } from './kode-semantic.ts';
+import type { KodeSymbol } from './kode-semantic.ts';
+import type { KodeTypeId } from './kode-types.ts';
 import { KodeTypeSystem } from './kode-types.ts';
 
 export type SemanticResolution = {
@@ -33,7 +34,7 @@ export class SemanticResolver {
     };
   }
 
-  resolveAs(ref: UnresolvedSemanticRef, expected: KodeType, span: KodeSpan, displayName: string): SemanticResolution | null {
+  resolveAs(ref: UnresolvedSemanticRef, expected: KodeTypeId, span: KodeSpan, displayName: string): SemanticResolution | null {
     const resolved = this.resolve(ref, span, displayName);
     if (!resolved) return null;
     if (!this.typeSystem.isCompatible(resolved.symbol.type, expected)) {
