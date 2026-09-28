@@ -67,10 +67,6 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
 
     if (statement.kind === 'ReverseStatement') {
       if (!resolvedInput) continue;
-      if (resolvedInput.symbol.type !== 'Path' && resolvedInput.symbol.type !== 'OperatorResultPath') {
-        diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${statement.source.name}" is not a Path.`, statement.source.span));
-        continue;
-      }
       const resultPath = createKodePath(statement.name, [...resolvedInput.path.nodes].reverse(), 'reverse');
       semanticPaths.register(resultPath, 'path');
       semanticSymbols.register(declaration, 'path');
@@ -80,15 +76,6 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
     const left = resolver.resolvePath(statement.left.ref, statement.left.span, statement.left.name);
     const right = resolver.resolvePath(statement.right.ref, statement.right.span, statement.right.name);
     if (!left || !right) continue;
-
-    if (left.symbol.type !== 'Path' && left.symbol.type !== 'OperatorResultPath') {
-      diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${statement.left.name}" is not a Path.`, statement.left.span));
-      continue;
-    }
-    if (right.symbol.type !== 'Path' && right.symbol.type !== 'OperatorResultPath') {
-      diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${statement.right.name}" is not a Path.`, statement.right.span));
-      continue;
-    }
 
     const leftPath = left.path;
     const rightPath = right.path;
@@ -109,7 +96,6 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
     const resultPath = createKodePath(statement.name, [...leftPath.nodes, ...rightPath.nodes.slice(1)], 'compose');
     semanticPaths.register(resultPath, 'path');
     semanticSymbols.register(declaration, 'path');
-    declared.add(statement.name);
   }
 
   if (diagnostics.length) return { ok: false, model: null, diagnostics };
