@@ -10,3 +10,5 @@ export * from './typecheck.ts';
 export * from './executor.ts';
 export * from './pipeline.ts';
 export * from './program.ts';
+export * from './kode.ts';
+export * from './kode-compile.ts';
