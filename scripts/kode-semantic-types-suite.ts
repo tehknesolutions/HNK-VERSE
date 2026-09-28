@@ -18,3 +18,8 @@ console.log('KODE-0.2 semantic-type suite: PASS');
 console.log('PASS Path declaration type');
 console.log('PASS reverse OperatorResultPath');
 console.log('PASS compose OperatorResultPath');
+
+const unresolved = program.statements[1].kind === 'ReverseStatement' ? program.statements[1].source.ref : null;
+if (!unresolved || unresolved.kind !== 'unresolved') throw new Error('AST reference should remain unresolved before semantic analysis.');
+if (!r?.ref || r.ref.kind !== 'resolved' || r.ref.namespace !== 'path' || r.ref.id !== 'R') throw new Error('Declaration semantic reference was not resolved.');
+console.log('PASS semantic identity resolution');
