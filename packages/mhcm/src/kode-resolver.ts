@@ -34,6 +34,10 @@ export class SemanticResolver {
   resolvePath(ref: UnresolvedSemanticRef, span: KodeSpan, displayName: string): PathResolution | null {
     const resolved = this.resolve(ref, span, displayName);
     if (!resolved) return null;
+    if (resolved.symbol.type !== 'Path' && resolved.symbol.type !== 'OperatorResultPath') {
+      this.diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${displayName}" is not a Path.`, span));
+      return null;
+    }
     const path = this.paths.get(resolved.ref.id, resolved.ref.namespace);
     if (!path) {
       this.diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${displayName}" has no PathValue.`, span));
