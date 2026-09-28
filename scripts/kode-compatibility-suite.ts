@@ -1,4 +1,6 @@
-import { analyzeKode, compileKode, parseKode, tryCompileKode } from '../packages/mhcm/src/index.ts';
+import { compileKode, tryCompileKode } from '../packages/mhcm/src/kode-compile.ts';
+import { parseKode } from '../packages/mhcm/src/kode.ts';
+import { analyzeKode } from '../packages/mhcm/src/kode-semantic.ts';
 
 const fixtures = [
   'path A = A -> B;',
