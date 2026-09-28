@@ -9,7 +9,7 @@
     "lint": "pnpm -r --if-present lint",
     "typecheck": "tsc -p tsconfig.json",
     "test": "pnpm test:mhcm && pnpm test:verse-sdk && pnpm test:zero && pnpm test:persistence-schema && pnpm test:web-local && pnpm test:chronicle && pnpm test:spatial && pnpm test:path-routing && pnpm test:reference-avatar && pnpm test:knowledge && pnpm test:codex-sync",
-    "test:mhcm": "node --experimental-strip-types scripts/mhcm-kernel-check.ts && node --experimental-strip-types scripts/mhcm-runtime-proof.ts && node --experimental-strip-types scripts/kode-negative-suite.ts && node --experimental-strip-types scripts/kode-diagnostic-labels-suite.ts && node --experimental-strip-types scripts/kode-diagnostic-order-suite.ts",
+    "test:mhcm": "node --experimental-strip-types scripts/mhcm-kernel-check.ts && node --experimental-strip-types scripts/mhcm-runtime-proof.ts && node --experimental-strip-types scripts/kode-negative-suite.ts && node --experimental-strip-types scripts/kode-diagnostic-labels-suite.ts && node --experimental-strip-types scripts/kode-diagnostic-order-suite.ts && node --experimental-strip-types scripts/kode-diagnostic-report-suite.ts",
     "test:zero": "node --experimental-strip-types scripts/zero-runtime-check.ts",
     "test:persistence-schema": "node scripts/zero-persistence-schema-check.mjs",
     "web:dev": "pnpm --filter @hnk-verse/web dev",
