@@ -1,6 +1,6 @@
 import { SemanticRegistry, createUnresolvedSemanticRef, type KodeSymbol, type SemanticRef } from '../packages/mhcm/src/model.ts';
 import { SemanticResolver } from '../packages/mhcm/src/kode-resolver.ts';
-import { KodeTypeSystem } from '../packages/mhcm/src/kode-types.ts';
+import { KODE_TYPES, KodeTypeSystem, validateKodeTypeDefinitions } from '../packages/mhcm/src/kode-types.ts';
 import type { KodeTypeSystemPort } from '../packages/mhcm/src/kode-type-port.ts';
 import { KodeDiagnostic } from '../packages/mhcm/src/kode-diagnostics.ts';
 
@@ -77,3 +77,16 @@ console.log('PASS generalized type compatibility');
 const port: KodeTypeSystemPort = typeSystem;
 if (!port.isSubtypeOf('SpecialPath', 'Path')) throw new Error('Type-system port contract failed.');
 console.log('PASS type-system port contract');
+
+if (!validateKodeTypeDefinitions(KODE_TYPES).ok) throw new Error('Canonical KODE type hierarchy should validate.');
+const cyclicTypes = {
+  Path: { id: 'Path' as const, category: 'value' as const, parents: ['SpecialPath'] as const },
+  OperatorResultPath: KODE_TYPES.OperatorResultPath,
+  SpecialPath: KODE_TYPES.SpecialPath,
+};
+const cycleResult = validateKodeTypeDefinitions(cyclicTypes);
+if (cycleResult.ok || !cycleResult.errors.some((error) => error.includes('cycle'))) throw new Error('Type hierarchy cycle was not detected.');
+let invalidRejected = false;
+try { new KodeTypeSystem(cyclicTypes); } catch { invalidRejected = true; }
+if (!invalidRejected) throw new Error('Invalid type hierarchy was not rejected at initialization.');
+console.log('PASS type hierarchy validation');
