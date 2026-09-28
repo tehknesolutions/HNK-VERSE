@@ -4,6 +4,7 @@ export { assertBoundaryChain, appendBoundaryEvent, createChronicleBoundaryEvent 
 export { TransitionCoordinator } from './transition-coordinator.ts';
 export type { BoundaryEventInput, ChronicleBoundaryEvent, VerseBoundaryEventPayload, VerseBoundaryEventType } from './chronicle-boundary.ts';
 export type { TransitionCoordinatorDeps } from './transition-coordinator.ts';
-
 export { InteropEngine } from './interop-engine.ts';
 export type { InteropEngineDeps, InteropRequest } from './interop-engine.ts';
+export { VerseLifecycleRuntime } from './lifecycle-runtime.ts';
+export type { LifecycleOperation } from './lifecycle-runtime.ts';
