@@ -111,8 +111,6 @@ export class SemanticRegistry<T extends { id: string }> {
     const prefix = `${namespace}:`;
     return [...this.values.entries()].filter(([key]) => key.startsWith(prefix)).map(([, value]) => value);
   }
-    return [...this.values.values()];
-  }
 }
 
 export function createProvenance(
