@@ -17,7 +17,7 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
 
   for (const statement of program.statements) {
     if (declared.has(statement.name)) {
-      diagnostics.push({ code: 'E_DUPLICATE', message: `Duplicate KODE symbol "${statement.name}".` });
+      diagnostics.push({ code: 'E_DUPLICATE', message: `Duplicate KODE symbol "${statement.name}".`, span: statement.span });
       continue;
     }
 
@@ -28,7 +28,7 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
       const input = symbols.get(statement.source);
       const path = paths.get(statement.source);
       if (!input || !path) {
-        diagnostics.push({ code: 'E_SYMBOL', message: `Unknown KODE symbol "${statement.source}".` });
+        diagnostics.push({ code: 'E_SYMBOL', message: `Unknown KODE symbol "${statement.source}".`, span: statement.span });
       } else {
         paths.set(statement.name, { start: path.end, end: path.start, nodes: [...path.nodes].reverse() });
         symbols.set(statement.name, statement.name);
@@ -39,9 +39,9 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
       const leftPath = paths.get(statement.left);
       const rightPath = paths.get(statement.right);
       if (!left || !right || !leftPath || !rightPath) {
-        diagnostics.push({ code: 'E_SYMBOL', message: `Unknown KODE symbol in compose "${statement.name}".` });
+        diagnostics.push({ code: 'E_SYMBOL', message: `Unknown KODE symbol in compose "${statement.name}".`, span: statement.span });
       } else if (leftPath.end !== rightPath.start) {
-        diagnostics.push({ code: 'E_CONNECTIVITY', message: `Cannot compose "${statement.left}" ending at "${leftPath.end}" with "${statement.right}" starting at "${rightPath.start}".` });
+        diagnostics.push({ code: 'E_CONNECTIVITY', message: `Cannot compose "${statement.left}" ending at "${leftPath.end}" with "${statement.right}" starting at "${rightPath.start}".`, span: statement.span });
       } else {
         paths.set(statement.name, { start: leftPath.start, end: rightPath.end, nodes: [...leftPath.nodes, ...rightPath.nodes.slice(1)] });
         symbols.set(statement.name, statement.name);
