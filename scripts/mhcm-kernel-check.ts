@@ -17,10 +17,30 @@ import {
   executeMhcmOperator,
   executeMhcmPipeline,
   executeMhcmProgram,
+  lexKode,
+  parseKode,
+  compileKode,
   type Cell,
   type Edge,
   type Path,
 } from '../packages/mhcm/src/index.ts';
+
+const kodeSource = \`
+path A = A -> B -> C;
+path B = C -> D -> E;
+compose AB = A, B;
+reverse FINAL = AB;
+\`;
+const tokens = lexKode(kodeSource);
+if (tokens.at(-1)?.kind !== 'EOF') throw new Error('KODE lexer did not terminate.');
+const kodeAst = parseKode(kodeSource);
+if (kodeAst.statements.length !== 4) throw new Error('KODE parser statement count mismatch.');
+const kodeProgram = compileKode(kodeSource);
+if (kodeProgram.outputs[0] !== 'FINAL') throw new Error('KODE compiler output mismatch.');
+const kodeResult = executeMhcmProgram(kodeProgram);
+if (kodeResult.outputs[0].value.start !== 'E' || kodeResult.outputs[0].value.end !== 'A') {
+  throw new Error('KODE compiled program result mismatch.');
+}
 
 const provenance = createProvenance(
   'MHCM-KERNEL-CHECK',
@@ -163,3 +183,7 @@ console.log('PASS operator → HNK-IR lowering');
 console.log('PASS operator executor produces result IR');
 console.log('PASS composable operator pipeline');
 console.log('PASS formal program graph execution');
+console.log('PASS KODE-0 lexer');
+console.log('PASS KODE-0 parser');
+console.log('PASS KODE-0 → Program Graph compiler');
+console.log('PASS KODE-0 execution');
