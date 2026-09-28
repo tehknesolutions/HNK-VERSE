@@ -1,0 +1,12 @@
+import { EXPERIENCE_A_MANIFEST, TransitionCoordinator } from '@hnk-verse/sdk';
+const assert=(x:unknown,m:string):asserts x=>{if(!x)throw new Error('VERSE_SDK_TRANSITION_CHECK_FAILED: '+m)};
+const source={identityId:'HNKID-ZERO-001',sessionId:'SESSION-T4-001',presenceId:'PRESENCE-001',verseId:'VERSE-ZERO-HUB-001',worldId:'WORLD-ZERO-MALKUTH-001',roles:['player'],permissions:[],correlationId:'CORR-T4-001',contracts:[{name:'verse-sdk',version:'0.1'}]};
+let n=0;
+const deps={resolveTargetManifest:(id:string)=>id===EXPERIENCE_A_MANIFEST.verseId?EXPERIENCE_A_MANIFEST:undefined,resolveTargetContext:()=>({...source,verseId:EXPERIENCE_A_MANIFEST.verseId,worldId:'WORLD-ZERO-A-001'}),prepareInterop:async()=>[{kind:'REFERENCE' as const,sourceRef:'HNKID-ZERO-001',provenance:{sourceRef:'HNKID-ZERO-001',sourceAuthority:'platform',targetContextRef:'VERSE-ZERO-A-001',contractVersion:'0.1'}}],now:()=>({realTimestamp:'2026-09-28T00:00:00Z',worldTimestamp:'DAY-001T12:00:00'}),nextEventId:()=>`EVT-T4-${++n}`};
+const coordinator=new TransitionCoordinator(deps);
+const result=await coordinator.transition({source,targetVerseId:EXPERIENCE_A_MANIFEST.verseId,targetWorldId:'WORLD-ZERO-A-001',requestedInterop:['embodiment.verse-native'],correlationId:source.correlationId});
+assert(result.ok&&result.state==='COMPLETED','happy path must complete');
+assert(result.target.verseId===EXPERIENCE_A_MANIFEST.verseId,'target context must be returned');
+const unavailable=await new TransitionCoordinator({...deps,resolveTargetManifest:()=>undefined}).transition({source,targetVerseId:'VERSE-MISSING',targetWorldId:'WORLD-MISSING',requestedInterop:[],correlationId:'CORR-T4-FAIL'});
+assert(!unavailable.ok&&unavailable.code==='VERSE_UNAVAILABLE','missing verse must fail explicitly');
+console.log('VERSE_SDK_TRANSITION_CHECK_PASS');
