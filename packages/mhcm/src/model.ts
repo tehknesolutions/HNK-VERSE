@@ -48,27 +48,40 @@ export type Path = PathValue;
 
 export type SemanticValue = PathValue;
 
+export type SemanticNamespace = 'path' | 'cell' | 'edge' | 'generic';
+
+export type SemanticRegistryKey = `${SemanticNamespace}:${string}`;
+
 export class SemanticRegistry<T extends { id: string }> {
-  private readonly values = new Map<string, T>();
+  private readonly values = new Map<SemanticRegistryKey, T>();
+
+  private key(namespace: SemanticNamespace, id: string): SemanticRegistryKey {
+    return `${namespace}:${id}`;
+  }
 
   constructor(values: Iterable<T> = []) {
     for (const value of values) this.register(value);
   }
 
-  register(value: T): void {
-    if (this.values.has(value.id)) throw new Error(`Duplicate semantic value: ${value.id}`);
-    this.values.set(value.id, value);
+  register(value: T, namespace: SemanticNamespace = 'generic'): void {
+    const key = this.key(namespace, value.id);
+    if (this.values.has(key)) throw new Error(`Duplicate semantic value: ${key}`);
+    this.values.set(key, value);
   }
 
-  has(id: string): boolean {
-    return this.values.has(id);
+  has(id: string, namespace: SemanticNamespace = 'generic'): boolean {
+    return this.values.has(this.key(namespace, id));
   }
 
-  get(id: string): T | undefined {
-    return this.values.get(id);
+  get(id: string, namespace: SemanticNamespace = 'generic'): T | undefined {
+    return this.values.get(this.key(namespace, id));
   }
 
-  valuesList(): T[] {
+  valuesList(namespace?: SemanticNamespace): T[] {
+    if (!namespace) return [...this.values.values()];
+    const prefix = `${namespace}:`;
+    return [...this.values.entries()].filter(([key]) => key.startsWith(prefix)).map(([, value]) => value);
+  }
     return [...this.values.values()];
   }
 }
