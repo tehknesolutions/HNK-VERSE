@@ -1,13 +1,12 @@
 import type { KodeProgram, KodeSpan } from './kode.ts';
 import { createProvenance, createSemanticRef, SemanticRegistry, type PathValue, type SemanticRef } from './model.ts';
 import { diagnostic, type KodeDiagnostic } from './kode-diagnostics.ts';
+import type { KodeTypeId } from './kode-types.ts';
 import { SemanticResolver } from './kode-resolver.ts';
-
-export type KodeType = 'Path' | 'OperatorResultPath';
 
 export type KodeSymbol = {
   name: string;
-  type: KodeType;
+  type: KodeTypeId;
   declarationSpan: KodeSpan;
   origin: 'declaration' | 'operator';
   ref: SemanticRef;
