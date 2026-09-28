@@ -220,6 +220,27 @@ export function handleZeroCommand(
         };
       }
 
+      if (irOp === 'MHCM_OPERATOR') {
+        const operator = String(value?.operator ?? '');
+        const inputs = Array.isArray(value?.inputs) ? value.inputs.map(String) : [];
+        if (!['PATH_REVERSE', 'PATH_COMPOSE'].includes(operator)) {
+          return reject('WORLD_RULE_DENIED', { reason: 'UNSUPPORTED_MHCM_OPERATOR', operator });
+        }
+        if ((operator === 'PATH_REVERSE' && inputs.length !== 1) || (operator === 'PATH_COMPOSE' && inputs.length !== 2)) {
+          return reject('WORLD_RULE_DENIED', { reason: 'INVALID_MHCM_OPERATOR_ARITY', operator, inputs });
+        }
+        return {
+          accepted: true,
+          events: [
+            event(command, 1, 'MhcmIrExecuted', { irId, irOp, executionMode: 'MHCM-RUNTIME-V1' }),
+            event(command, 2, 'MhcmOperatorExecuted', {
+              irId, operator, inputs, executionMode: 'MHCM-OPERATOR-V1',
+            }, { causationId: command.commandId + ':EV:01' }),
+          ],
+          data: { irId, irOp, operator, inputs, executionMode: 'MHCM-OPERATOR-V1' },
+        };
+      }
+
       if (irOp === 'GLYPH_LITERAL') {
         return {
           accepted: true,
