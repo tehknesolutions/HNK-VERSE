@@ -22,7 +22,7 @@
     "test:reference-avatar": "node --experimental-strip-types scripts/reference-avatar-check.ts",
     "test:knowledge": "node --experimental-strip-types scripts/knowledge-architecture-check.ts",
     "test:codex-sync": "node --experimental-strip-types scripts/codex-sync-agent-context-check.ts",
-    "test:verse-sdk": "node --experimental-strip-types scripts/verse-sdk-contract-check.ts && node --experimental-strip-types scripts/verse-sdk-capability-check.ts && node --experimental-strip-types scripts/verse-sdk-chronicle-boundary-check.ts"
+    "test:verse-sdk": "node --experimental-strip-types scripts/verse-sdk-contract-check.ts && node --experimental-strip-types scripts/verse-sdk-capability-check.ts && node --experimental-strip-types scripts/verse-sdk-chronicle-boundary-check.ts && node --experimental-strip-types scripts/verse-sdk-transition-check.ts"
   },
   "devDependencies": {
     "typescript": "5.8.3",
