@@ -18,19 +18,23 @@ export function compileKode(source: string): MhcmProgram {
   if (!analysis.ok) throw new KodeCompileError(sortDiagnostics(analysis.diagnostics));
 
   const nodes: MhcmProgram['nodes'] = [];
+  const semanticPaths: Record<string, import('./model.ts').PathValue> = {};
   for (const statement of ast.statements) {
     if (statement.kind === 'PathDeclaration') {
       const path = analysis.model.paths.get(statement.name);
       if (!path) throw new Error(`Semantic PathValue missing for "${statement.name}".`);
+      semanticPaths[path.id] = path;
       nodes.push({ id: statement.name, kind: 'IR', ir: astToIr(pathToAst(path)) });
     } else if (statement.kind === 'ReverseStatement') {
       const semanticPath = analysis.model.paths.get(statement.name);
       if (!semanticPath) throw new Error(`Semantic PathValue missing for operator result "${statement.name}".`);
-      nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_REVERSE', inputs: [statement.source.name], resultType: 'OperatorResultPath', semanticPath });
+      semanticPaths[semanticPath.id] = semanticPath;
+      nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_REVERSE', inputs: [statement.source.name], resultType: 'OperatorResultPath', semanticPathId: semanticPath.id });
     } else {
       const semanticPath = analysis.model.paths.get(statement.name);
       if (!semanticPath) throw new Error(`Semantic PathValue missing for operator result "${statement.name}".`);
-      nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_COMPOSE', inputs: [statement.left.name, statement.right.name], resultType: 'OperatorResultPath', semanticPath });
+      semanticPaths[semanticPath.id] = semanticPath;
+      nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_COMPOSE', inputs: [statement.left.name, statement.right.name], resultType: 'OperatorResultPath', semanticPathId: semanticPath.id });
     }
   }
 
@@ -39,6 +43,7 @@ export function compileKode(source: string): MhcmProgram {
     version: '0.1',
     nodes,
     outputs: nodes.length ? [nodes[nodes.length - 1].id] : [],
+    semanticPaths,
   };
 }
 export function tryCompileKode(source: string): KodeCompileResult {
