@@ -23,6 +23,46 @@ export function getKodeType(id: KodeTypeId): KodeType {
   return KODE_TYPES[id];
 }
 
+export type KodeTypeSystemValidation = {
+  ok: true;
+} | {
+  ok: false;
+  errors: string[];
+};
+
+export function validateKodeTypeDefinitions(types: Record<KodeTypeId, KodeType> = KODE_TYPES): KodeTypeSystemValidation {
+  const errors: string[] = [];
+  for (const type of Object.values(types)) {
+    for (const parent of type.parents) {
+      if (!types[parent]) errors.push(`Type ${type.id} references unknown parent ${parent}.`);
+    }
+  }
+  for (const type of Object.values(types)) {
+    const visiting = new Set<KodeTypeId>();
+    const visited = new Set<KodeTypeId>();
+    const visit = (id: KodeTypeId): void => {
+      if (visiting.has(id)) {
+        errors.push(`Type hierarchy cycle detected at ${id}.`);
+        return;
+      }
+      if (visited.has(id)) return;
+      visiting.add(id);
+      for (const parent of types[id]?.parents ?? []) {
+        if (types[parent]) visit(parent);
+      }
+      visiting.delete(id);
+      visited.add(id);
+    };
+    visit(type.id);
+  }
+  return errors.length ? { ok: false, errors } : { ok: true };
+}
+
+export function assertValidKodeTypeDefinitions(types: Record<KodeTypeId, KodeType> = KODE_TYPES): void {
+  const result = validateKodeTypeDefinitions(types);
+  if (!result.ok) throw new Error(`Invalid KODE type system:\\n${result.errors.join('\\n')}`);
+}
+
 export class KodeTypeSystem {
   get(id: KodeTypeId): KodeType {
     return getKodeType(id);
