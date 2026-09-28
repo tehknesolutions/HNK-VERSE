@@ -104,9 +104,9 @@ class Parser {
       return { kind: 'ReverseStatement', name, nameSpan: nameToken.span, source, span: spanOf(this.source, start, this.peek().span.start) };
     }
     if (head === 'compose') {
-      this.keyword('compose'); const name = this.take('IDENT').lexeme; this.take('EQUALS');
+      this.keyword('compose'); const nameToken = this.take('IDENT'); const name = nameToken.lexeme; this.take('EQUALS');
       const leftToken = this.take('IDENT'); this.take('COMMA'); const rightToken = this.take('IDENT'); const left = { name: leftToken.lexeme, span: leftToken.span }; const right = { name: rightToken.lexeme, span: rightToken.span };
-      return { kind: 'ComposeStatement', name, nameSpan: nameToken.span, left, right, span: { start, end: this.peek().span.start } };
+      return { kind: 'ComposeStatement', name, nameSpan: nameToken.span, left, right, span: spanOf(this.source, start, this.peek().span.start) };
     }
     throw new KodeSyntaxError(`Unknown KODE statement "${head}"`, this.peek().span);
   }
