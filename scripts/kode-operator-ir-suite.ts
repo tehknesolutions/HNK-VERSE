@@ -44,7 +44,7 @@ console.log('PASS final composed/reversed Path IR');
 const semantic = analyzeKode(parseKode(source));
 if (!semantic.ok) throw new Error('Semantic model failed for shared PathValue proof.');
 const semanticC = semantic.model.paths.get('C');
-if (!semanticC || semanticC.id !== 'KODE-PATH-C' || semanticC.nodes.join(',') !== 'A,B,C' || semanticC.edges.join(',') !== 'A->B,B->C') {
+if (!semanticC || semanticC.id !== 'PATH-C' || semanticC.nodes.join(',') !== 'A,B,C' || semanticC.edges.join(',') !== 'A->B,B->C') {
   throw new Error('Semantic PathValue diverged from canonical path representation.');
 }
 if (semanticC.provenance.source !== 'HNK-KODE') throw new Error('Semantic PathValue provenance mismatch.');
