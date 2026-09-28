@@ -1,12 +1,13 @@
 import type { KodeProgram, KodeSpan } from './kode.ts';
 import { diagnostic, type KodeDiagnostic } from './kode-diagnostics.ts';
 
-export type KodeType = 'Path';
+export type KodeType = 'Path' | 'OperatorResultPath';
 
 export type KodeSymbol = {
   name: string;
   type: KodeType;
   declarationSpan: KodeSpan;
+  origin: 'declaration' | 'operator';
 };
 
 export type KodeStaticPath = { start: string; end: string; nodes: string[] };
@@ -29,7 +30,12 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
       continue;
     }
 
-    const declaration = { name: statement.name, type: 'Path' as const, declarationSpan: statement.nameSpan };
+    const declaration = {
+      name: statement.name,
+      type: statement.kind === 'PathDeclaration' ? 'Path' as const : 'OperatorResultPath' as const,
+      declarationSpan: statement.nameSpan,
+      origin: statement.kind === 'PathDeclaration' ? 'declaration' as const : 'operator' as const,
+    };
 
     if (statement.kind === 'PathDeclaration') {
       paths.set(statement.name, {
@@ -43,7 +49,7 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
       const path = paths.get(statement.source.name);
       if (!input || !path) {
         diagnostics.push(diagnostic('E_SYMBOL', `Unknown KODE symbol "${statement.source.name}".`, statement.source.span));
-      } else if (input.type !== 'Path') {
+      } else if (input.type !== 'Path' && input.type !== 'OperatorResultPath') {
         diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${statement.source.name}" is not a Path.`, statement.source.span));
       } else {
         paths.set(statement.name, { start: path.end, end: path.start, nodes: [...path.nodes].reverse() });
@@ -59,9 +65,9 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
         diagnostics.push(diagnostic('E_SYMBOL', `Unknown KODE symbol "${statement.left.name}".`, statement.left.span));
       } else if (!right || !rightPath) {
         diagnostics.push(diagnostic('E_SYMBOL', `Unknown KODE symbol "${statement.right.name}".`, statement.right.span));
-      } else if (left.type !== 'Path') {
+      } else if (left.type !== 'Path' && left.type !== 'OperatorResultPath') {
         diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${statement.left.name}" is not a Path.`, statement.left.span));
-      } else if (right.type !== 'Path') {
+      } else if (right.type !== 'Path' && right.type !== 'OperatorResultPath') {
         diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${statement.right.name}" is not a Path.`, statement.right.span));
       } else if (leftPath.end !== rightPath.start) {
         diagnostics.push(diagnostic(
