@@ -2,21 +2,7 @@ import { diagnostic, type KodeDiagnostic } from './kode-diagnostics.ts';
 import { SemanticRegistry, semanticRefKey, type PathValue, type SemanticRef, type UnresolvedSemanticRef } from './model.ts';
 import type { KodeSpan } from './kode.ts';
 import type { KodeSymbol, KodeType } from './kode-semantic.ts';
-
-export type KodeTypeCompatibility = {
-  actual: KodeType;
-  expected: KodeType;
-};
-
-export function isTypeCompatible(actual: KodeType, expected: KodeType): boolean {
-  if (actual === expected) return true;
-  if (expected === 'Path' && actual === 'OperatorResultPath') return true;
-  return false;
-}
-
-export function isPathType(type: KodeType): boolean {
-  return isTypeCompatible(type, 'Path');
-}
+import { KodeTypeSystem } from './kode-types.ts';
 
 export type SemanticResolution = {
   ref: SemanticRef;
@@ -32,6 +18,7 @@ export class SemanticResolver {
     private readonly symbols: SemanticRegistry<KodeSymbol>,
     private readonly paths: SemanticRegistry<PathValue>,
     private readonly diagnostics: KodeDiagnostic[],
+    private readonly typeSystem: KodeTypeSystem = new KodeTypeSystem(),
   ) {}
 
   resolve(ref: UnresolvedSemanticRef, span: KodeSpan, displayName: string): SemanticResolution | null {
@@ -49,7 +36,7 @@ export class SemanticResolver {
   resolveAs(ref: UnresolvedSemanticRef, expected: KodeType, span: KodeSpan, displayName: string): SemanticResolution | null {
     const resolved = this.resolve(ref, span, displayName);
     if (!resolved) return null;
-    if (!isTypeCompatible(resolved.symbol.type, expected)) {
+    if (!this.typeSystem.isCompatible(resolved.symbol.type, expected)) {
       this.diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${displayName}" is incompatible with expected type "${expected}".`, span));
       return null;
     }
@@ -59,7 +46,7 @@ export class SemanticResolver {
   resolvePath(ref: UnresolvedSemanticRef, span: KodeSpan, displayName: string): PathResolution | null {
     const resolved = this.resolveAs(ref, 'Path', span, displayName);
     if (!resolved) return null;
-    if (!isPathType(resolved.symbol.type)) {
+    if (!this.typeSystem.isPathType(resolved.symbol.type)) {
       this.diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${displayName}" is not a Path.`, span));
       return null;
     }
