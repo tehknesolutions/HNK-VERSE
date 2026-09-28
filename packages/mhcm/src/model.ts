@@ -50,10 +50,26 @@ export type SemanticValue = PathValue;
 
 export type SemanticNamespace = 'path' | 'cell' | 'edge' | 'generic';
 
-export type SemanticRef = {
+export type UnresolvedSemanticRef = {
+  kind: 'unresolved';
   namespace: SemanticNamespace;
   id: string;
 };
+
+export type SemanticRef = {
+  kind: 'resolved';
+  namespace: SemanticNamespace;
+  id: string;
+};
+
+export function createUnresolvedSemanticRef(namespace: SemanticNamespace, id: string): UnresolvedSemanticRef {
+  return { kind: 'unresolved', namespace, id };
+}
+
+export function resolveSemanticRef(ref: UnresolvedSemanticRef, registry: SemanticRegistry<unknown>): SemanticRef {
+  if (!registry.has(ref.id, ref.namespace)) throw new Error(`Unresolved semantic reference: ${ref.namespace}:${ref.id}`);
+  return { kind: 'resolved', namespace: ref.namespace, id: ref.id };
+}
 
 export type SemanticRegistryKey = `${SemanticNamespace}:${string}`;
 
