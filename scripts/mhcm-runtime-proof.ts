@@ -1,0 +1,113 @@
+import {
+  ZERO_IDS,
+  type HnkCommand,
+} from '@hnk-verse/contracts';
+import {
+  ZERO_FIXTURE_V1_INITIAL_STATE,
+  assertZeroFixtureGoldenState,
+} from '@hnk-verse/fixtures';
+import { InMemoryPersistence } from '@hnk-verse/persistence';
+import { ZeroCommandRuntime } from '@hnk-verse/simulation';
+import {
+  createProvenance,
+  pathToAst,
+  astToIr,
+  projectPathToGlyph,
+  type Cell,
+  type Edge,
+  type Path,
+  irToRuntimeManifestation,
+  validatePath,
+} from '../packages/mhcm/src/index.ts';
+
+function assert(condition: unknown, message: string): asserts condition {
+  if (!condition) throw new Error(message);
+}
+
+const provenance = createProvenance(
+  'MHCM-RUNTIME-PROOF',
+  ['HNK-MHCM-V0.1'],
+  'EXPERIMENTAL',
+  'mhcm-runtime-proof@0.1.0',
+);
+
+const cells: Cell[] = ['A', 'B', 'C'].map((id, index) => ({
+  id,
+  address: { namespace: 'fixture', coordinate: String(index), version: '0.1.0' },
+  provenance,
+}));
+
+const edges: Edge[] = [
+  { id: 'AB', source: 'A', target: 'B', relation: 'adjacent', directed: true, provenance },
+  { id: 'BC', source: 'B', target: 'C', relation: 'adjacent', directed: true, provenance },
+];
+
+const path: Path = {
+  id: 'PATH-RUNTIME-001',
+  start: 'A',
+  nodes: ['A', 'B', 'C'],
+  edges: ['AB', 'BC'],
+  end: 'C',
+  directed: true,
+  provenance,
+};
+
+assert(validatePath(cells, edges, path).status === 'PASS', 'MHCM path validation failed.');
+
+const glyph = projectPathToGlyph(path);
+const ir = astToIr(pathToAst(path));
+const glyphIr = astToIr({
+  kind: 'GlyphExpression',
+  id: glyph.id,
+  anchor: glyph.anchor,
+  path: glyph.path,
+  transform: glyph.transform,
+  encoding: glyph.encoding,
+  provenance: glyph.provenance,
+});
+
+assert(ir.id === 'IR-PATH-RUNTIME-001', 'Path IR identity mismatch.');
+assert(glyphIr.type === 'Glyph', 'Glyph IR type mismatch.');
+
+const manifestation = irToRuntimeManifestation(glyphIr);
+assert(manifestation.commandType === 'ExecuteMhcmIr', 'Wrong MHCM runtime command.');
+
+const store = new InMemoryPersistence<typeof ZERO_FIXTURE_V1_INITIAL_STATE>();
+const runtime = await ZeroCommandRuntime.create(
+  { events: store, snapshots: store, receipts: store },
+  ZERO_FIXTURE_V1_INITIAL_STATE,
+);
+
+const command: HnkCommand<Record<string, unknown>> = {
+  commandId: 'MHCM-RUNTIME-001',
+  commandType: manifestation.commandType,
+  schemaVersion: 1,
+  actorId: ZERO_IDS.avatar,
+  verseId: ZERO_IDS.verse,
+  worldId: ZERO_IDS.world,
+  sessionId: 'SESSION-MHCM-RUNTIME-001',
+  issuedAtReal: '2026-09-28T00:00:00Z',
+  issuedAtWorld: ZERO_FIXTURE_V1_INITIAL_STATE.worldTime,
+  correlationId: 'CORR:MHCM-RUNTIME-001',
+  idempotencyKey: 'IDEMP:MHCM-RUNTIME-001',
+  payload: manifestation.payload,
+};
+
+const result = await runtime.execute(command);
+
+assert(result.accepted, `MHCM IR execution rejected: ${result.rejectionCode}`);
+assert(result.eventIds.length === 1, 'MHCM IR execution must emit one event.');
+assert(result.data?.irId === glyphIr.id, 'Runtime result lost IR identity.');
+assert(result.state.mhcmExecutionIds?.includes(glyphIr.id), 'Runtime state did not record MHCM execution.');
+
+const events = await store.allEvents(ZERO_IDS.world);
+const executed = events.find((event) => event.eventType === 'MhcmIrExecuted');
+assert(executed, 'Missing MhcmIrExecuted event.');
+assert((executed.payload as Record<string, unknown>).irId === glyphIr.id, 'Event lost IR identity.');
+
+console.log('MHCM runtime proof: PASS');
+console.log('PASS MHCM Path → Glyph → AST → HNK-IR');
+console.log('PASS HNK-IR → ExecuteMhcmIr command');
+console.log('PASS runtime accepted IR');
+console.log('PASS MhcmIrExecuted event emitted');
+console.log('PASS world state recorded MHCM execution');
