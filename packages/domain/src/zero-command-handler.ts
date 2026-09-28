@@ -265,12 +265,13 @@ export function handleZeroCommand(
 
     case 'ExecuteMhcmProgram': {
       const programId = String(payload.programId ?? '');
-      const nodes = Array.isArray(payload.nodes) ? payload.nodes : [];
+      const nodes = Array.isArray(payload.nodes) ? payload.nodes as Array<Record<string, unknown>> : [];
       const outputs = Array.isArray(payload.outputs) ? payload.outputs.map(String) : [];
       if (!programId || nodes.length === 0 || outputs.length === 0) {
         return reject('WORLD_RULE_DENIED', { reason: 'INVALID_MHCM_PROGRAM', programId });
       }
-      const nodeIds = nodes.map((node) => String((node as Record<string, unknown>).id ?? ''));
+
+      const nodeIds = nodes.map((node) => String(node.id ?? ''));
       if (nodeIds.some((id) => !id) || new Set(nodeIds).size !== nodeIds.length) {
         return reject('WORLD_RULE_DENIED', { reason: 'INVALID_MHCM_PROGRAM_NODE_IDS', programId });
       }
@@ -278,22 +279,100 @@ export function handleZeroCommand(
       if (missingOutputs.length) {
         return reject('WORLD_RULE_DENIED', { reason: 'INVALID_MHCM_PROGRAM_OUTPUTS', programId, missingOutputs });
       }
+
+      const values = new Map<string, Record<string, unknown>>();
+      const events = [];
+      const resultIrIds: string[] = [];
+
+      for (let index = 0; index < nodes.length; index += 1) {
+        const node = nodes[index];
+        const nodeId = String(node.id);
+        const kind = String(node.kind);
+
+        if (kind === 'IR') {
+          const ir = (node.ir ?? {}) as Record<string, unknown>;
+          const irId = String(ir.id ?? '');
+          if (!irId) return reject('WORLD_RULE_DENIED', { reason: 'INVALID_MHCM_PROGRAM_IR', programId, nodeId });
+          values.set(nodeId, ir);
+          events.push(event(command, index + 2, 'MhcmProgramNodeExecuted', {
+            programId, nodeId, kind, resultIrId: irId, executionMode: 'MHCM-PROGRAM-NODE-V1',
+          }, { causationId: command.commandId + ':EV:01' }));
+          resultIrIds.push(irId);
+          continue;
+        }
+
+        if (kind !== 'OPERATOR') {
+          return reject('WORLD_RULE_DENIED', { reason: 'UNSUPPORTED_MHCM_PROGRAM_NODE', programId, nodeId, kind });
+        }
+
+        const operator = String(node.operator ?? '');
+        const inputIds = Array.isArray(node.inputs) ? node.inputs.map(String) : [];
+        const inputs = inputIds.map((inputId) => values.get(inputId));
+        if (inputs.some((value) => !value)) {
+          return reject('WORLD_RULE_DENIED', { reason: 'MHCM_PROGRAM_DEPENDENCY_MISSING', programId, nodeId, inputIds });
+        }
+        if (operator !== 'PATH_REVERSE' && operator !== 'PATH_COMPOSE') {
+          return reject('WORLD_RULE_DENIED', { reason: 'UNSUPPORTED_MHCM_OPERATOR', operator });
+        }
+
+        const pathValues = inputs as Record<string, unknown>[];
+        if (pathValues.some((value) => value.op !== 'PATH_LITERAL' || value.type !== 'Path')) {
+          return reject('WORLD_RULE_DENIED', { reason: 'MHCM_PROGRAM_OPERATOR_TYPE', programId, nodeId, operator });
+        }
+
+        const left = pathValues[0].value as Record<string, unknown>;
+        let resultValue: Record<string, unknown>;
+        if (operator === 'PATH_REVERSE') {
+          if (pathValues.length !== 1) return reject('WORLD_RULE_DENIED', { reason: 'INVALID_MHCM_OPERATOR_ARITY', operator });
+          const nodesReversed = Array.isArray(left.nodes) ? left.nodes.map(String).reverse() : [];
+          const edgesReversed = Array.isArray(left.edges) ? left.edges.map(String).reverse() : [];
+          if (!nodesReversed.length || edgesReversed.length !== nodesReversed.length - 1) {
+            return reject('WORLD_RULE_DENIED', { reason: 'INVALID_PATH_IR', nodeId });
+          }
+          resultValue = { ...left, id: String(left.id) + '-REVERSE', start: nodesReversed[0], nodes: nodesReversed, edges: edgesReversed, end: nodesReversed[nodesReversed.length - 1] };
+        } else {
+          if (pathValues.length !== 2) return reject('WORLD_RULE_DENIED', { reason: 'INVALID_MHCM_OPERATOR_ARITY', operator });
+          const right = pathValues[1].value as Record<string, unknown>;
+          const ln = Array.isArray(left.nodes) ? left.nodes.map(String) : [];
+          const rn = Array.isArray(right.nodes) ? right.nodes.map(String) : [];
+          const le = Array.isArray(left.edges) ? left.edges.map(String) : [];
+          const re = Array.isArray(right.edges) ? right.edges.map(String) : [];
+          if (!ln.length || !rn.length || String(left.end) !== String(right.start) || le.length !== ln.length - 1 || re.length !== rn.length - 1) {
+            return reject('WORLD_RULE_DENIED', { reason: 'NON_CONTIGUOUS_PATH_COMPOSITION', programId, nodeId });
+          }
+          const combinedNodes = [...ln, ...rn.slice(1)];
+          const combinedEdges = [...le, ...re];
+          resultValue = {
+            ...left,
+            id: String(left.id) + '-COMPOSE-' + String(right.id),
+            start: combinedNodes[0], nodes: combinedNodes, edges: combinedEdges,
+            end: combinedNodes[combinedNodes.length - 1],
+            directed: Boolean(left.directed) && Boolean(right.directed),
+          };
+        }
+
+        const resultIrId = 'IR-PROGRAM-' + programId + '-' + nodeId;
+        const resultIr = { irVersion: 1, id: resultIrId, type: 'Path', op: 'PATH_LITERAL', inputs: inputIds, value: resultValue };
+        values.set(nodeId, resultIr);
+        resultIrIds.push(resultIrId);
+        events.push(event(command, index + 2, 'MhcmProgramNodeExecuted', {
+          programId, nodeId, kind, operator, resultIrId, executionMode: 'MHCM-PROGRAM-NODE-V1',
+        }, { causationId: command.commandId + ':EV:01' }));
+      }
+
+      const outputResults = outputs.map((outputId) => values.get(outputId));
+      if (outputResults.some((value) => !value)) {
+        return reject('WORLD_RULE_DENIED', { reason: 'MHCM_PROGRAM_OUTPUT_UNRESOLVED', programId });
+      }
+
+      events.push(event(command, 1, 'MhcmProgramExecuted', {
+        programId, nodeCount: nodes.length, outputIds: outputs, resultIrIds,
+        executionMode: 'MHCM-PROGRAM-V2',
+      }));
       return {
         accepted: true,
-        events: [
-          event(command, 1, 'MhcmProgramExecuted', {
-            programId,
-            nodeCount: nodes.length,
-            outputIds: outputs,
-            executionMode: 'MHCM-PROGRAM-V1',
-          }),
-        ],
-        data: {
-          programId,
-          nodeCount: nodes.length,
-          outputIds: outputs,
-          executionMode: 'MHCM-PROGRAM-V1',
-        },
+        events,
+        data: { programId, nodeCount: nodes.length, outputIds: outputs, resultIrIds, executionMode: 'MHCM-PROGRAM-V2' },
       };
     }
 
