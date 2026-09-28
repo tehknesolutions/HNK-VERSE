@@ -12,3 +12,7 @@ export * from './pipeline.ts';
 export * from './program.ts';
 export * from './kode.ts';
 export * from './kode-compile.ts';
+export * from './kode-report.ts';
+export * from './kode-diagnostics.ts';
+export * from './kode-result.ts';
+export * from './kode-semantic.ts';

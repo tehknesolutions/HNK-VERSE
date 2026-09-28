@@ -1,16 +1,19 @@
 import type { MhcmProgram } from './program.ts';
 import type { KodeDiagnostic } from './kode-diagnostics.ts';
+import type { KodeDiagnosticReport } from './kode-report.ts';
 
 export type KodeCompileSuccess = {
   ok: true;
   program: MhcmProgram;
   diagnostics: [];
+  report: KodeDiagnosticReport;
 };
 
 export type KodeCompileFailure = {
   ok: false;
   program: null;
   diagnostics: KodeDiagnostic[];
+  report: KodeDiagnosticReport;
 };
 
 export type KodeCompileResult = KodeCompileSuccess | KodeCompileFailure;
