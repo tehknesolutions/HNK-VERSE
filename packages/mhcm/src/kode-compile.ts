@@ -1,5 +1,6 @@
 import { KodeSyntaxError, parseKode, type KodeProgram } from './kode.ts';
-import { astToIr, pathToAst } from './ast.ts';
+import { pathToAst } from './ast.ts';
+import { astToIr } from './ir.ts';
 import type { MhcmProgram } from './program.ts';
 import { SemanticRegistry, createSemanticRef, type PathValue } from './model.ts';
 import { KodeCompileError, diagnostic, sortDiagnostics } from './kode-diagnostics.ts';
