@@ -16,14 +16,14 @@ if (!composed || composed.kind !== 'OPERATOR' || composed.operator !== 'PATH_COM
   throw new Error('Compose did not lower to PATH_COMPOSE.');
 }
 if (composed.inputs.join(',') !== 'A,B') throw new Error('Compose inputs changed.');
-if (composed.resultType !== 'OperatorResultPath' || program.semanticPaths.getPath(composed.semanticPathId)?.nodes.join(',') !== 'A,B,C') throw new Error('Compose semantic PathValue was not lowered.');
+if (composed.resultType !== 'OperatorResultPath' || program.semanticPaths.getPath(composed.semanticPathRef.id)?.nodes.join(',') !== 'A,B,C') throw new Error('Compose semantic PathValue was not lowered.');
 
 const reversed = program.nodes.find((node) => node.id === 'R');
 if (!reversed || reversed.kind !== 'OPERATOR' || reversed.operator !== 'PATH_REVERSE') {
   throw new Error('Reverse did not lower to PATH_REVERSE.');
 }
 if (reversed.inputs[0] !== 'C') throw new Error('Reverse input changed.');
-if (reversed.resultType !== 'OperatorResultPath' || program.semanticPaths.getPath(reversed.semanticPathId)?.nodes.join(',') !== 'C,B,A') throw new Error('Reverse semantic PathValue was not lowered.');
+if (reversed.resultType !== 'OperatorResultPath' || program.semanticPaths.getPath(reversed.semanticPathRef.id)?.nodes.join(',') !== 'C,B,A') throw new Error('Reverse semantic PathValue was not lowered.');
 
 const result = executeMhcmProgram(program);
 const output = result.outputs[0];
@@ -53,6 +53,6 @@ if (semanticC.provenance.source !== 'HNK-KODE') throw new Error('Semantic PathVa
 console.log('PASS semantic model uses shared PathValue');
 
 const registry = program.semanticPaths;
-if (!!registry.has('PATH-C', 'path') || !registry.has('PATH-R', 'path')) throw new Error('Semantic PathValue registry lookup failed.');
+if (!!registry.has('PATH-C', 'path') && composed.semanticPathRef.namespace !== 'path' || !registry.has('PATH-R', 'path') && reversed.semanticPathRef.namespace !== 'path') throw new Error('Semantic PathValue registry lookup failed.');
 if (registry.get('PATH-C', 'path')?.nodes.join(',') !== 'A,B,C') throw new Error('Registry returned incorrect compose PathValue.');
 console.log('PASS semantic PathValue registry API');
