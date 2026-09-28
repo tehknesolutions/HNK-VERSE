@@ -1,6 +1,7 @@
 import { SemanticRegistry, createUnresolvedSemanticRef, type KodeSymbol, type SemanticRef } from '../packages/mhcm/src/model.ts';
 import { SemanticResolver } from '../packages/mhcm/src/kode-resolver.ts';
 import { KodeTypeSystem } from '../packages/mhcm/src/kode-types.ts';
+import type { KodeTypeSystemPort } from '../packages/mhcm/src/kode-type-port.ts';
 import { KodeDiagnostic } from '../packages/mhcm/src/kode-diagnostics.ts';
 
 const span = { start: 0, end: 1, line: 1, column: 1 };
@@ -72,3 +73,7 @@ if (!typeSystem.isSubtypeOf('SpecialPath', 'Path')) throw new Error('Recursive s
 const resolvedAsPath = resolver.resolveAs(createUnresolvedSemanticRef('path', 'A'), 'Path', span, 'A');
 if (!resolvedAsPath || resolvedAsPath.ref.kind !== 'resolved') throw new Error('resolveAs(Path) failed.');
 console.log('PASS generalized type compatibility');
+
+const port: KodeTypeSystemPort = typeSystem;
+if (!port.isSubtypeOf('SpecialPath', 'Path')) throw new Error('Type-system port contract failed.');
+console.log('PASS type-system port contract');
