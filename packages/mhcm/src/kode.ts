@@ -10,10 +10,12 @@ export type KodeToken = {
   span: KodeSpan;
 };
 
+export type KodeIdentifier = { name: string; span: KodeSpan };
+
 export type KodeStatement =
-  | { kind: 'PathDeclaration'; name: string; nodes: string[]; span: KodeSpan }
-  | { kind: 'ReverseStatement'; name: string; source: string; span: KodeSpan }
-  | { kind: 'ComposeStatement'; name: string; left: string; right: string; span: KodeSpan };
+  | { kind: 'PathDeclaration'; name: string; nameSpan: KodeSpan; nodes: KodeIdentifier[]; span: KodeSpan }
+  | { kind: 'ReverseStatement'; name: string; nameSpan: KodeSpan; source: KodeIdentifier; span: KodeSpan }
+  | { kind: 'ComposeStatement'; name: string; nameSpan: KodeSpan; left: KodeIdentifier; right: KodeIdentifier; span: KodeSpan };
 
 export type KodeProgram = { kind: 'Program'; statements: KodeStatement[]; span: KodeSpan };
 
@@ -91,20 +93,20 @@ class Parser {
     const start = this.peek().span.start;
     const head = this.peek().lexeme;
     if (head === 'path') {
-      this.keyword('path'); const name = this.take('IDENT').lexeme; this.take('EQUALS');
-      const nodes = [this.take('IDENT').lexeme];
-      while (this.peek().kind === 'ARROW') { this.take('ARROW'); nodes.push(this.take('IDENT').lexeme); }
+      this.keyword('path'); const nameToken = this.take('IDENT'); const name = nameToken.lexeme; this.take('EQUALS');
+      const nodes = [this.take('IDENT')].map((token) => ({ name: token.lexeme, span: token.span }));
+      while (this.peek().kind === 'ARROW') { this.take('ARROW'); const token = this.take('IDENT'); nodes.push({ name: token.lexeme, span: token.span }); }
       if (nodes.length < 2) throw new KodeSyntaxError('Path requires at least two nodes.', spanOf(this.source, start, this.peek().span.start));
-      return { kind: 'PathDeclaration', name, nodes, span: spanOf(this.source, start, this.peek().span.start) };
+      return { kind: 'PathDeclaration', name, nameSpan: nameToken.span, nodes, span: spanOf(this.source, start, this.peek().span.start) };
     }
     if (head === 'reverse') {
-      this.keyword('reverse'); const name = this.take('IDENT').lexeme; this.take('EQUALS'); const source = this.take('IDENT').lexeme;
-      return { kind: 'ReverseStatement', name, source, span: spanOf(this.source, start, this.peek().span.start) };
+      this.keyword('reverse'); const nameToken = this.take('IDENT'); const name = nameToken.lexeme; this.take('EQUALS'); const sourceToken = this.take('IDENT'); const source = { name: sourceToken.lexeme, span: sourceToken.span };
+      return { kind: 'ReverseStatement', name, nameSpan: nameToken.span, source, span: spanOf(this.source, start, this.peek().span.start) };
     }
     if (head === 'compose') {
       this.keyword('compose'); const name = this.take('IDENT').lexeme; this.take('EQUALS');
-      const left = this.take('IDENT').lexeme; this.take('COMMA'); const right = this.take('IDENT').lexeme;
-      return { kind: 'ComposeStatement', name, left, right, span: { start, end: this.peek().span.start } };
+      const leftToken = this.take('IDENT'); this.take('COMMA'); const rightToken = this.take('IDENT'); const left = { name: leftToken.lexeme, span: leftToken.span }; const right = { name: rightToken.lexeme, span: rightToken.span };
+      return { kind: 'ComposeStatement', name, nameSpan: nameToken.span, left, right, span: { start, end: this.peek().span.start } };
     }
     throw new KodeSyntaxError(`Unknown KODE statement "${head}"`, this.peek().span);
   }
