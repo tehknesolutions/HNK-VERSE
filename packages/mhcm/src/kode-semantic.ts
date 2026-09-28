@@ -1,5 +1,5 @@
 import type { KodeProgram, KodeSpan } from './kode.ts';
-import { createProvenance, type PathValue } from './model.ts';
+import { createProvenance, createSemanticRef, type PathValue, type SemanticRef } from './model.ts';
 import { diagnostic, type KodeDiagnostic } from './kode-diagnostics.ts';
 
 export type KodeType = 'Path' | 'OperatorResultPath';
@@ -9,6 +9,7 @@ export type KodeSymbol = {
   type: KodeType;
   declarationSpan: KodeSpan;
   origin: 'declaration' | 'operator';
+  ref: SemanticRef;
 };
 
 export type KodeStaticPath = PathValue;
@@ -49,14 +50,15 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
       type: statement.kind === 'PathDeclaration' ? 'Path' as const : 'OperatorResultPath' as const,
       declarationSpan: statement.nameSpan,
       origin: statement.kind === 'PathDeclaration' ? 'declaration' as const : 'operator' as const,
+      ref: createSemanticRef('path', statement.name),
     };
 
     if (statement.kind === 'PathDeclaration') {
       paths.set(statement.name, createKodePath(statement.name, statement.nodes.map((node) => node.name), 'declaration'));
       symbols.set(statement.name, declaration);
     } else if (statement.kind === 'ReverseStatement') {
-      const input = symbols.get(statement.source.name);
-      const path = paths.get(statement.source.name);
+      const input = symbols.get(statement.source.ref.id);
+      const path = paths.get(statement.source.ref.id);
       if (!input || !path) {
         diagnostics.push(diagnostic('E_SYMBOL', `Unknown KODE symbol "${statement.source.name}".`, statement.source.span));
       } else if (input.type !== 'Path' && input.type !== 'OperatorResultPath') {
@@ -66,10 +68,10 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
         symbols.set(statement.name, declaration);
       }
     } else {
-      const left = symbols.get(statement.left.name);
-      const right = symbols.get(statement.right.name);
-      const leftPath = paths.get(statement.left.name);
-      const rightPath = paths.get(statement.right.name);
+      const left = symbols.get(statement.left.ref.id);
+      const right = symbols.get(statement.right.ref.id);
+      const leftPath = paths.get(statement.left.ref.id);
+      const rightPath = paths.get(statement.right.ref.id);
 
       if (!left || !leftPath) {
         diagnostics.push(diagnostic('E_SYMBOL', `Unknown KODE symbol "${statement.left.name}".`, statement.left.span));
