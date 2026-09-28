@@ -38,7 +38,7 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
   const diagnostics: KodeDiagnostic[] = [];
   const semanticPaths = new SemanticRegistry<PathValue>();
   const semanticSymbols = new SemanticRegistry<KodeSymbol>();
-  const resolver = new SemanticResolver(semanticSymbols, diagnostics);
+  const resolver = new SemanticResolver(semanticSymbols, semanticPaths, diagnostics);
   const declared = new Set<string>();
 
   for (const statement of program.statements) {
@@ -64,7 +64,7 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
     }
 
     const resolvedInput = statement.kind === 'ReverseStatement'
-      ? resolver.resolve(statement.source.ref, statement.source.span, statement.source.name)
+      ? resolver.resolvePath(statement.source.ref, statement.source.span, statement.source.name)
       : null;
 
     if (statement.kind === 'ReverseStatement') {
@@ -73,20 +73,15 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
         diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${statement.source.name}" is not a Path.`, statement.source.span));
         continue;
       }
-      const path = semanticPaths.get(resolvedInput.ref.id, resolvedInput.ref.namespace);
-      if (!path) {
-        diagnostics.push(diagnostic('E_SYMBOL', `Unknown KODE symbol "${statement.source.name}".`, statement.source.span));
-        continue;
-      }
-      const resultPath = createKodePath(statement.name, [...path.nodes].reverse(), 'reverse');
+      const resultPath = createKodePath(statement.name, [...resolvedInput.path.nodes].reverse(), 'reverse');
       semanticPaths.register(resultPath, 'path');
       semanticSymbols.register(declaration, 'path');
       declared.add(statement.name);
       continue;
     }
 
-    const left = resolver.resolve(statement.left.ref, statement.left.span, statement.left.name);
-    const right = resolver.resolve(statement.right.ref, statement.right.span, statement.right.name);
+    const left = resolver.resolvePath(statement.left.ref, statement.left.span, statement.left.name);
+    const right = resolver.resolvePath(statement.right.ref, statement.right.span, statement.right.name);
     if (!left || !right) continue;
 
     if (left.symbol.type !== 'Path' && left.symbol.type !== 'OperatorResultPath') {
@@ -98,12 +93,8 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
       continue;
     }
 
-    const leftPath = semanticPaths.get(left.ref.id, left.ref.namespace);
-    const rightPath = semanticPaths.get(right.ref.id, right.ref.namespace);
-    if (!leftPath || !rightPath) {
-      diagnostics.push(diagnostic('E_SYMBOL', 'Resolved KODE symbol has no PathValue.', statement.left.span));
-      continue;
-    }
+    const leftPath = left.path;
+    const rightPath = right.path;
 
     if (leftPath.end !== rightPath.start) {
       diagnostics.push(diagnostic(
