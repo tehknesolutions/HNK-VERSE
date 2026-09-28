@@ -9,3 +9,4 @@ export * from './ops.ts';
 export * from './typecheck.ts';
 export * from './executor.ts';
 export * from './pipeline.ts';
+export * from './program.ts';
