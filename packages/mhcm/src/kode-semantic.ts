@@ -1,6 +1,7 @@
 import type { KodeProgram, KodeSpan } from './kode.ts';
 import { createProvenance, createSemanticRef, SemanticRegistry, type PathValue, type SemanticRef } from './model.ts';
 import { diagnostic, type KodeDiagnostic } from './kode-diagnostics.ts';
+import { SemanticResolver } from './kode-resolver.ts';
 
 export type KodeType = 'Path' | 'OperatorResultPath';
 
@@ -37,6 +38,7 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
   const diagnostics: KodeDiagnostic[] = [];
   const semanticPaths = new SemanticRegistry<PathValue>();
   const semanticSymbols = new SemanticRegistry<KodeSymbol>();
+  const resolver = new SemanticResolver(semanticSymbols, diagnostics);
   const declared = new Set<string>();
 
   for (const statement of program.statements) {
@@ -57,52 +59,68 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
       const path = createKodePath(statement.name, statement.nodes.map((node) => node.name), 'declaration');
       semanticPaths.register(path, 'path');
       semanticSymbols.register(declaration, 'path');
-      symbols.set(statement.name, declaration);
-    } else if (statement.kind === 'ReverseStatement') {
-      const input = semanticSymbols.get(statement.source.ref.id, statement.source.ref.namespace);
-      const path = semanticPaths.get(statement.source.ref.id, statement.source.ref.namespace);
-      if (!input || !path) {
-        diagnostics.push(diagnostic('E_SYMBOL', `Unknown KODE symbol "${statement.source.name}".`, statement.source.span));
-      } else if (input.type !== 'Path' && input.type !== 'OperatorResultPath') {
-        diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${statement.source.name}" is not a Path.`, statement.source.span));
-      } else {
-        const resultPath = createKodePath(statement.name, [...path.nodes].reverse(), 'reverse');
-        semanticPaths.register(resultPath, 'path');
-        semanticSymbols.set(semanticRefKey(declaration.ref), declaration);
-        symbols.set(statement.name, declaration);
-      }
-    } else {
-      const left = semanticSymbols.get(statement.left.ref.id, statement.left.ref.namespace);
-      const right = semanticSymbols.get(statement.right.ref.id, statement.right.ref.namespace);
-      const leftPath = semanticPaths.get(statement.left.ref.id, statement.left.ref.namespace);
-      const rightPath = semanticPaths.get(statement.right.ref.id, statement.right.ref.namespace);
-
-      if (!left || !leftPath) {
-        diagnostics.push(diagnostic('E_SYMBOL', `Unknown KODE symbol "${statement.left.name}".`, statement.left.span));
-      } else if (!right || !rightPath) {
-        diagnostics.push(diagnostic('E_SYMBOL', `Unknown KODE symbol "${statement.right.name}".`, statement.right.span));
-      } else if (left.type !== 'Path' && left.type !== 'OperatorResultPath') {
-        diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${statement.left.name}" is not a Path.`, statement.left.span));
-      } else if (right.type !== 'Path' && right.type !== 'OperatorResultPath') {
-        diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${statement.right.name}" is not a Path.`, statement.right.span));
-      } else if (leftPath.end !== rightPath.start) {
-        diagnostics.push(diagnostic(
-          'E_CONNECTIVITY',
-          `Cannot compose "${statement.left.name}" ending at "${leftPath.end}" with "${statement.right.name}" starting at "${rightPath.start}".`,
-          statement.left.span,
-          [
-            { label: 'left operand', span: statement.left.span },
-            { label: 'right operand', span: statement.right.span },
-          ],
-        ));
-      } else {
-        const resultPath = createKodePath(statement.name, [...leftPath.nodes, ...rightPath.nodes.slice(1)], 'compose');
-        semanticPaths.register(resultPath, 'path');
-        semanticSymbols.set(semanticRefKey(declaration.ref), declaration);
-        symbols.set(statement.name, declaration);
-      }
+      declared.add(statement.name);
+      continue;
     }
 
+    const resolvedInput = statement.kind === 'ReverseStatement'
+      ? resolver.resolve(statement.source.ref, statement.source.span, statement.source.name)
+      : null;
+
+    if (statement.kind === 'ReverseStatement') {
+      if (!resolvedInput) continue;
+      if (resolvedInput.symbol.type !== 'Path' && resolvedInput.symbol.type !== 'OperatorResultPath') {
+        diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${statement.source.name}" is not a Path.`, statement.source.span));
+        continue;
+      }
+      const path = semanticPaths.get(resolvedInput.ref.id, resolvedInput.ref.namespace);
+      if (!path) {
+        diagnostics.push(diagnostic('E_SYMBOL', `Unknown KODE symbol "${statement.source.name}".`, statement.source.span));
+        continue;
+      }
+      const resultPath = createKodePath(statement.name, [...path.nodes].reverse(), 'reverse');
+      semanticPaths.register(resultPath, 'path');
+      semanticSymbols.register(declaration, 'path');
+      declared.add(statement.name);
+      continue;
+    }
+
+    const left = resolver.resolve(statement.left.ref, statement.left.span, statement.left.name);
+    const right = resolver.resolve(statement.right.ref, statement.right.span, statement.right.name);
+    if (!left || !right) continue;
+
+    if (left.symbol.type !== 'Path' && left.symbol.type !== 'OperatorResultPath') {
+      diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${statement.left.name}" is not a Path.`, statement.left.span));
+      continue;
+    }
+    if (right.symbol.type !== 'Path' && right.symbol.type !== 'OperatorResultPath') {
+      diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${statement.right.name}" is not a Path.`, statement.right.span));
+      continue;
+    }
+
+    const leftPath = semanticPaths.get(left.ref.id, left.ref.namespace);
+    const rightPath = semanticPaths.get(right.ref.id, right.ref.namespace);
+    if (!leftPath || !rightPath) {
+      diagnostics.push(diagnostic('E_SYMBOL', 'Resolved KODE symbol has no PathValue.', statement.left.span));
+      continue;
+    }
+
+    if (leftPath.end !== rightPath.start) {
+      diagnostics.push(diagnostic(
+        'E_CONNECTIVITY',
+        `Cannot compose "${statement.left.name}" ending at "${leftPath.end}" with "${statement.right.name}" starting at "${rightPath.start}".`,
+        statement.left.span,
+        [
+          { label: 'left operand', span: statement.left.span },
+          { label: 'right operand', span: statement.right.span },
+        ],
+      ));
+      continue;
+    }
+
+    const resultPath = createKodePath(statement.name, [...leftPath.nodes, ...rightPath.nodes.slice(1)], 'compose');
+    semanticPaths.register(resultPath, 'path');
+    semanticSymbols.register(declaration, 'path');
     declared.add(statement.name);
   }
 
