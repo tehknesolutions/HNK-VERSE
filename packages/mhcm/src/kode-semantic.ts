@@ -22,7 +22,7 @@ export type KodeSemanticModel = {
 function createKodePath(name: string, nodes: string[], operation: 'declaration' | 'reverse' | 'compose'): PathValue {
   const edges = nodes.slice(0, -1).map((node, index) => `${node}->${nodes[index + 1]}`);
   return {
-    id: `KODE-PATH-${name}`,
+    id: `PATH-${name}`,
     start: nodes[0],
     nodes: [...nodes],
     edges,
