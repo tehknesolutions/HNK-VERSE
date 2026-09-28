@@ -64,8 +64,12 @@ export function assertValidKodeTypeDefinitions(types: Record<KodeTypeId, KodeTyp
 }
 
 export class KodeTypeSystem {
+  constructor(private readonly types: Record<KodeTypeId, KodeType> = KODE_TYPES) {
+    assertValidKodeTypeDefinitions(types);
+  }
+
   get(id: KodeTypeId): KodeType {
-    return getKodeType(id);
+    return this.types[id];
   }
 
   isSubtypeOf(actual: KodeTypeId, expected: KodeTypeId, seen = new Set<KodeTypeId>()): boolean {
