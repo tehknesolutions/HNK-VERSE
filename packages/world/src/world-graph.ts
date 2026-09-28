@@ -29,13 +29,17 @@ export type WorldGraph = {
   relations: readonly WorldRelation[];
 };
 
+function cloneValue<T>(value: T): T {
+  return structuredClone(value);
+}
+
 export function createWorldGraph(): WorldGraph {
   return { entities: new Map(), relations: [] };
 }
 
 export function upsertWorldEntity(graph: WorldGraph, entity: WorldEntity): WorldGraph {
   const entities = new Map(graph.entities);
-  entities.set(entity.id, entity);
+  entities.set(entity.id, cloneValue(entity));
   return { ...graph, entities };
 }
 
@@ -44,7 +48,7 @@ export function addWorldRelation(graph: WorldGraph, relation: WorldRelation): Wo
     throw new Error('World relation endpoint does not exist in graph.');
   }
 
-  return { ...graph, relations: [...graph.relations, relation] };
+  return { ...graph, relations: [...graph.relations, cloneValue(relation)] };
 }
 
 export function getOutgoingRelations(graph: WorldGraph, entityId: string): readonly WorldRelation[] {
