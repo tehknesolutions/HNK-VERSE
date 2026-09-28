@@ -20,7 +20,9 @@ export type KodeTypeCompatibility = {
 };
 
 export function getKodeType(id: KodeTypeId): KodeType {
-  return KODE_TYPES[id];
+  const type = KODE_TYPES[id];
+  if (!type) throw new Error(`Unknown KODE type: ${id}.`);
+  return type;
 }
 
 export type KodeTypeSystemValidation = {
@@ -82,9 +84,20 @@ export function assertValidKodeTypeDefinitions(types: Record<KodeTypeId, KodeTyp
   if (!result.ok) throw new Error(`Invalid KODE type system:\\n${result.errors.join('\\n')}`);
 }
 
+function freezeTypeDefinitions(types: Record<KodeTypeId, KodeType>): Readonly<Record<KodeTypeId, KodeType>> {
+  const frozen: Record<KodeTypeId, KodeType> = {} as Record<KodeTypeId, KodeType>;
+  for (const [id, type] of Object.entries(types) as [KodeTypeId, KodeType][]) {
+    frozen[id] = Object.freeze({ ...type, parents: Object.freeze([...type.parents]) });
+  }
+  return Object.freeze(frozen);
+}
+
 export class KodeTypeSystem {
-  constructor(private readonly types: Record<KodeTypeId, KodeType> = KODE_TYPES) {
+  private readonly types: Readonly<Record<KodeTypeId, KodeType>>;
+
+  constructor(types: Record<KodeTypeId, KodeType> = KODE_TYPES) {
     assertValidKodeTypeDefinitions(types);
+    this.types = freezeTypeDefinitions(types);
   }
 
   get(id: KodeTypeId): KodeType {
