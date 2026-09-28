@@ -20,6 +20,7 @@ import {
   lexKode,
   parseKode,
   compileKode,
+  tryCompileKode,
   type Cell,
   type Edge,
   type Path,
@@ -38,6 +39,20 @@ if (kodeAst.statements.length !== 4) throw new Error('KODE parser statement coun
 const kodeProgram = compileKode(kodeSource);
 if (kodeProgram.outputs[0] !== 'FINAL') throw new Error('KODE compiler output mismatch.');
 const kodeResult = executeMhcmProgram(kodeProgram);
+const invalidKodeSourcePlaceholder = \`
+path X = X -> Y;
+path Z = Z -> W;
+compose BAD = X, Z;
+\`;
+const validResult = tryCompileKode(kodeSource);
+if (!validResult.ok || validResult.program.outputs[0] !== 'FINAL') {
+  throw new Error('Structured KODE compile success contract failed.');
+}
+const invalidResult = tryCompileKode(invalidKodeSourcePlaceholder);
+if (invalidResult.ok || !invalidResult.diagnostics.some((diagnostic) => diagnostic.code === 'E_CONNECTIVITY')) {
+  throw new Error('Structured KODE compile diagnostics contract failed.');
+}
+
 const invalidKode = \`
 path X = X -> Y;
 path Z = Z -> W;
@@ -200,3 +215,4 @@ console.log('PASS KODE-0 parser');
 console.log('PASS KODE-0 → Program Graph compiler');
 console.log('PASS KODE-0 execution');
 console.log('PASS KODE-0 static connectivity/type validation');
+console.log('PASS KODE-0 structured compile result API');
