@@ -7,3 +7,4 @@ export * from './ir.ts';
 export * from './runtime.ts';
 export * from './ops.ts';
 export * from './typecheck.ts';
+export * from './executor.ts';
