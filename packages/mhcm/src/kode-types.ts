@@ -34,7 +34,13 @@ export function validateKodeTypeDefinitions(types: Record<KodeTypeId, KodeType> 
   const errors: string[] = [];
   for (const type of Object.values(types)) {
     for (const parent of type.parents) {
-      if (!types[parent]) errors.push(`Type ${type.id} references unknown parent ${parent}.`);
+      if (!types[parent]) {
+        errors.push(`Type ${type.id} references unknown parent ${parent}.`);
+        continue;
+      }
+      if (type.category === 'value' && types[parent].category === 'operator-result') {
+        errors.push(`Type ${type.id} (value) cannot inherit from operator-result type ${parent}.`);
+      }
     }
   }
   for (const type of Object.values(types)) {
@@ -56,6 +62,13 @@ export function validateKodeTypeDefinitions(types: Record<KodeTypeId, KodeType> 
     visit(type.id);
   }
   return errors.length ? { ok: false, errors } : { ok: true };
+}
+
+export function isValidKodeTypeCategory(type: KodeType, types: Record<KodeTypeId, KodeType> = KODE_TYPES): boolean {
+  return type.parents.every((parent) => {
+    const parentType = types[parent];
+    return !parentType || !(type.category === 'value' && parentType.category === 'operator-result');
+  });
 }
 
 export function assertValidKodeTypeDefinitions(types: Record<KodeTypeId, KodeType> = KODE_TYPES): void {
