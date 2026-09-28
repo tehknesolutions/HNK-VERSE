@@ -3,6 +3,7 @@ import { astToIr, pathToAst } from './ast.ts';
 import { createProvenance, type Path } from './model.ts';
 import type { MhcmProgram } from './program.ts';
 import { KodeCompileError, type KodeDiagnostic } from './kode-diagnostics.ts';
+import type { KodeCompileResult } from './kode-result.ts';
 
 type StaticPath = { start: string; end: string; nodes: string[] };
 
@@ -89,4 +90,17 @@ export function compileKode(source: string): MhcmProgram {
     nodes,
     outputs: nodes.length ? [nodes[nodes.length - 1].id] : [],
   };
+}
+
+export function tryCompileKode(source: string): KodeCompileResult {
+  try {
+    return { ok: true, program: compileKode(source), diagnostics: [] };
+  } catch (error) {
+    if (error instanceof KodeCompileError) return { ok: false, program: null, diagnostics: error.diagnostics };
+    return {
+      ok: false,
+      program: null,
+      diagnostics: [{ code: 'E_SYNTAX', message: error instanceof Error ? error.message : String(error) }],
+    };
+  }
 }
