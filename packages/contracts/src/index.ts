@@ -110,4 +110,72 @@ export type LexemeFormObservedPayload = { lexemeRef: 'LEX-013'; form: 'VALI'; me
 export type LexemeMeaningLearnedPayload = { lexemeRef: 'LEX-013'; surface: 'VALI'; meaningPt: 'trabalho / trabalhar'; zeroBinding: 'TRANSVERSAL'; curriculumBindingL07: false; languageRef: LanguageRef };
 export type KnowledgeUnitDiscoveredPayload = { knowledgeRef: PendingCodexRef | CanonicalCodexRef };
 export type ResourceGatheredPayload = { nodeId: 'RESOURCE-NODE-WOOD-ZERO-001' | string; resourceDefinitionId: 'RESOURCE-WOOD-ZERO-V0' | string; quantity: number; ownerId: string };
-export type SkillEvidenceRecordedPayload = Record<string, unknown>;
+export type SkillEvidenceRecordedPayload = {
+  evidenceId: string;
+  skillDefinitionId: 'SKILL-PRACTICAL-WORK-ZERO-V0' | string;
+  sourceEventRefs: string[];
+  contextEntityId: string;
+  result: 'SUCCESS' | 'FAILURE';
+  guided: boolean;
+  quality: number;
+};
+export type EntityCreatedPayload = {
+  entityInstanceId: string;
+  definitionId: 'ENTITY-WOODEN-BOX-ZERO-V0' | string;
+  ownerId: string;
+  capabilities: string[];
+  provenance: Record<string, unknown>;
+};
+export type EntityPlacedPayload = { entityInstanceId: string; landId: string; logicalX: number; logicalY: number; orientation: number };
+export type OwnershipTransferredPayload = { fromOwnerId: string; toOwnerId: string; resourceDefinitionId: string; quantity: number };
+export type HumanReflectionAppendedPayload = { reflectionId: string; authorId: string; text: string; linkedEventRefs: string[]; authorityClass: 'HUMAN_AUTHORED_INTERPRETATION' };
+export type AvatarRestedPayload = { avatarId: string; energyBefore: number; energyAfter: number; worldTimeBefore: string; worldTimeAfter: string };
+export type AvatarPositionCheckpointedPayload = { avatarId: string; logicalX: number; logicalY: number; thresholdId?: string | null; zoneIds?: string[] };
+
+export const ZERO_IDS = {
+  hnkIdentity: 'HNKID-ZERO-001',
+  verse: 'VERSE-ZERO-001',
+  world: 'WORLD-ZERO-MALKUTH-001',
+  land: 'LAND-ZERO-MALKUTH-001',
+  home: 'HOME-ZERO-MALKUTH-001',
+  avatar: 'AVATAR-ZERO-PLAYER-001',
+  metatron: 'AGENT-ZERO-CARTOGRAPHER-001',
+  bed: 'ENTITY-BED-ZERO-001',
+  workbench: 'ENTITY-WORKBENCH-ZERO-001',
+  valiSurface: 'ENTITY-VALI-SURFACE-ZERO-001',
+  cartographyTable: 'ENTITY-CARTOGRAPHY-TABLE-ZERO-001',
+  woodNode: 'RESOURCE-NODE-WOOD-ZERO-001',
+  storageZone: 'ZONE-ZERO-HOME-STORAGE-001',
+  homeThreshold: 'THRESHOLD-ZERO-HOME-EAST-001',
+  woodenBox: 'ENTITY-WOODEN-BOX-ZERO-001',
+  playerInventory: 'INVENTORY-ZERO-PLAYER-001',
+  metatronInventory: 'INVENTORY-ZERO-METATRON-001',
+  relationship: 'REL-ZERO-PLAYER-METATRON-001',
+  skillRecord: 'SKILLREC-ZERO-PRACTICAL-WORK-001',
+  eventStream: 'STREAM-ZERO-MALKUTH-001',
+  fixture: 'HNK-ZERO-MALKUTH-FIXTURE-V1',
+} as const;
+
+export const ZERO_PENDING_MALKUTH_CODEX_REF: PendingCodexRef = {
+  source: 'codex-hnk',
+  resolution: 'pending',
+  canonicalId: null,
+  internalRef: 'ZERO-KNOWLEDGE-MALKUTH-MANIFESTATION-V0',
+  bridgeStatus: 'PENDING_CANONICAL_ID',
+  sourceRefs: ['HNK-PROJECT-MALKUTH-SOURCE'],
+  authority: 'SOURCE_SUPPORTED_DERIVATION',
+  status: 'fixture',
+};
+
+export const ZERO_VALI_LANGUAGE_REF: LanguageRef = {
+  source: 'hnk-idioma',
+  canonicalId: 'LEX-013',
+  surface: 'VALI',
+  version: '1.0.0-preproduction',
+  status: 'fixture',
+  authority: 'FROZEN',
+};
+
+export const LUCIDITY_INVARIANT = 'EXPERIENCE != INTERPRETATION != EVIDENCE != CANON' as const;
+export const PRACTICE_LUCIDITY_INVARIANT = 'ACTION != OBSERVATION != RESULT != INTERPRETATION != EVIDENCE != CANON' as const;
+export const FULL_LUCIDITY_INVARIANT = 'EVENT != PERCEPTION != MEMORY != TESTIMONY != CLAIM != EVIDENCE != INTERPRETATION != CANON' as const;
