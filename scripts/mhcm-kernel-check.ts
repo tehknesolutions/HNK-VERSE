@@ -4,7 +4,11 @@ import {
   projectPathToGlyph,
   serializePath,
   validatePath,
+  pathToAst,
+  glyphToAst,
+  astToIr,
   MHCM_SCHEMA_VERSION,
+  HNK_IR_SCHEMA_VERSION,
   type Cell,
   type Edge,
   type Path,
@@ -53,11 +57,29 @@ if (glyph.id !== 'GLYPH-PATH-ABC') throw new Error('Unexpected glyph id.');
 if (glyph.path !== serialized) throw new Error('Glyph path projection is not deterministic.');
 if (glyph.encoding !== 'MHCM-PATH-JSON-V1') throw new Error('Unexpected glyph encoding.');
 
+const pathAst = pathToAst(path);
+if (pathAst.kind !== 'PathExpression') throw new Error('Path AST kind mismatch.');
+
+const pathIr = astToIr(pathAst);
+if (pathIr.type !== 'Path' || pathIr.op !== 'PATH_LITERAL') throw new Error('Path IR lowering mismatch.');
+if (pathIr.id !== 'IR-PATH-ABC') throw new Error('Path IR id mismatch.');
+
+const glyphAst = glyphToAst(glyph);
+if (glyphAst.kind !== 'GlyphExpression') throw new Error('Glyph AST kind mismatch.');
+
+const glyphIr = astToIr(glyphAst);
+if (glyphIr.type !== 'Glyph' || glyphIr.op !== 'GLYPH_LITERAL') throw new Error('Glyph IR lowering mismatch.');
+if (glyphIr.inputs[0] !== serialized) throw new Error('Glyph IR input mismatch.');
+
 if (MHCM_SCHEMA_VERSION !== 1) throw new Error('Unexpected MHCM schema version.');
+if (HNK_IR_SCHEMA_VERSION !== 1) throw new Error('Unexpected HNK-IR schema version.');
 
 console.log('MHCM kernel check: PASS');
 console.log('PASS valid topology');
 console.log('PASS invalid topology rejection');
 console.log('PASS canonical serialization round-trip');
 console.log('PASS deterministic glyph projection');
-console.log('PASS schema version');
+console.log('PASS Path → AST');
+console.log('PASS AST → HNK-IR');
+console.log('PASS Glyph → AST → HNK-IR');
+console.log('PASS schema versions');
