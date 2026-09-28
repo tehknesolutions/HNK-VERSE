@@ -1,6 +1,7 @@
 export type KodeTokenKind = 'IDENT' | 'STRING' | 'ARROW' | 'LPAREN' | 'RPAREN' | 'COMMA' | 'EQUALS' | 'SEMICOLON' | 'EOF';
 
-export type KodeSpan = { start: number; end: number };
+export type KodePosition = { offset: number; line: number; column: number };
+export type KodeSpan = { start: number; end: number; startPosition: KodePosition; endPosition: KodePosition };
 
 export type KodeToken = {
   kind: KodeTokenKind;
@@ -16,6 +17,16 @@ export type KodeStatement =
 
 export type KodeProgram = { kind: 'Program'; statements: KodeStatement[]; span: KodeSpan };
 
+function positionAt(source: string, offset: number): KodePosition {
+  let line = 1; let column = 1;
+  for (let i = 0; i < offset; i += 1) { if (source[i] === '\\n') { line += 1; column = 1; } else column += 1; }
+  return { offset, line, column };
+}
+
+function spanOf(source: string, start: number, end: number): KodeSpan {
+  return { start, end, startPosition: positionAt(source, start), endPosition: positionAt(source, end) };
+}
+
 export function lexKode(source: string): KodeToken[] {
   const tokens: KodeToken[] = [];
   let i = 0;
@@ -23,33 +34,33 @@ export function lexKode(source: string): KodeToken[] {
     const ch = source[i];
     if (/\s/.test(ch)) { i += 1; continue; }
     if (source.startsWith('->', i)) {
-      tokens.push({ kind: 'ARROW', lexeme: '->', position: i, span: { start: i, end: i + 2 } }); i += 2; continue;
+      tokens.push({ kind: 'ARROW', lexeme: '->', position: i, span: spanOf(source, i, i + 2) }); i += 2; continue;
     }
     const single: Record<string, KodeTokenKind> = { '(': 'LPAREN', ')': 'RPAREN', ',': 'COMMA', '=': 'EQUALS', ';': 'SEMICOLON' };
-    if (single[ch]) { tokens.push({ kind: single[ch], lexeme: ch, position: i, span: { start: i, end: i + 1 } }); i += 1; continue; }
+    if (single[ch]) { tokens.push({ kind: single[ch], lexeme: ch, position: i, span: spanOf(source, i, i + 1) }); i += 1; continue; }
     if (ch === '"') {
       const start = i++;
       let value = '';
       while (i < source.length && source[i] !== '"') value += source[i++];
       if (source[i] !== '"') throw new Error(`Unterminated string at ${start}`);
       i += 1;
-      tokens.push({ kind: 'STRING', lexeme: value, position: start, span: { start, end: i } });
+      tokens.push({ kind: 'STRING', lexeme: value, position: start, span: spanOf(source, start, i) });
       continue;
     }
     const match = source.slice(i).match(/^[A-Za-z_][A-Za-z0-9_-]*/);
     if (match) {
       const start = i; i += match[0].length;
-      tokens.push({ kind: 'IDENT', lexeme: match[0], position: start, span: { start, end: i } }); continue;
+      tokens.push({ kind: 'IDENT', lexeme: match[0], position: start, span: spanOf(source, start, i) }); continue;
     }
     throw new Error(`Unexpected character "${ch}" at ${i}`);
   }
-  tokens.push({ kind: 'EOF', lexeme: '', position: source.length, span: { start: source.length, end: source.length } });
+  tokens.push({ kind: 'EOF', lexeme: '', position: source.length, span: spanOf(source, source.length, source.length) });
   return tokens;
 }
 
 class Parser {
   private index = 0;
-  constructor(private readonly tokens: KodeToken[]) {}
+  constructor(private readonly tokens: KodeToken[], private readonly source: string) {}
   private peek() { return this.tokens[this.index]; }
   private take(kind: KodeTokenKind) {
     const token = this.peek();
@@ -68,9 +79,9 @@ class Parser {
     while (this.peek().kind !== 'EOF') {
       const statement = this.statement();
       this.take('SEMICOLON');
-      statements.push({ ...statement, span: { ...statement.span, end: this.tokens[this.index - 1].span.end } });
+      statements.push({ ...statement, span: spanOf(this.source, statement.span.start, this.tokens[this.index - 1].span.end)  });
     }
-    return { kind: 'Program', statements, span: { start, end: this.peek().span.end } };
+    return { kind: 'Program', statements, span: spanOf(this.source, start, this.peek().span.end) };
   }
   private statement(): KodeStatement {
     const start = this.peek().span.start;
@@ -80,7 +91,7 @@ class Parser {
       const nodes = [this.take('IDENT').lexeme];
       while (this.peek().kind === 'ARROW') { this.take('ARROW'); nodes.push(this.take('IDENT').lexeme); }
       if (nodes.length < 2) throw new Error('Path requires at least two nodes.');
-      return { kind: 'PathDeclaration', name, nodes, span: { start, end: this.peek().span.start } };
+      return { kind: 'PathDeclaration', name, nodes, span: spanOf(this.source, start, this.peek().span.start) };
     }
     if (head === 'reverse') {
       this.keyword('reverse'); const name = this.take('IDENT').lexeme; this.take('EQUALS'); const source = this.take('IDENT').lexeme;
@@ -96,5 +107,5 @@ class Parser {
 }
 
 export function parseKode(source: string): KodeProgram {
-  return new Parser(lexKode(source)).parse();
+  return new Parser(lexKode(source), source).parse();
 }
