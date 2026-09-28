@@ -41,7 +41,7 @@ export function executeMhcmProgram(program: MhcmProgram): MhcmProgramResult {
 
     const result = executeMhcmOperator(node.operator, inputs).result;
     if (result.type !== 'Path' || result.op !== 'PATH_LITERAL') throw new Error(`Operator ${node.id} did not produce a Path literal.`);
-    const expected = program.semanticPaths.getPath(node.semanticPathId);
+    const expected = program.semanticPaths.get(node.semanticPathId, 'path');
     if (!expected) throw new Error(`Semantic PathValue ${node.semanticPathId} is unavailable.`);
     const actual = result.value;
     const actualNodes = Array.isArray(actual.nodes) ? actual.nodes.map(String) : [];
