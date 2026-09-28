@@ -3,6 +3,7 @@ import { SemanticRegistry, semanticRefKey, type PathValue, type SemanticRef, typ
 import type { KodeSpan } from './kode.ts';
 import type { KodeSymbol } from './kode-semantic.ts';
 import type { KodeTypeId } from './kode-types.ts';
+import type { KodeTypeSystemPort } from './kode-type-port.ts';
 import { KodeTypeSystem } from './kode-types.ts';
 
 export type SemanticResolution = {
@@ -19,7 +20,7 @@ export class SemanticResolver {
     private readonly symbols: SemanticRegistry<KodeSymbol>,
     private readonly paths: SemanticRegistry<PathValue>,
     private readonly diagnostics: KodeDiagnostic[],
-    private readonly typeSystem: KodeTypeSystem = new KodeTypeSystem(),
+    private readonly typeSystem: KodeTypeSystemPort = new KodeTypeSystem(),
   ) {}
 
   resolve(ref: UnresolvedSemanticRef, span: KodeSpan, displayName: string): SemanticResolution | null {
