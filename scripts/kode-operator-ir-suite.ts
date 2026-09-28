@@ -44,14 +44,15 @@ console.log('PASS compile graph → MHCM program execution');
 console.log('PASS final composed/reversed Path IR');
 
 const ast = parseKode(source);
-if (ast.statements[2].kind !== 'ComposeStatement' || ast.statements[2].left.ref.namespace !== 'path' || ast.statements[2].left.ref.id !== 'A' || ast.statements[2].right.ref.id !== 'B') throw new Error('AST SemanticRef contract failed.');
+if (ast.statements[2].kind !== 'ComposeStatement' || ast.statements[2].left.ref.kind !== 'unresolved' || ast.statements[2].left.ref.namespace !== 'path' || ast.statements[2].left.ref.id !== 'A' || ast.statements[2].right.ref.id !== 'B') throw new Error('AST SemanticRef contract failed.');
 const semantic = analyzeKode(ast);
 if (!semantic.ok) throw new Error('Semantic model failed for shared PathValue proof.');
 const semanticC = semantic.model.paths.get('C');
 if (!semanticC || semanticC.id !== 'PATH-C' || semanticC.nodes.join(',') !== 'A,B,C' || semanticC.edges.join(',') !== 'A->B,B->C') {
   throw new Error('Semantic PathValue diverged from canonical path representation.');
 }
-if (semanticC.provenance.source !== 'HNK-KODE') throw new Error('Semantic PathValue provenance mismatch.');
+if (semanticC.provenance.source !== 'HNK-KODE')
+if (semantic.model.symbols.get('C')?.ref.kind !== 'resolved') throw new Error('Semantic analyzer did not resolve declaration reference.'); throw new Error('Semantic PathValue provenance mismatch.');
 console.log('PASS semantic model uses shared PathValue');
 
 const registry = program.semanticPaths;
