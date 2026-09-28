@@ -1,5 +1,5 @@
 import type { KodeProgram } from './kode.ts';
-import type { KodeDiagnostic } from './kode-diagnostics.ts';
+import { diagnostic, type KodeDiagnostic } from './kode-diagnostics.ts';
 
 export type KodeStaticPath = { start: string; end: string; nodes: string[] };
 
@@ -60,15 +60,15 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
           span: statement.right.span,
         });
       } else if (leftPath.end !== rightPath.start) {
-        diagnostics.push({
-          code: 'E_CONNECTIVITY',
-          message: `Cannot compose "${statement.left.name}" ending at "${leftPath.end}" with "${statement.right.name}" starting at "${rightPath.start}".`,
-          span: statement.left.span,
-          relatedSpans: [
+        diagnostics.push(diagnostic(
+          'E_CONNECTIVITY',
+          `Cannot compose "${statement.left.name}" ending at "${leftPath.end}" with "${statement.right.name}" starting at "${rightPath.start}".`,
+          statement.left.span,
+          [
             { label: 'left operand', span: statement.left.span },
             { label: 'right operand', span: statement.right.span },
           ],
-        });
+        ));
       } else {
         paths.set(statement.name, {
           start: leftPath.start,
