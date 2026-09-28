@@ -4,3 +4,4 @@ export * from './serialization.ts';
 export * from './glyph.ts';
 export * from './ast.ts';
 export * from './ir.ts';
+export * from './runtime.ts';
