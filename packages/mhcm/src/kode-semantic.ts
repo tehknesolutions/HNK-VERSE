@@ -39,10 +39,9 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
   const semanticPaths = new SemanticRegistry<PathValue>();
   const semanticSymbols = new SemanticRegistry<KodeSymbol>();
   const resolver = new SemanticResolver(semanticSymbols, semanticPaths, diagnostics);
-  const declared = new Set<string>();
 
   for (const statement of program.statements) {
-    if (declared.has(statement.name)) {
+    if (semanticSymbols.has(statement.name, 'path')) {
       diagnostics.push(diagnostic('E_DUPLICATE', `Duplicate KODE symbol "${statement.name}".`, statement.nameSpan));
       continue;
     }
@@ -59,7 +58,6 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
       const path = createKodePath(statement.name, statement.nodes.map((node) => node.name), 'declaration');
       semanticPaths.register(path, 'path');
       semanticSymbols.register(declaration, 'path');
-      declared.add(statement.name);
       continue;
     }
 
@@ -76,7 +74,6 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
       const resultPath = createKodePath(statement.name, [...resolvedInput.path.nodes].reverse(), 'reverse');
       semanticPaths.register(resultPath, 'path');
       semanticSymbols.register(declaration, 'path');
-      declared.add(statement.name);
       continue;
     }
 
