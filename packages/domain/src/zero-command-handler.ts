@@ -199,17 +199,41 @@ export function handleZeroCommand(
       const irId = String(payload.irId ?? '');
       const irOp = String(payload.irOp ?? '');
       if (!irId || !irOp) return reject('WORLD_RULE_DENIED', { reason: 'INVALID_MHCM_IR' });
-      return {
-        accepted: true,
-        events: [
-          event(command, 1, 'MhcmIrExecuted', {
-            irId,
-            irOp,
-            executionMode: 'MHCM-RUNTIME-V1',
-          }),
-        ],
-        data: { irId, irOp, executionMode: 'MHCM-RUNTIME-V1' },
-      };
+      const value = payload.value as Record<string, unknown> | undefined;
+      if (irOp === 'PATH_LITERAL') {
+        const nodes = Array.isArray(value?.nodes) ? value.nodes.map(String) : [];
+        const edges = Array.isArray(value?.edges) ? value.edges.map(String) : [];
+        if (nodes.length === 0 || edges.length !== nodes.length - 1) {
+          return reject('WORLD_RULE_DENIED', { reason: 'INVALID_PATH_IR', irId });
+        }
+        return {
+          accepted: true,
+          events: [
+            event(command, 1, 'MhcmIrExecuted', { irId, irOp, executionMode: 'MHCM-RUNTIME-V1' }),
+            event(command, 2, 'MhcmPathExecuted', {
+              irId, nodes, edges,
+              start: String(value?.start ?? nodes[0]),
+              end: String(value?.end ?? nodes[nodes.length - 1]),
+            }, { causationId: command.commandId + ':EV:01' }),
+          ],
+          data: { irId, irOp, nodes, edges, executionMode: 'MHCM-PATH-V1' },
+        };
+      }
+
+      if (irOp === 'GLYPH_LITERAL') {
+        return {
+          accepted: true,
+          events: [
+            event(command, 1, 'MhcmIrExecuted', { irId, irOp, executionMode: 'MHCM-RUNTIME-V1' }),
+            event(command, 2, 'MhcmGlyphExecuted', {
+              irId, encoding: String(value?.encoding ?? ''), transform: String(value?.transform ?? 'IDENTITY'),
+            }, { causationId: command.commandId + ':EV:01' }),
+          ],
+          data: { irId, irOp, executionMode: 'MHCM-GLYPH-V1' },
+        };
+      }
+
+      return reject('WORLD_RULE_DENIED', { reason: 'UNSUPPORTED_MHCM_IR_OP', irId, irOp });
     }
 
     case 'StartSession':
