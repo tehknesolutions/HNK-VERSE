@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-  TECNOMAGE_PRIME_V28,
-  createReferenceAvatarRuntimePlan,
-} from './reference-avatar-runtime.ts';
+import { TECNOMAGE_PRIME_V28 } from './reference-avatar.ts';
+import { createReferenceAvatarRuntimePlan } from './reference-avatar-runtime.ts';
 
 describe('reference avatar runtime adapter', () => {
   it('maps Tecnomage locomotion and actions without importing Three.js', () => {
