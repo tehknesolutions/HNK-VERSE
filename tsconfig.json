@@ -7,6 +7,10 @@
     "noEmit": true,
     "allowImportingTsExtensions": true,
     "skipLibCheck": true,
+    "types": [
+      "vite/client",
+      "vitest/globals"
+    ],
     "lib": [
       "ES2023",
       "DOM"
