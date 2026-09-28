@@ -1,7 +1,11 @@
 import { diagnostic, type KodeDiagnostic } from './kode-diagnostics.ts';
 import { SemanticRegistry, semanticRefKey, type PathValue, type SemanticRef, type UnresolvedSemanticRef } from './model.ts';
 import type { KodeSpan } from './kode.ts';
-import type { KodeSymbol } from './kode-semantic.ts';
+import type { KodeSymbol, KodeType } from './kode-semantic.ts';
+
+export function isPathType(type: KodeType): boolean {
+  return type === 'Path' || type === 'OperatorResultPath';
+}
 
 export type SemanticResolution = {
   ref: SemanticRef;
@@ -34,7 +38,7 @@ export class SemanticResolver {
   resolvePath(ref: UnresolvedSemanticRef, span: KodeSpan, displayName: string): PathResolution | null {
     const resolved = this.resolve(ref, span, displayName);
     if (!resolved) return null;
-    if (resolved.symbol.type !== 'Path' && resolved.symbol.type !== 'OperatorResultPath') {
+    if (!isPathType(resolved.symbol.type)) {
       this.diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${displayName}" is not a Path.`, span));
       return null;
     }
