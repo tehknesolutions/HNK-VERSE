@@ -10,6 +10,8 @@ import {
   MHCM_SCHEMA_VERSION,
   HNK_IR_SCHEMA_VERSION,
   irToRuntimeManifestation,
+  reversePathIr,
+  composePathIr,
   type Cell,
   type Edge,
   type Path,
@@ -75,6 +77,24 @@ if (glyphIr.inputs[0] !== serialized) throw new Error('Glyph IR input mismatch.'
 if (MHCM_SCHEMA_VERSION !== 1) throw new Error('Unexpected MHCM schema version.');
 if (HNK_IR_SCHEMA_VERSION !== 1) throw new Error('Unexpected HNK-IR schema version.');
 
+const reversed = reversePathIr(pathIr);
+if (reversed.value.start !== 'C' || reversed.value.end !== 'A') throw new Error('Path reverse operator mismatch.');
+
+const secondPath: Path = {
+  ...path,
+  id: 'PATH-CDE',
+  start: 'C',
+  nodes: ['C', 'D', 'E'],
+  edges: ['CD', 'DE'],
+  end: 'E',
+};
+const secondIr = astToIr(pathToAst(secondPath));
+const composed = composePathIr(pathIr, secondIr);
+if (JSON.stringify(composed.value.nodes) !== JSON.stringify(['A', 'B', 'C', 'D', 'E'])) {
+  throw new Error('Path composition nodes mismatch.');
+}
+if (composed.inputs.length !== 2) throw new Error('Path composition inputs mismatch.');
+
 const manifestation = irToRuntimeManifestation(glyphIr);
 if (manifestation.commandType !== 'StartSession') throw new Error('Runtime boundary command mismatch.');
 if (manifestation.irId !== glyphIr.id) throw new Error('Runtime boundary lost IR identity.');
@@ -90,3 +110,5 @@ console.log('PASS AST → HNK-IR');
 console.log('PASS Glyph → AST → HNK-IR');
 console.log('PASS schema versions');
 console.log('PASS HNK-IR → HNK-VERSE runtime boundary');
+console.log('PASS PATH_REVERSE operator');
+console.log('PASS PATH_COMPOSE operator');
