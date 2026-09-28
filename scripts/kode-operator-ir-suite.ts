@@ -1,4 +1,4 @@
-import { compileKode, executeMhcmProgram } from '../packages/mhcm/src/index.ts';
+import { analyzeKode, compileKode, executeMhcmProgram, parseKode } from '../packages/mhcm/src/index.ts';
 
 const source = [
   'path A = A -> B;',
@@ -40,3 +40,12 @@ console.log('PASS KODE compose → PATH_COMPOSE');
 console.log('PASS KODE reverse → PATH_REVERSE');
 console.log('PASS compile graph → MHCM program execution');
 console.log('PASS final composed/reversed Path IR');
+
+const semantic = analyzeKode(parseKode(source));
+if (!semantic.ok) throw new Error('Semantic model failed for shared PathValue proof.');
+const semanticC = semantic.model.paths.get('C');
+if (!semanticC || semanticC.id !== 'KODE-PATH-C' || semanticC.nodes.join(',') !== 'A,B,C' || semanticC.edges.join(',') !== 'A->B,B->C') {
+  throw new Error('Semantic PathValue diverged from canonical path representation.');
+}
+if (semanticC.provenance.source !== 'HNK-KODE') throw new Error('Semantic PathValue provenance mismatch.');
+console.log('PASS semantic model uses shared PathValue');
