@@ -61,13 +61,14 @@ const nonPath = typeResolver.resolvePath(createUnresolvedSemanticRef('path', 'NO
 if (!nonPath) throw new Error('OperatorResultPath should be accepted as a Path-compatible type.');
 console.log('PASS Path-compatible type validation');
 
-if (!typeSystem.isPathType('Path') || !typeSystem.isPathType('OperatorResultPath')) throw new Error('Path-compatible predicate rejected a valid type.');
-console.log('PASS isPathType predicate');
-
 const typeSystem = new KodeTypeSystem();
+if (!typeSystem.isPathType('Path') || !typeSystem.isPathType('OperatorResultPath') || !typeSystem.isPathType('SpecialPath')) throw new Error('Path-compatible predicate rejected a valid type.');
+console.log('PASS isPathType predicate');
 if (!typeSystem.isCompatible('Path', 'Path')) throw new Error('Path should be compatible with Path.');
 if (!typeSystem.isCompatible('OperatorResultPath', 'Path')) throw new Error('OperatorResultPath should be Path-compatible.');
 if (typeSystem.isCompatible('Path', 'OperatorResultPath')) throw new Error('Path should not satisfy OperatorResultPath.');
+if (!typeSystem.isSubtypeOf('SpecialPath', 'OperatorResultPath')) throw new Error('SpecialPath should subtype OperatorResultPath.');
+if (!typeSystem.isSubtypeOf('SpecialPath', 'Path')) throw new Error('Recursive subtype resolution failed.');
 const resolvedAsPath = resolver.resolveAs(createUnresolvedSemanticRef('path', 'A'), 'Path', span, 'A');
 if (!resolvedAsPath || resolvedAsPath.ref.kind !== 'resolved') throw new Error('resolveAs(Path) failed.');
 console.log('PASS generalized type compatibility');
