@@ -1,0 +1,28 @@
+name: HV-01 Platform Kernel
+
+on:
+  push:
+    branches:
+      - feature/hv-01-platform-kernel
+  pull_request:
+    paths:
+      - 'packages/world/**'
+      - '.github/workflows/hv-01-platform-kernel.yml'
+
+jobs:
+  platform-kernel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.15.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Platform Kernel invariants
+        run: node --import tsx --test packages/world/src/platform-kernel.test.ts
+      - name: Typecheck
+        run: pnpm typecheck
