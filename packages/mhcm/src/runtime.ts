@@ -1,7 +1,7 @@
 import type { HnkIrNode } from './ir.ts';
 
 export type RuntimeManifestation = {
-  commandType: 'StartSession';
+  commandType: 'ExecuteMhcmIr';
   irId: string;
   irType: HnkIrNode['type'];
   provenance: HnkIrNode['metadata']['provenance'];
@@ -19,7 +19,7 @@ export type RuntimeManifestation = {
  */
 export function irToRuntimeManifestation(ir: HnkIrNode): RuntimeManifestation {
   return {
-    commandType: 'StartSession',
+    commandType: 'ExecuteMhcmIr',
     irId: ir.id,
     irType: ir.type,
     provenance: ir.metadata.provenance,
