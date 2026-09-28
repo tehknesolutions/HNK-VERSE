@@ -58,3 +58,33 @@ test('relation endpoints must already exist', () => {
     data: {},
   }), /endpoint/i);
 });
+
+test('entity input mutations cannot change a stored graph snapshot', () => {
+  const entity: WorldEntity = {
+    id: 'entity:immutable',
+    kind: 'OBJECT',
+    address: { verseId: 'verse:test' },
+    data: { nested: { value: 1 } },
+  };
+  const graph = upsertWorldEntity(createWorldGraph(), entity);
+
+  entity.address.verseId = 'verse:mutated';
+  (entity.data.nested as { value: number }).value = 99;
+
+  assert.equal(graph.entities.get('entity:immutable')?.address.verseId, 'verse:test');
+  assert.deepEqual(graph.entities.get('entity:immutable')?.data, { nested: { value: 1 } });
+});
+
+test('relation input mutations cannot invalidate a stored graph snapshot', () => {
+  let graph = createWorldGraph();
+  graph = upsertWorldEntity(graph, { id: 'entity:a', kind: 'OBJECT', address: { verseId: 'verse:test' }, data: {} });
+  graph = upsertWorldEntity(graph, { id: 'entity:b', kind: 'OBJECT', address: { verseId: 'verse:test' }, data: {} });
+  const relation = { id: 'relation:ab', type: 'LINK', from: 'entity:a', to: 'entity:b', data: { nested: { value: 1 } } };
+  graph = addWorldRelation(graph, relation);
+
+  relation.to = 'entity:missing';
+  relation.data.nested.value = 99;
+
+  assert.equal(graph.relations[0]?.to, 'entity:b');
+  assert.deepEqual(graph.relations[0]?.data, { nested: { value: 1 } });
+});
