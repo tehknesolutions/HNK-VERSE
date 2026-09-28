@@ -1,4 +1,4 @@
-import { parseKode, type KodeProgram } from './kode.ts';
+import { KodeSyntaxError, parseKode, type KodeProgram } from './kode.ts';
 import { astToIr, pathToAst } from './ast.ts';
 import { createProvenance, type Path } from './model.ts';
 import type { MhcmProgram } from './program.ts';
@@ -13,7 +13,11 @@ export function compileKode(source: string): MhcmProgram {
   try {
     ast = parseKode(source);
   } catch (error) {
-    throw new KodeCompileError([{ code: 'E_SYNTAX', message: error instanceof Error ? error.message : String(error) }]);
+    throw new KodeCompileError([{
+      code: 'E_SYNTAX',
+      message: error instanceof Error ? error.message : String(error),
+      span: error instanceof KodeSyntaxError ? error.span : undefined,
+    }]);
   }
 
   const analysis = analyzeKode(ast);
@@ -25,18 +29,18 @@ export function compileKode(source: string): MhcmProgram {
       const provenance = createProvenance('HNK-KODE-KODE0', ['KODE-0'], 'EXPERIMENTAL', 'kode-0@0.1.0');
       const path: Path = {
         id: `PATH-${statement.name}`,
-        start: statement.nodes[0],
-        nodes: statement.nodes,
+        start: statement.nodes[0].name,
+        nodes: statement.nodes.map((node) => node.name),
         edges: statement.nodes.slice(0, -1).map((_, i) => `${statement.nodes[i]}->${statement.nodes[i + 1]}`),
-        end: statement.nodes[statement.nodes.length - 1],
+        end: statement.nodes[statement.nodes.length - 1].name,
         directed: true,
         provenance,
       };
       nodes.push({ id: statement.name, kind: 'IR', ir: astToIr(pathToAst(path)) });
     } else if (statement.kind === 'ReverseStatement') {
-      nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_REVERSE', inputs: [statement.source] });
+      nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_REVERSE', inputs: [statement.source.name] });
     } else {
-      nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_COMPOSE', inputs: [statement.left, statement.right] });
+      nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_COMPOSE', inputs: [statement.left.name, statement.right.name] });
     }
   }
 
@@ -55,7 +59,7 @@ export function tryCompileKode(source: string): KodeCompileResult {
     return {
       ok: false,
       program: null,
-      diagnostics: [{ code: 'E_SYNTAX', message: error instanceof Error ? error.message : String(error) }],
+      diagnostics: [{ code: 'E_SYNTAX', message: error instanceof Error ? error.message : String(error), span: error instanceof KodeSyntaxError ? error.span : undefined }],
     };
   }
 }

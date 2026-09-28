@@ -20,3 +20,8 @@ console.log('PASS duplicate symbol diagnostic');
 console.log('PASS unknown symbol diagnostic');
 console.log('PASS compose symbol diagnostic');
 console.log('PASS connectivity diagnostic');
+
+assertDiagnostic('path A = A -> B; reverse A = A;', 'E_DUPLICATE', 'duplicate reverse symbol');
+assertDiagnostic('path A = A -> B; compose C = A, UNKNOWN;', 'E_SYMBOL', 'unknown right compose symbol');
+console.log('PASS duplicate reverse symbol diagnostic');
+console.log('PASS unknown right compose symbol diagnostic');

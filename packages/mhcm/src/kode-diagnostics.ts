@@ -1,7 +1,10 @@
+import type { KodeSpan } from './kode.ts';
+
 export type KodeDiagnostic = {
   code: 'E_SYNTAX' | 'E_SYMBOL' | 'E_ARITY' | 'E_CONNECTIVITY' | 'E_DUPLICATE';
   message: string;
   position?: number;
+  span?: KodeSpan;
 };
 
 export class KodeCompileError extends Error {
