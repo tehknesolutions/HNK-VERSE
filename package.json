@@ -20,7 +20,7 @@
     "test:reference-avatar": "node --experimental-strip-types scripts/reference-avatar-check.ts",
     "test:knowledge": "node --experimental-strip-types scripts/knowledge-architecture-check.ts",
     "test:codex-sync": "node --experimental-strip-types scripts/codex-sync-agent-context-check.ts",
-    "test:verse-sdk": "node --experimental-strip-types scripts/verse-sdk-contract-check.ts && node --experimental-strip-types scripts/verse-sdk-capability-check.ts && node --experimental-strip-types scripts/verse-sdk-chronicle-boundary-check.ts && node --experimental-strip-types scripts/verse-sdk-transition-check.ts && node --experimental-strip-types scripts/verse-sdk-interop-check.ts && node --experimental-strip-types scripts/verse-sdk-lifecycle-check.ts"
+    "test:verse-sdk": "node --experimental-strip-types scripts/verse-sdk-contract-check.ts && node --experimental-strip-types scripts/verse-sdk-capability-check.ts && node --experimental-strip-types scripts/verse-sdk-chronicle-boundary-check.ts && node --experimental-strip-types scripts/verse-sdk-transition-check.ts && node --experimental-strip-types scripts/verse-sdk-interop-check.ts && node --experimental-strip-types scripts/verse-sdk-lifecycle-check.ts && node --experimental-strip-types scripts/verse-sdk-zero-e2e-check.ts"
   },
   "devDependencies": {
     "typescript": "5.8.3", "vite": "8.3.0", "vitest": "3.2.4",
