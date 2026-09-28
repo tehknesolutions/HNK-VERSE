@@ -1,0 +1,13 @@
+import { InteropEngine } from '@hnk-verse/sdk';
+const assert=(x:unknown,m:string):asserts x=>{if(!x)throw new Error('VERSE_SDK_INTEROP_CHECK_FAILED: '+m)};
+let n=0; const engine=new InteropEngine({allocateResultRef:()=>`RESULT-T5-${++n}`});
+const base={sourceRef:'ENTITY-ZERO-001',sourceAuthority:'verse-zero',targetContextRef:'VERSE-ZERO-A-001',contractVersion:'0.1'};
+const reference=engine.execute({...base,outcome:'REFERENCE'}); assert(reference.kind==='REFERENCE'&&reference.sourceRef===base.sourceRef,'reference must preserve identity as reference');
+const project=engine.execute({...base,outcome:'PROJECT'}); assert(project.kind==='PROJECT'&&project.projectionRef==='RESULT-T5-1','project must allocate projection ref');
+const translate=engine.execute({...base,outcome:'TRANSLATE',mapperRef:'MAPPER-HNK-001'}); assert(translate.kind==='TRANSLATE'&&translate.mapperRef==='MAPPER-HNK-001','translate must require mapper');
+const denied=engine.execute({...base,outcome:'TRANSLATE'}); assert(denied.kind==='REJECT'&&denied.reason==='TRANSLATION_MAPPER_REQUIRED','translation without mapper must reject');
+const transfer=engine.execute({...base,outcome:'TRANSFER'}); assert(transfer.kind==='TRANSFER'&&transfer.resultRef==='RESULT-T5-2','transfer must allocate result');
+const clone=engine.execute({...base,outcome:'CLONE'}); assert(clone.kind==='CLONE'&&clone.resultRef==='RESULT-T5-3','clone must allocate result');
+const reject=engine.execute({...base,outcome:'REJECT',reason:'TARGET_POLICY'}); assert(reject.kind==='REJECT'&&reject.reason==='TARGET_POLICY','explicit rejection must preserve reason');
+for(const outcome of [reference,project,translate,transfer,clone]) assert(outcome.provenance.targetContextRef===base.targetContextRef,'provenance must preserve target context');
+console.log('VERSE_SDK_INTEROP_CHECK_PASS');
