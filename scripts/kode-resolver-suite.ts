@@ -51,3 +51,11 @@ let duplicateRejected = false;
 try { duplicateRegistry.register(symbol, 'path'); } catch { duplicateRejected = true; }
 if (!duplicateRejected) throw new Error('SemanticRegistry accepted duplicate semantic symbol.');
 console.log('PASS registry owns duplicate identity');
+
+const nonPathSymbol = { ...symbol, name: 'NOT_PATH', type: 'OperatorResultPath' as const };
+const typeRegistry = new SemanticRegistry<KodeSymbol>();
+typeRegistry.register(nonPathSymbol, 'path');
+const typeResolver = new SemanticResolver(typeRegistry, paths, diagnostics);
+const nonPath = typeResolver.resolvePath(createUnresolvedSemanticRef('path', 'NOT_PATH'), span, 'NOT_PATH');
+if (!nonPath) throw new Error('OperatorResultPath should be accepted as a Path-compatible type.');
+console.log('PASS Path-compatible type validation');
