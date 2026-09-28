@@ -1,5 +1,5 @@
 import { SemanticRegistry, createUnresolvedSemanticRef, type KodeSymbol, type SemanticRef } from '../packages/mhcm/src/model.ts';
-import { SemanticResolver } from '../packages/mhcm/src/kode-resolver.ts';
+import { isPathType, SemanticResolver } from '../packages/mhcm/src/kode-resolver.ts';
 import { KodeDiagnostic } from '../packages/mhcm/src/kode-diagnostics.ts';
 
 const span = { start: 0, end: 1, line: 1, column: 1 };
@@ -59,3 +59,6 @@ const typeResolver = new SemanticResolver(typeRegistry, paths, diagnostics);
 const nonPath = typeResolver.resolvePath(createUnresolvedSemanticRef('path', 'NOT_PATH'), span, 'NOT_PATH');
 if (!nonPath) throw new Error('OperatorResultPath should be accepted as a Path-compatible type.');
 console.log('PASS Path-compatible type validation');
+
+if (!isPathType('Path') || !isPathType('OperatorResultPath')) throw new Error('Path-compatible predicate rejected a valid type.');
+console.log('PASS isPathType predicate');
