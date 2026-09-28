@@ -236,8 +236,14 @@ export function handleZeroCommand(
             event(command, 2, 'MhcmOperatorExecuted', {
               irId, operator, inputs, executionMode: 'MHCM-OPERATOR-V1',
             }, { causationId: command.commandId + ':EV:01' }),
+            event(command, 3, 'MhcmOperatorResultProduced', {
+              irId,
+              operator,
+              resultIrId: irId + ':RESULT',
+              resultType: operator === 'PATH_REVERSE' || operator === 'PATH_COMPOSE' ? 'Path' : 'Unknown',
+            }, { causationId: command.commandId + ':EV:02' }),
           ],
-          data: { irId, irOp, operator, inputs, executionMode: 'MHCM-OPERATOR-V1' },
+          data: { irId, irOp, operator, inputs, resultIrId: irId + ':RESULT', executionMode: 'MHCM-OPERATOR-V1' },
         };
       }
 
