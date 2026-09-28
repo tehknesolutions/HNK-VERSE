@@ -26,6 +26,7 @@
     "test:verse-sdk": "node --experimental-strip-types scripts/verse-sdk-contract-check.ts && node --experimental-strip-types scripts/verse-sdk-capability-check.ts && node --experimental-strip-types scripts/verse-sdk-chronicle-boundary-check.ts && node --experimental-strip-types scripts/verse-sdk-transition-check.ts && node --experimental-strip-types scripts/verse-sdk-interop-check.ts && node --experimental-strip-types scripts/verse-sdk-lifecycle-check.ts && node --experimental-strip-types scripts/verse-sdk-zero-e2e-check.ts"
   },
   "devDependencies": {
+    "@types/node": "26.6.3",
     "typescript": "5.8.3", "vite": "8.3.0", "vitest": "3.2.4", "tsx": "4.20.6",
     "@hnk-verse/mhcm": "workspace:*",
     "@hnk-verse/chronicle": "workspace:*", "@hnk-verse/contracts": "workspace:*", "@hnk-verse/domain": "workspace:*", "@hnk-verse/fixtures": "workspace:*", "@hnk-verse/persistence": "workspace:*", "@hnk-verse/renderer": "workspace:*", "@hnk-verse/simulation": "workspace:*", "@hnk-verse/world": "workspace:*", "@hnk-verse/sdk": "workspace:*"
