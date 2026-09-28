@@ -1,3 +1,5 @@
+import type { ContractVersion } from './sdk-context.ts';
+
 export const CAPABILITY_SUPPORT_STATES = [
   'SUPPORTED',
   'UNSUPPORTED',
