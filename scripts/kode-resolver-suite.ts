@@ -43,3 +43,11 @@ console.log('PASS missing symbol → E_SYMBOL');
 console.log('PASS wrong namespace → E_SYMBOL');
 
 console.log('PASS symbol + PathValue atomic resolution');
+
+const duplicateRegistry = new SemanticRegistry<KodeSymbol>();
+duplicateRegistry.register(symbol, 'path');
+if (!duplicateRegistry.has('A', 'path')) throw new Error('Registry duplicate precondition failed.');
+let duplicateRejected = false;
+try { duplicateRegistry.register(symbol, 'path'); } catch { duplicateRejected = true; }
+if (!duplicateRejected) throw new Error('SemanticRegistry accepted duplicate semantic symbol.');
+console.log('PASS registry owns duplicate identity');
