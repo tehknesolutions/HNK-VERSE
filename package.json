@@ -3,12 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@10.17.1",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "check": "pnpm typecheck && pnpm test && pnpm web:build",
     "lint": "pnpm -r --if-present lint",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "pnpm test:zero && pnpm test:persistence-schema && pnpm test:web-local && pnpm test:chronicle && pnpm test:spatial && pnpm test:path-routing && pnpm test:reference-avatar && pnpm test:knowledge && pnpm test:codex-sync",
+    "test": "pnpm test:verse-sdk && pnpm test:zero && pnpm test:persistence-schema && pnpm test:web-local && pnpm test:chronicle && pnpm test:spatial && pnpm test:path-routing && pnpm test:reference-avatar && pnpm test:knowledge && pnpm test:codex-sync",
     "test:zero": "node --experimental-strip-types scripts/zero-runtime-check.ts",
     "test:persistence-schema": "node scripts/zero-persistence-schema-check.mjs",
     "web:dev": "pnpm --filter @hnk-verse/web dev",
@@ -19,7 +21,8 @@
     "test:path-routing": "node --experimental-strip-types scripts/zero-path-routing-check.ts",
     "test:reference-avatar": "node --experimental-strip-types scripts/reference-avatar-check.ts",
     "test:knowledge": "node --experimental-strip-types scripts/knowledge-architecture-check.ts",
-    "test:codex-sync": "node --experimental-strip-types scripts/codex-sync-agent-context-check.ts"
+    "test:codex-sync": "node --experimental-strip-types scripts/codex-sync-agent-context-check.ts",
+    "test:verse-sdk": "node --experimental-strip-types scripts/verse-sdk-contract-check.ts && node --experimental-strip-types scripts/verse-sdk-capability-check.ts"
   },
   "devDependencies": {
     "typescript": "5.8.3",
@@ -32,7 +35,8 @@
     "@hnk-verse/persistence": "workspace:*",
     "@hnk-verse/renderer": "workspace:*",
     "@hnk-verse/simulation": "workspace:*",
-    "@hnk-verse/world": "workspace:*"
+    "@hnk-verse/world": "workspace:*",
+    "@hnk-verse/sdk": "workspace:*"
   },
   "type": "module"
 }
