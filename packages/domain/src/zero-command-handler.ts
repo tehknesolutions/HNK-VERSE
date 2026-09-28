@@ -195,6 +195,23 @@ export function handleZeroCommand(
   const payload = payloadOf(command);
 
   switch (command.commandType) {
+    case 'ExecuteMhcmIr': {
+      const irId = String(payload.irId ?? '');
+      const irOp = String(payload.irOp ?? '');
+      if (!irId || !irOp) return reject('WORLD_RULE_DENIED', { reason: 'INVALID_MHCM_IR' });
+      return {
+        accepted: true,
+        events: [
+          event(command, 1, 'MhcmIrExecuted', {
+            irId,
+            irOp,
+            executionMode: 'MHCM-RUNTIME-V1',
+          }),
+        ],
+        data: { irId, irOp, executionMode: 'MHCM-RUNTIME-V1' },
+      };
+    }
+
     case 'StartSession':
       return {
         accepted: true,
