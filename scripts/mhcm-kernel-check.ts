@@ -195,7 +195,7 @@ if (executedCompose.result.value.end !== 'E') throw new Error('Operator executor
 if (executedCompose.result.inputs.length !== 2) throw new Error('Operator executor lost input provenance.');
 
 const manifestation = irToRuntimeManifestation(glyphIr);
-if (manifestation.commandType !== 'StartSession') throw new Error('Runtime boundary command mismatch.');
+if (manifestation.commandType !== 'ExecuteMhcmIr') throw new Error('Runtime boundary command mismatch.');
 if (manifestation.irId !== glyphIr.id) throw new Error('Runtime boundary lost IR identity.');
 if (manifestation.payload.irOp !== glyphIr.op) throw new Error('Runtime boundary lost IR operation.');
 
