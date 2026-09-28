@@ -99,3 +99,22 @@ const invalidCategoryTypes = {
 const categoryResult = validateKodeTypeDefinitions(invalidCategoryTypes);
 if (categoryResult.ok || !categoryResult.errors.some((error) => error.includes('cannot inherit'))) throw new Error('Invalid type category inheritance was not detected.');
 console.log('PASS type category validation');
+
+const malformedDescriptors = {
+  Path: { id: 'WrongPathId' as 'Path', category: 'value' as const, parents: [] as const },
+  OperatorResultPath: KODE_TYPES.OperatorResultPath,
+  SpecialPath: KODE_TYPES.SpecialPath,
+};
+const descriptorResult = validateKodeTypeDefinitions(malformedDescriptors);
+if (descriptorResult.ok || !descriptorResult.errors.some((error) => error.includes('does not match descriptor id'))) throw new Error('Descriptor key/id mismatch was not detected.');
+const invalidMetadata = {
+  Path: { id: 'Path' as const, category: 'invalid' as 'value', parents: [] as const },
+  OperatorResultPath: KODE_TYPES.OperatorResultPath,
+  SpecialPath: KODE_TYPES.SpecialPath,
+};
+const metadataResult = validateKodeTypeDefinitions(invalidMetadata);
+if (metadataResult.ok || !metadataResult.errors.some((error) => error.includes('invalid category'))) throw new Error('Invalid descriptor category was not detected.');
+let unknownTypeRejected = false;
+try { typeSystem.get('UnknownType' as 'Path'); } catch { unknownTypeRejected = true; }
+if (!unknownTypeRejected) throw new Error('Unknown KODE type was not rejected.');
+console.log('PASS type descriptor integrity');
