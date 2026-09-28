@@ -17,3 +17,4 @@ export * from './kode-diagnostics.ts';
 export * from './kode-result.ts';
 export * from './kode-semantic.ts';
 export * from './kode-resolver.ts';
+export * from './kode-types.ts';
