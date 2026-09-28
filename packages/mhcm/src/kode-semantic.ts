@@ -1,4 +1,5 @@
 import type { KodeProgram, KodeSpan } from './kode.ts';
+import { createProvenance, type PathValue } from './model.ts';
 import { diagnostic, type KodeDiagnostic } from './kode-diagnostics.ts';
 
 export type KodeType = 'Path' | 'OperatorResultPath';
@@ -10,13 +11,26 @@ export type KodeSymbol = {
   origin: 'declaration' | 'operator';
 };
 
-export type KodeStaticPath = { start: string; end: string; nodes: string[] };
+export type KodeStaticPath = PathValue;
 
 export type KodeSemanticModel = {
   program: KodeProgram;
   paths: Map<string, KodeStaticPath>;
   symbols: Map<string, KodeSymbol>;
 };
+
+function createKodePath(name: string, nodes: string[], operation: 'declaration' | 'reverse' | 'compose'): PathValue {
+  const edges = nodes.slice(0, -1).map((node, index) => `${node}->${nodes[index + 1]}`);
+  return {
+    id: `KODE-PATH-${name}`,
+    start: nodes[0],
+    nodes: [...nodes],
+    edges,
+    end: nodes[nodes.length - 1],
+    directed: true,
+    provenance: createProvenance('HNK-KODE', ['KODE-0'], 'EXPERIMENTAL', `kode-0.2-${operation}`),
+  };
+}
 
 export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemanticModel; diagnostics: [] } | { ok: false; model: null; diagnostics: KodeDiagnostic[] } {
   const diagnostics: KodeDiagnostic[] = [];
@@ -38,11 +52,7 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
     };
 
     if (statement.kind === 'PathDeclaration') {
-      paths.set(statement.name, {
-        start: statement.nodes[0].name,
-        end: statement.nodes[statement.nodes.length - 1].name,
-        nodes: statement.nodes.map((node) => node.name),
-      });
+      paths.set(statement.name, createKodePath(statement.name, statement.nodes.map((node) => node.name), 'declaration'));
       symbols.set(statement.name, declaration);
     } else if (statement.kind === 'ReverseStatement') {
       const input = symbols.get(statement.source.name);
@@ -52,7 +62,7 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
       } else if (input.type !== 'Path' && input.type !== 'OperatorResultPath') {
         diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${statement.source.name}" is not a Path.`, statement.source.span));
       } else {
-        paths.set(statement.name, { start: path.end, end: path.start, nodes: [...path.nodes].reverse() });
+        paths.set(statement.name, createKodePath(statement.name, [...path.nodes].reverse(), 'reverse'));
         symbols.set(statement.name, declaration);
       }
     } else {
@@ -80,11 +90,7 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
           ],
         ));
       } else {
-        paths.set(statement.name, {
-          start: leftPath.start,
-          end: rightPath.end,
-          nodes: [...leftPath.nodes, ...rightPath.nodes.slice(1)],
-        });
+        paths.set(statement.name, createKodePath(statement.name, [...leftPath.nodes, ...rightPath.nodes.slice(1)], 'compose'));
         symbols.set(statement.name, declaration);
       }
     }
