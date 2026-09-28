@@ -16,6 +16,7 @@ import {
   typeCheckOperator,
   executeMhcmOperator,
   executeMhcmPipeline,
+  executeMhcmProgram,
   type Cell,
   type Edge,
   type Path,
@@ -120,6 +121,22 @@ if (pipeline.results[1].value.start !== 'C' || pipeline.results[1].value.end !==
   throw new Error('Composed pipeline result mismatch.');
 }
 
+const program = executeMhcmProgram({
+  id: 'PROGRAM-MHCM-001',
+  version: '0.1',
+  nodes: [
+    { id: 'A', kind: 'IR', ir: pathIr },
+    { id: 'A-REV', kind: 'OPERATOR', operator: 'PATH_REVERSE', inputs: ['A'] },
+    { id: 'B', kind: 'IR', ir: secondIr },
+    { id: 'RESULT', kind: 'OPERATOR', operator: 'PATH_COMPOSE', inputs: ['A-REV', 'B'] },
+  ],
+  outputs: ['RESULT'],
+});
+if (program.outputs.length !== 1) throw new Error('Program output count mismatch.');
+if (program.outputs[0].value.start !== 'C' || program.outputs[0].value.end !== 'E') {
+  throw new Error('Program graph result mismatch.');
+}
+
 const executedCompose = executeMhcmOperator('PATH_COMPOSE', [pathIr, secondIr]);
 if (executedCompose.result.value.end !== 'E') throw new Error('Operator executor result mismatch.');
 if (executedCompose.result.inputs.length !== 2) throw new Error('Operator executor lost input provenance.');
@@ -145,3 +162,4 @@ console.log('PASS operator type checking');
 console.log('PASS operator → HNK-IR lowering');
 console.log('PASS operator executor produces result IR');
 console.log('PASS composable operator pipeline');
+console.log('PASS formal program graph execution');
