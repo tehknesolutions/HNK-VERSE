@@ -111,6 +111,42 @@ assert(result.data?.executionMode === 'MHCM-GLYPH-V1', 'Runtime did not select G
 assert(result.state.mhcmGlyphExecutions?.includes(glyphIr.id), 'Runtime state did not record Glyph execution.');
 assert(resultProduced === undefined, 'Glyph execution unexpectedly produced an operator result.');
 
+const program = {
+  id: 'PROGRAM-MHCM-RUNTIME-001',
+  version: '0.1' as const,
+  nodes: [
+    { id: 'P-A', kind: 'IR' as const, ir: ir },
+    { id: 'P-B', kind: 'IR' as const, ir: glyphIr },
+    { id: 'P-REV', kind: 'OPERATOR' as const, operator: 'PATH_REVERSE' as const, inputs: ['P-A'] },
+    { id: 'P-COMPOSE', kind: 'OPERATOR' as const, operator: 'PATH_COMPOSE' as const, inputs: ['P-REV', 'P-B'] },
+  ],
+  outputs: ['P-COMPOSE'],
+};
+
+const programCommand: HnkCommand<Record<string, unknown>> = {
+  commandId: 'MHCM-PROGRAM-RUNTIME-001',
+  commandType: 'ExecuteMhcmProgram',
+  schemaVersion: 1,
+  actorId: ZERO_IDS.avatar,
+  verseId: ZERO_IDS.verse,
+  worldId: ZERO_IDS.world,
+  sessionId: 'SESSION-MHCM-PROGRAM-001',
+  issuedAtReal: '2026-09-28T00:00:01Z',
+  issuedAtWorld: ZERO_FIXTURE_V1_INITIAL_STATE.worldTime,
+  correlationId: 'CORR:MHCM-PROGRAM-RUNTIME-001',
+  idempotencyKey: 'IDEMP:MHCM-PROGRAM-RUNTIME-001',
+  payload: program,
+};
+
+const programResult = await runtime.execute(programCommand);
+assert(programResult.accepted, `MHCM program execution rejected: ${programResult.rejectionCode}`);
+assert(programResult.data?.programId === program.id, 'Program execution lost identity.');
+assert(programResult.state.mhcmProgramExecutions?.some((entry) => entry.programId === program.id), 'World state did not record program execution.');
+
+const programEvents = await store.allEvents(ZERO_IDS.world);
+const programExecuted = programEvents.find((event) => event.eventType === 'MhcmProgramExecuted');
+assert(programExecuted, 'Missing MhcmProgramExecuted event.');
+
 console.log('MHCM runtime proof: PASS');
 console.log('PASS MHCM Path → Glyph → AST → HNK-IR');
 console.log('PASS HNK-IR → ExecuteMhcmIr command');
@@ -118,3 +154,4 @@ console.log('PASS runtime accepted IR');
 console.log('PASS MhcmIrExecuted event emitted');
 console.log('PASS semantic Glyph execution');
 console.log('PASS world state recorded MHCM execution');
+console.log('PASS complete MHCM program executed as one runtime unit');
