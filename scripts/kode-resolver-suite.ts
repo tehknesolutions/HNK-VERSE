@@ -1,5 +1,5 @@
 import { SemanticRegistry, createUnresolvedSemanticRef, type KodeSymbol, type SemanticRef } from '../packages/mhcm/src/model.ts';
-import { isPathType, SemanticResolver } from '../packages/mhcm/src/kode-resolver.ts';
+import { isPathType, isTypeCompatible, SemanticResolver } from '../packages/mhcm/src/kode-resolver.ts';
 import { KodeDiagnostic } from '../packages/mhcm/src/kode-diagnostics.ts';
 
 const span = { start: 0, end: 1, line: 1, column: 1 };
@@ -62,3 +62,10 @@ console.log('PASS Path-compatible type validation');
 
 if (!isPathType('Path') || !isPathType('OperatorResultPath')) throw new Error('Path-compatible predicate rejected a valid type.');
 console.log('PASS isPathType predicate');
+
+if (!isTypeCompatible('Path', 'Path')) throw new Error('Path should be compatible with Path.');
+if (!isTypeCompatible('OperatorResultPath', 'Path')) throw new Error('OperatorResultPath should be Path-compatible.');
+if (isTypeCompatible('Path', 'OperatorResultPath')) throw new Error('Path should not satisfy OperatorResultPath.');
+const resolvedAsPath = resolver.resolveAs(createUnresolvedSemanticRef('path', 'A'), 'Path', span, 'A');
+if (!resolvedAsPath || resolvedAsPath.ref.kind !== 'resolved') throw new Error('resolveAs(Path) failed.');
+console.log('PASS generalized type compatibility');
