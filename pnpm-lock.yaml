@@ -35,6 +35,12 @@ importers:
       typescript:
         specifier: 5.8.3
         version: 5.8.3
+      vite:
+        specifier: 8.3.0
+        version: 8.3.0(@types/node@26.6.2)(esbuild@0.28.2)
+      vitest:
+        specifier: 3.2.4
+        version: 3.2.4(@types/node@26.6.2)(lightningcss@1.33.0)
 
   apps/web:
     dependencies:
