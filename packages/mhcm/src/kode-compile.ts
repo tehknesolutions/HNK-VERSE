@@ -2,13 +2,13 @@ import { parseKode, type KodeProgram } from './kode.ts';
 import { astToIr, pathToAst } from './ast.ts';
 import { createProvenance, type Path } from './model.ts';
 import type { MhcmProgram } from './program.ts';
-import { KodeCompileError, type KodeDiagnostic } from './kode-diagnostics.ts';
+import { KodeCompileError } from './kode-diagnostics.ts';
+import { analyzeKode } from './kode-semantic.ts';
 import type { KodeCompileResult } from './kode-result.ts';
 
 type StaticPath = { start: string; end: string; nodes: string[] };
 
 export function compileKode(source: string): MhcmProgram {
-  const diagnostics: KodeDiagnostic[] = [];
   let ast: KodeProgram;
   try {
     ast = parseKode(source);
@@ -16,17 +16,11 @@ export function compileKode(source: string): MhcmProgram {
     throw new KodeCompileError([{ code: 'E_SYNTAX', message: error instanceof Error ? error.message : String(error) }]);
   }
 
+  const analysis = analyzeKode(ast);
+  if (!analysis.ok) throw new KodeCompileError(analysis.diagnostics);
+
   const nodes: MhcmProgram['nodes'] = [];
-  const symbols = new Map<string, string>();
-  const paths = new Map<string, StaticPath>();
-  const declared = new Set<string>();
-
   for (const statement of ast.statements) {
-    if (declared.has(statement.name)) {
-      diagnostics.push({ code: 'E_DUPLICATE', message: `Duplicate KODE symbol "${statement.name}".` });
-      continue;
-    }
-
     if (statement.kind === 'PathDeclaration') {
       const provenance = createProvenance('HNK-KODE-KODE0', ['KODE-0'], 'EXPERIMENTAL', 'kode-0@0.1.0');
       const path: Path = {
@@ -39,50 +33,12 @@ export function compileKode(source: string): MhcmProgram {
         provenance,
       };
       nodes.push({ id: statement.name, kind: 'IR', ir: astToIr(pathToAst(path)) });
-      paths.set(statement.name, { start: path.start, end: path.end, nodes: [...path.nodes] });
-      symbols.set(statement.name, statement.name);
     } else if (statement.kind === 'ReverseStatement') {
-      const input = symbols.get(statement.source);
-      const staticPath = paths.get(statement.source);
-      if (!input || !staticPath) {
-        diagnostics.push({ code: 'E_SYMBOL', message: `Unknown KODE symbol "${statement.source}".` });
-      } else {
-        nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_REVERSE', inputs: [input] });
-        paths.set(statement.name, {
-          start: staticPath.end,
-          end: staticPath.start,
-          nodes: [...staticPath.nodes].reverse(),
-        });
-      }
-      symbols.set(statement.name, statement.name);
+      nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_REVERSE', inputs: [statement.source] });
     } else {
-      const left = symbols.get(statement.left);
-      const right = symbols.get(statement.right);
-      const leftPath = paths.get(statement.left);
-      const rightPath = paths.get(statement.right);
-
-      if (!left || !right || !leftPath || !rightPath) {
-        diagnostics.push({ code: 'E_SYMBOL', message: `Unknown KODE symbol in compose "${statement.name}".` });
-      } else if (leftPath.end !== rightPath.start) {
-        diagnostics.push({
-          code: 'E_CONNECTIVITY',
-          message: `Cannot compose "${statement.left}" ending at "${leftPath.end}" with "${statement.right}" starting at "${rightPath.start}".`,
-        });
-      } else {
-        nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_COMPOSE', inputs: [left, right] });
-        paths.set(statement.name, {
-          start: leftPath.start,
-          end: rightPath.end,
-          nodes: [...leftPath.nodes, ...rightPath.nodes.slice(1)],
-        });
-      }
-      symbols.set(statement.name, statement.name);
+      nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_COMPOSE', inputs: [statement.left, statement.right] });
     }
-
-    declared.add(statement.name);
   }
-
-  if (diagnostics.length) throw new KodeCompileError(diagnostics);
 
   return {
     id: 'KODE-PROGRAM',
@@ -91,7 +47,6 @@ export function compileKode(source: string): MhcmProgram {
     outputs: nodes.length ? [nodes[nodes.length - 1].id] : [],
   };
 }
-
 export function tryCompileKode(source: string): KodeCompileResult {
   try {
     return { ok: true, program: compileKode(source), diagnostics: [] };
