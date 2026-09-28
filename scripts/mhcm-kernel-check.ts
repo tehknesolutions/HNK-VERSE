@@ -38,6 +38,18 @@ if (kodeAst.statements.length !== 4) throw new Error('KODE parser statement coun
 const kodeProgram = compileKode(kodeSource);
 if (kodeProgram.outputs[0] !== 'FINAL') throw new Error('KODE compiler output mismatch.');
 const kodeResult = executeMhcmProgram(kodeProgram);
+const invalidKode = \`
+path X = X -> Y;
+path Z = Z -> W;
+compose BAD = X, Z;
+\`;
+try {
+  compileKode(invalidKode);
+  throw new Error('Invalid KODE connectivity was accepted.');
+} catch (error) {
+  if (!(error instanceof Error) || !error.message.includes('Cannot compose')) throw error;
+}
+
 if (kodeResult.outputs[0].value.start !== 'E' || kodeResult.outputs[0].value.end !== 'A') {
   throw new Error('KODE compiled program result mismatch.');
 }
@@ -187,3 +199,4 @@ console.log('PASS KODE-0 lexer');
 console.log('PASS KODE-0 parser');
 console.log('PASS KODE-0 → Program Graph compiler');
 console.log('PASS KODE-0 execution');
+console.log('PASS KODE-0 static connectivity/type validation');
