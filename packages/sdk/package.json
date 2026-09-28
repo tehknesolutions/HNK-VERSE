@@ -1,0 +1,7 @@
+{
+  "name": "@hnk-verse/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {"@hnk-verse/contracts": "workspace:*"}
+}
