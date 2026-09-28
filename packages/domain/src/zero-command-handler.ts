@@ -263,6 +263,40 @@ export function handleZeroCommand(
       return reject('WORLD_RULE_DENIED', { reason: 'UNSUPPORTED_MHCM_IR_OP', irId, irOp });
     }
 
+    case 'ExecuteMhcmProgram': {
+      const programId = String(payload.programId ?? '');
+      const nodes = Array.isArray(payload.nodes) ? payload.nodes : [];
+      const outputs = Array.isArray(payload.outputs) ? payload.outputs.map(String) : [];
+      if (!programId || nodes.length === 0 || outputs.length === 0) {
+        return reject('WORLD_RULE_DENIED', { reason: 'INVALID_MHCM_PROGRAM', programId });
+      }
+      const nodeIds = nodes.map((node) => String((node as Record<string, unknown>).id ?? ''));
+      if (nodeIds.some((id) => !id) || new Set(nodeIds).size !== nodeIds.length) {
+        return reject('WORLD_RULE_DENIED', { reason: 'INVALID_MHCM_PROGRAM_NODE_IDS', programId });
+      }
+      const missingOutputs = outputs.filter((id) => !nodeIds.includes(id));
+      if (missingOutputs.length) {
+        return reject('WORLD_RULE_DENIED', { reason: 'INVALID_MHCM_PROGRAM_OUTPUTS', programId, missingOutputs });
+      }
+      return {
+        accepted: true,
+        events: [
+          event(command, 1, 'MhcmProgramExecuted', {
+            programId,
+            nodeCount: nodes.length,
+            outputIds: outputs,
+            executionMode: 'MHCM-PROGRAM-V1',
+          }),
+        ],
+        data: {
+          programId,
+          nodeCount: nodes.length,
+          outputIds: outputs,
+          executionMode: 'MHCM-PROGRAM-V1',
+        },
+      };
+    }
+
     case 'StartSession':
       return {
         accepted: true,
