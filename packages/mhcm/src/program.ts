@@ -6,12 +6,38 @@ export type MhcmProgramNode =
   | { id: string; kind: 'IR'; ir: HnkIrNode }
   | { id: string; kind: 'OPERATOR'; operator: 'PATH_REVERSE' | 'PATH_COMPOSE'; inputs: string[]; resultType: 'OperatorResultPath'; semanticPathId: string };
 
+
+export class SemanticPathRegistry {
+  private readonly paths = new Map<string, PathValue>();
+
+  constructor(paths: Record<string, PathValue> = {}) {
+    for (const path of Object.values(paths)) this.registerPath(path);
+  }
+
+  registerPath(path: PathValue): void {
+    if (this.paths.has(path.id)) throw new Error(`Duplicate semantic PathValue: ${path.id}`);
+    this.paths.set(path.id, path);
+  }
+
+  hasPath(id: string): boolean {
+    return this.paths.has(id);
+  }
+
+  getPath(id: string): PathValue | undefined {
+    return this.paths.get(id);
+  }
+
+  toRecord(): Record<string, PathValue> {
+    return Object.fromEntries(this.paths.entries());
+  }
+}
+
 export type MhcmProgram = {
   id: string;
   version: '0.1';
   nodes: MhcmProgramNode[];
   outputs: string[];
-  semanticPaths: Record<string, PathValue>;
+  semanticPaths: SemanticPathRegistry;
 };
 
 export type MhcmProgramResult = {
@@ -38,7 +64,7 @@ export function executeMhcmProgram(program: MhcmProgram): MhcmProgramResult {
 
     const result = executeMhcmOperator(node.operator, inputs).result;
     if (result.type !== 'Path' || result.op !== 'PATH_LITERAL') throw new Error(`Operator ${node.id} did not produce a Path literal.`);
-    const expected = program.semanticPaths[node.semanticPathId];
+    const expected = program.semanticPaths.getPath(node.semanticPathId);
     if (!expected) throw new Error(`Semantic PathValue ${node.semanticPathId} is unavailable.`);
     const actual = result.value;
     const actualNodes = Array.isArray(actual.nodes) ? actual.nodes.map(String) : [];
