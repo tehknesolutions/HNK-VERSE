@@ -12,6 +12,8 @@ import {
   irToRuntimeManifestation,
   reversePathIr,
   composePathIr,
+  operatorToIr,
+  typeCheckOperator,
   type Cell,
   type Edge,
   type Path,
@@ -95,6 +97,16 @@ if (JSON.stringify(composed.value.nodes) !== JSON.stringify(['A', 'B', 'C', 'D',
 }
 if (composed.inputs.length !== 2) throw new Error('Path composition inputs mismatch.');
 
+const typeCheckedReverse = typeCheckOperator('PATH_REVERSE', [pathIr]);
+if (!typeCheckedReverse.ok) throw new Error('PATH_REVERSE type check failed.');
+const typeCheckedCompose = typeCheckOperator('PATH_COMPOSE', [pathIr, secondIr]);
+if (!typeCheckedCompose.ok) throw new Error('PATH_COMPOSE type check failed.');
+const invalidTypeCheck = typeCheckOperator('PATH_COMPOSE', [pathIr]);
+if (invalidTypeCheck.ok) throw new Error('Invalid operator arity was accepted.');
+
+const operatorIr = operatorToIr('PATH_COMPOSE', [pathIr, secondIr], pathIr.metadata.provenance);
+if (operatorIr.op !== 'MHCM_OPERATOR' || operatorIr.inputs.length !== 2) throw new Error('Operator IR lowering mismatch.');
+
 const manifestation = irToRuntimeManifestation(glyphIr);
 if (manifestation.commandType !== 'StartSession') throw new Error('Runtime boundary command mismatch.');
 if (manifestation.irId !== glyphIr.id) throw new Error('Runtime boundary lost IR identity.');
@@ -112,3 +124,5 @@ console.log('PASS schema versions');
 console.log('PASS HNK-IR → HNK-VERSE runtime boundary');
 console.log('PASS PATH_REVERSE operator');
 console.log('PASS PATH_COMPOSE operator');
+console.log('PASS operator type checking');
+console.log('PASS operator → HNK-IR lowering');
