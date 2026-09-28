@@ -23,17 +23,17 @@ export function compileKode(source: string): MhcmProgram {
     if (statement.kind === 'PathDeclaration') {
       const path = analysis.model.paths.get(statement.name);
       if (!path) throw new Error(`Semantic PathValue missing for "${statement.name}".`);
-      semanticPaths.registerPath(path);
+      semanticPaths.register(path, 'path');
       nodes.push({ id: statement.name, kind: 'IR', ir: astToIr(pathToAst(path)) });
     } else if (statement.kind === 'ReverseStatement') {
       const semanticPath = analysis.model.paths.get(statement.name);
       if (!semanticPath) throw new Error(`Semantic PathValue missing for operator result "${statement.name}".`);
-      semanticPaths.registerPath(semanticPath);
+      semanticPaths.register(semanticPath, 'path');
       nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_REVERSE', inputs: [statement.source.name], resultType: 'OperatorResultPath', semanticPathId: semanticPath.id });
     } else {
       const semanticPath = analysis.model.paths.get(statement.name);
       if (!semanticPath) throw new Error(`Semantic PathValue missing for operator result "${statement.name}".`);
-      semanticPaths[semanticPath.id] = semanticPath;
+      semanticPaths.register(semanticPath, 'path');
       nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_COMPOSE', inputs: [statement.left.name, statement.right.name], resultType: 'OperatorResultPath', semanticPathId: semanticPath.id });
     }
   }
