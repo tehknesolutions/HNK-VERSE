@@ -50,13 +50,26 @@ export type SemanticValue = PathValue;
 
 export type SemanticNamespace = 'path' | 'cell' | 'edge' | 'generic';
 
+export type SemanticRef = {
+  namespace: SemanticNamespace;
+  id: string;
+};
+
 export type SemanticRegistryKey = `${SemanticNamespace}:${string}`;
+
+export function createSemanticRef(namespace: SemanticNamespace, id: string): SemanticRef {
+  return { namespace, id };
+}
+
+export function semanticRefKey(ref: SemanticRef): SemanticRegistryKey {
+  return `${ref.namespace}:${ref.id}`;
+}
 
 export class SemanticRegistry<T extends { id: string }> {
   private readonly values = new Map<SemanticRegistryKey, T>();
 
   private key(namespace: SemanticNamespace, id: string): SemanticRegistryKey {
-    return `${namespace}:${id}`;
+    return semanticRefKey(createSemanticRef(namespace, id));
   }
 
   constructor(values: Iterable<T> = []) {
