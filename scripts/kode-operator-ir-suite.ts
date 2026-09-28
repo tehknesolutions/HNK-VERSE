@@ -15,15 +15,15 @@ const composed = program.nodes.find((node) => node.id === 'C');
 if (!composed || composed.kind !== 'OPERATOR' || composed.operator !== 'PATH_COMPOSE') {
   throw new Error('Compose did not lower to PATH_COMPOSE.');
 }
-if (composed.inputs.join(',') !== 'A,B') throw new Error('Compose inputs changed.');
-if (composed.resultType !== 'OperatorResultPath' || program.semanticPaths.getPath(composed.semanticPathId)?.nodes.join(',') !== 'A,B,C') throw new Error('Compose semantic PathValue was not lowered.');
+if (composed.inputs.map((ref) => `${ref.namespace}:${ref.id}`).join(',') !== 'path:A,path:B') throw new Error('Compose inputs changed.');
+if (composed.resultType !== 'OperatorResultPath' || program.semanticPaths.get(composed.semanticPathRef.id, composed.semanticPathRef.namespace)?.nodes.join(',') !== 'A,B,C') throw new Error('Compose semantic PathValue was not lowered.');
 
 const reversed = program.nodes.find((node) => node.id === 'R');
 if (!reversed || reversed.kind !== 'OPERATOR' || reversed.operator !== 'PATH_REVERSE') {
   throw new Error('Reverse did not lower to PATH_REVERSE.');
 }
-if (reversed.inputs[0] !== 'C') throw new Error('Reverse input changed.');
-if (reversed.resultType !== 'OperatorResultPath' || program.semanticPaths.getPath(reversed.semanticPathId)?.nodes.join(',') !== 'C,B,A') throw new Error('Reverse semantic PathValue was not lowered.');
+if (reversed.inputs[0].namespace !== 'path' || reversed.inputs[0].id !== 'C') throw new Error('Reverse input changed.');
+if (reversed.resultType !== 'OperatorResultPath' || program.semanticPaths.get(reversed.semanticPathRef.id, reversed.semanticPathRef.namespace)?.nodes.join(',') !== 'C,B,A') throw new Error('Reverse semantic PathValue was not lowered.');
 
 const result = executeMhcmProgram(program);
 const output = result.outputs[0];
@@ -43,16 +43,19 @@ console.log('PASS KODE reverse → PATH_REVERSE');
 console.log('PASS compile graph → MHCM program execution');
 console.log('PASS final composed/reversed Path IR');
 
-const semantic = analyzeKode(parseKode(source));
+const ast = parseKode(source);
+if (ast.statements[2].kind !== 'ComposeStatement' || ast.statements[2].left.ref.kind !== 'unresolved' || ast.statements[2].left.ref.namespace !== 'path' || ast.statements[2].left.ref.id !== 'A' || ast.statements[2].right.ref.id !== 'B') throw new Error('AST SemanticRef contract failed.');
+const semantic = analyzeKode(ast);
 if (!semantic.ok) throw new Error('Semantic model failed for shared PathValue proof.');
-const semanticC = semantic.model.paths.get('C');
+const semanticC = semantic.model.semanticPaths.get('PATH-C', 'path');
 if (!semanticC || semanticC.id !== 'PATH-C' || semanticC.nodes.join(',') !== 'A,B,C' || semanticC.edges.join(',') !== 'A->B,B->C') {
   throw new Error('Semantic PathValue diverged from canonical path representation.');
 }
 if (semanticC.provenance.source !== 'HNK-KODE') throw new Error('Semantic PathValue provenance mismatch.');
+if (semantic.model.semanticSymbols.get('C', 'path')?.ref.kind !== 'resolved') throw new Error('Semantic analyzer did not resolve declaration reference.');
 console.log('PASS semantic model uses shared PathValue');
 
 const registry = program.semanticPaths;
-if (!!registry.has('PATH-C', 'path') || !registry.has('PATH-R', 'path')) throw new Error('Semantic PathValue registry lookup failed.');
+if (!registry.has('PATH-C', 'path') || !registry.has('PATH-R', 'path')) throw new Error('Semantic PathValue registry lookup failed.');
 if (registry.get('PATH-C', 'path')?.nodes.join(',') !== 'A,B,C') throw new Error('Registry returned incorrect compose PathValue.');
 console.log('PASS semantic PathValue registry API');

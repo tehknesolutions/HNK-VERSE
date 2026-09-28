@@ -10,7 +10,9 @@ export type KodeToken = {
   span: KodeSpan;
 };
 
-export type KodeIdentifier = { name: string; span: KodeSpan };
+import { createUnresolvedSemanticRef, type UnresolvedSemanticRef } from './model.ts';
+
+export type KodeIdentifier = { name: string; span: KodeSpan; ref: UnresolvedSemanticRef };
 
 export type KodeStatement =
   | { kind: 'PathDeclaration'; name: string; nameSpan: KodeSpan; nodes: KodeIdentifier[]; span: KodeSpan }
@@ -94,18 +96,18 @@ class Parser {
     const head = this.peek().lexeme;
     if (head === 'path') {
       this.keyword('path'); const nameToken = this.take('IDENT'); const name = nameToken.lexeme; this.take('EQUALS');
-      const nodes = [this.take('IDENT')].map((token) => ({ name: token.lexeme, span: token.span }));
+      const nodes = [this.take('IDENT')].map((token) => ({ name: token.lexeme, span: token.span, ref: createUnresolvedSemanticRef('path', token.lexeme) }));
       while (this.peek().kind === 'ARROW') { this.take('ARROW'); const token = this.take('IDENT'); nodes.push({ name: token.lexeme, span: token.span }); }
       if (nodes.length < 2) throw new KodeSyntaxError('Path requires at least two nodes.', spanOf(this.source, start, this.peek().span.start));
       return { kind: 'PathDeclaration', name, nameSpan: nameToken.span, nodes, span: spanOf(this.source, start, this.peek().span.start) };
     }
     if (head === 'reverse') {
-      this.keyword('reverse'); const nameToken = this.take('IDENT'); const name = nameToken.lexeme; this.take('EQUALS'); const sourceToken = this.take('IDENT'); const source = { name: sourceToken.lexeme, span: sourceToken.span };
+      this.keyword('reverse'); const nameToken = this.take('IDENT'); const name = nameToken.lexeme; this.take('EQUALS'); const sourceToken = this.take('IDENT'); const source = { name: sourceToken.lexeme, span: sourceToken.span, ref: createUnresolvedSemanticRef('path', sourceToken.lexeme) };
       return { kind: 'ReverseStatement', name, nameSpan: nameToken.span, source, span: spanOf(this.source, start, this.peek().span.start) };
     }
     if (head === 'compose') {
       this.keyword('compose'); const nameToken = this.take('IDENT'); const name = nameToken.lexeme; this.take('EQUALS');
-      const leftToken = this.take('IDENT'); this.take('COMMA'); const rightToken = this.take('IDENT'); const left = { name: leftToken.lexeme, span: leftToken.span }; const right = { name: rightToken.lexeme, span: rightToken.span };
+      const leftToken = this.take('IDENT'); this.take('COMMA'); const rightToken = this.take('IDENT'); const left = { name: leftToken.lexeme, span: leftToken.span, ref: createUnresolvedSemanticRef('path', leftToken.lexeme) }; const right = { name: rightToken.lexeme, span: rightToken.span, ref: createUnresolvedSemanticRef('path', rightToken.lexeme) };
       return { kind: 'ComposeStatement', name, nameSpan: nameToken.span, left, right, span: spanOf(this.source, start, this.peek().span.start) };
     }
     throw new KodeSyntaxError(`Unknown KODE statement "${head}"`, this.peek().span);

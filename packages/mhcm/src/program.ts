@@ -1,10 +1,10 @@
 import type { HnkIrNode } from './ir.ts';
-import { SemanticRegistry, type PathValue } from './model.ts';
+import { SemanticRegistry, type PathValue, type SemanticRef } from './model.ts';
 import { executeMhcmOperator } from './executor.ts';
 
 export type MhcmProgramNode =
   | { id: string; kind: 'IR'; ir: HnkIrNode }
-  | { id: string; kind: 'OPERATOR'; operator: 'PATH_REVERSE' | 'PATH_COMPOSE'; inputs: string[]; resultType: 'OperatorResultPath'; semanticPathId: string };
+  | { id: string; kind: 'OPERATOR'; operator: 'PATH_REVERSE' | 'PATH_COMPOSE'; inputs: SemanticRef[]; resultType: 'OperatorResultPath'; semanticPathRef: SemanticRef };
 
 
 
@@ -33,16 +33,16 @@ export function executeMhcmProgram(program: MhcmProgram): MhcmProgramResult {
       continue;
     }
 
-    const inputs = node.inputs.map((inputId) => {
-      const value = values.get(inputId);
-      if (!value) throw new Error(`Program input ${inputId} is unavailable.`);
+    const inputs = node.inputs.map((inputRef) => {
+      const value = values.get(inputRef.id);
+      if (!value) throw new Error(`Program input ${inputRef.namespace}:${inputRef.id} is unavailable.`);
       return value;
     });
 
     const result = executeMhcmOperator(node.operator, inputs).result;
     if (result.type !== 'Path' || result.op !== 'PATH_LITERAL') throw new Error(`Operator ${node.id} did not produce a Path literal.`);
-    const expected = program.semanticPaths.get(node.semanticPathId, 'path');
-    if (!expected) throw new Error(`Semantic PathValue ${node.semanticPathId} is unavailable.`);
+    const expected = program.semanticPaths.get(node.semanticPathRef.id, node.semanticPathRef.namespace);
+    if (!expected) throw new Error(`Semantic PathValue ${node.semanticPathRef.namespace}:${node.semanticPathRef.id} is unavailable.`);
     const actual = result.value;
     const actualNodes = Array.isArray(actual.nodes) ? actual.nodes.map(String) : [];
     const actualEdges = Array.isArray(actual.edges) ? actual.edges.map(String) : [];
