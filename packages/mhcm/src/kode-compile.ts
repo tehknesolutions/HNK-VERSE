@@ -22,7 +22,7 @@ export function compileKode(source: string): MhcmProgram {
   const semanticPaths = new SemanticRegistry<PathValue>();
   for (const statement of ast.statements) {
     if (statement.kind === 'PathDeclaration') {
-      const path = analysis.model.paths.get(statement.name);
+      const path = analysis.model.semanticPaths.get(`PATH-${statement.name}`, 'path');
       if (!path) throw new Error(`Semantic PathValue missing for "${statement.name}".`);
       semanticPaths.register(path, 'path');
       nodes.push({ id: statement.name, kind: 'IR', ir: astToIr(pathToAst(path)) });
