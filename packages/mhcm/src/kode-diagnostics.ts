@@ -5,6 +5,7 @@ export type KodeDiagnostic = {
   message: string;
   position?: number;
   span?: KodeSpan;
+  relatedSpans?: Array<{ label: string; span: KodeSpan }>;
 };
 
 export class KodeCompileError extends Error {
