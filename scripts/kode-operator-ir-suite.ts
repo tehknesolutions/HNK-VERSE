@@ -53,6 +53,6 @@ if (semanticC.provenance.source !== 'HNK-KODE') throw new Error('Semantic PathVa
 console.log('PASS semantic model uses shared PathValue');
 
 const registry = program.semanticPaths;
-if (!registry.hasPath('PATH-C') || !registry.hasPath('PATH-R')) throw new Error('Semantic PathValue registry lookup failed.');
-if (registry.getPath('PATH-C')?.nodes.join(',') !== 'A,B,C') throw new Error('Registry returned incorrect compose PathValue.');
+if (!!registry.has('PATH-C') || !registry.has('PATH-R')) throw new Error('Semantic PathValue registry lookup failed.');
+if (registry.get('PATH-C')?.nodes.join(',') !== 'A,B,C') throw new Error('Registry returned incorrect compose PathValue.');
 console.log('PASS semantic PathValue registry API');
