@@ -1,13 +1,10 @@
 import { KodeSyntaxError, parseKode, type KodeProgram } from './kode.ts';
 import { astToIr, pathToAst } from './ast.ts';
-import { createProvenance, type Path } from './model.ts';
 import type { MhcmProgram } from './program.ts';
 import { KodeCompileError, diagnostic, sortDiagnostics } from './kode-diagnostics.ts';
 import { analyzeKode } from './kode-semantic.ts';
 import type { KodeCompileResult } from './kode-result.ts';
 import { createDiagnosticReport } from './kode-report.ts';
-
-type StaticPath = { start: string; end: string; nodes: string[] };
 
 export function compileKode(source: string): MhcmProgram {
   let ast: KodeProgram;
@@ -23,16 +20,8 @@ export function compileKode(source: string): MhcmProgram {
   const nodes: MhcmProgram['nodes'] = [];
   for (const statement of ast.statements) {
     if (statement.kind === 'PathDeclaration') {
-      const provenance = createProvenance('HNK-KODE-KODE0', ['KODE-0'], 'EXPERIMENTAL', 'kode-0@0.1.0');
-      const path: Path = {
-        id: `PATH-${statement.name}`,
-        start: statement.nodes[0].name,
-        nodes: statement.nodes.map((node) => node.name),
-        edges: statement.nodes.slice(0, -1).map((_, i) => `${statement.nodes[i]}->${statement.nodes[i + 1]}`),
-        end: statement.nodes[statement.nodes.length - 1].name,
-        directed: true,
-        provenance,
-      };
+      const path = analysis.model.paths.get(statement.name);
+      if (!path) throw new Error(`Semantic PathValue missing for "${statement.name}".`);
       nodes.push({ id: statement.name, kind: 'IR', ir: astToIr(pathToAst(path)) });
     } else if (statement.kind === 'ReverseStatement') {
       nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_REVERSE', inputs: [statement.source.name] });
