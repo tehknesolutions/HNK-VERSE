@@ -1,4 +1,4 @@
-import type { KodeProgram, KodeStatement } from './kode.ts';
+import { parseKode, type KodeProgram } from './kode.ts';
 import { astToIr, pathToAst } from './ast.ts';
 import { createProvenance, type Path } from './model.ts';
 import { operatorToIr } from './ir.ts';
