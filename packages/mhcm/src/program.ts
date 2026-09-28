@@ -1,5 +1,5 @@
 import type { HnkIrNode } from './ir.ts';
-import type { PathValue } from './model.ts';
+import { SemanticRegistry, type PathValue } from './model.ts';
 import { executeMhcmOperator } from './executor.ts';
 
 export type MhcmProgramNode =
@@ -7,37 +7,14 @@ export type MhcmProgramNode =
   | { id: string; kind: 'OPERATOR'; operator: 'PATH_REVERSE' | 'PATH_COMPOSE'; inputs: string[]; resultType: 'OperatorResultPath'; semanticPathId: string };
 
 
-export class SemanticPathRegistry {
-  private readonly paths = new Map<string, PathValue>();
 
-  constructor(paths: Record<string, PathValue> = {}) {
-    for (const path of Object.values(paths)) this.registerPath(path);
-  }
-
-  registerPath(path: PathValue): void {
-    if (this.paths.has(path.id)) throw new Error(`Duplicate semantic PathValue: ${path.id}`);
-    this.paths.set(path.id, path);
-  }
-
-  hasPath(id: string): boolean {
-    return this.paths.has(id);
-  }
-
-  getPath(id: string): PathValue | undefined {
-    return this.paths.get(id);
-  }
-
-  toRecord(): Record<string, PathValue> {
-    return Object.fromEntries(this.paths.entries());
-  }
-}
 
 export type MhcmProgram = {
   id: string;
   version: '0.1';
   nodes: MhcmProgramNode[];
   outputs: string[];
-  semanticPaths: SemanticPathRegistry;
+  semanticPaths: SemanticRegistry<PathValue>;
 };
 
 export type MhcmProgramResult = {
