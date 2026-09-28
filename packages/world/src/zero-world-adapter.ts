@@ -1,3 +1,4 @@
+import { ZERO_IDS } from '@hnk-verse/contracts';
 import {
   ZERO_STATIC_SOLIDS,
   ZERO_WORLD_GRID,
@@ -11,56 +12,65 @@ import {
   type WorldGraph,
 } from './world-graph.ts';
 
-const ZERO_VERSE_ID = 'verse:zero';
-const ZERO_SPACE_ID = 'space:zero-grid';
-
 function zeroKind(kind: string): WorldEntityKind {
   return kind === 'AGENT' ? 'AGENT' : 'OBJECT';
+}
+
+function canonicalSolidId(legacyId: string): string {
+  const canonical: Record<string, string> = {
+    BED: ZERO_IDS.bed,
+    WORKBENCH: ZERO_IDS.workbench,
+    VALI_SURFACE: ZERO_IDS.valiSurface,
+    CARTOGRAPHY_TABLE: ZERO_IDS.cartographyTable,
+    WOOD_NODE: ZERO_IDS.woodNode,
+    METATRON: ZERO_IDS.metatron,
+  };
+  return canonical[legacyId] ?? `ZERO-LEGACY-${legacyId}`;
 }
 
 export function adaptZeroWorldToGraph(): WorldGraph {
   let graph = createWorldGraph();
 
   graph = upsertWorldEntity(graph, {
-    id: ZERO_VERSE_ID,
+    id: ZERO_IDS.verse,
     kind: 'VERSE',
-    address: { verseId: ZERO_VERSE_ID },
+    address: { verseId: ZERO_IDS.verse },
     data: { source: 'ZERO_LEGACY' },
   });
   graph = upsertWorldEntity(graph, {
-    id: ZERO_SPACE_ID,
+    id: ZERO_IDS.world,
     kind: 'SPACE',
-    address: { verseId: ZERO_VERSE_ID, spaceId: ZERO_SPACE_ID },
+    address: { verseId: ZERO_IDS.verse, spaceId: ZERO_IDS.world },
     data: { source: 'ZERO_LEGACY', grid: { ...ZERO_WORLD_GRID } },
   });
   graph = upsertWorldEntity(graph, {
-    id: 'entity:zero:player',
+    id: ZERO_IDS.avatar,
     kind: 'AVATAR',
-    address: { verseId: ZERO_VERSE_ID, spaceId: ZERO_SPACE_ID },
+    address: { verseId: ZERO_IDS.verse, spaceId: ZERO_IDS.world },
     data: { source: 'ZERO_LEGACY', logical: { ...ZERO_WORLD_POSITIONS.avatarSpawn } },
   });
 
   graph = addWorldRelation(graph, {
-    id: 'relation:zero:verse-contains-space',
+    id: 'REL-ZERO-VERSE-CONTAINS-WORLD',
     type: 'CONTAINS',
-    from: ZERO_VERSE_ID,
-    to: ZERO_SPACE_ID,
+    from: ZERO_IDS.verse,
+    to: ZERO_IDS.world,
     data: {},
   });
   graph = addWorldRelation(graph, {
-    id: 'relation:zero:space-contains-player',
+    id: 'REL-ZERO-WORLD-CONTAINS-AVATAR',
     type: 'CONTAINS',
-    from: ZERO_SPACE_ID,
-    to: 'entity:zero:player',
+    from: ZERO_IDS.world,
+    to: ZERO_IDS.avatar,
     data: {},
   });
 
   for (const solid of ZERO_STATIC_SOLIDS) {
-    const id = `entity:zero:${solid.id}`;
+    const id = canonicalSolidId(solid.id);
     graph = upsertWorldEntity(graph, {
       id,
       kind: zeroKind(solid.kind),
-      address: { verseId: ZERO_VERSE_ID, spaceId: ZERO_SPACE_ID },
+      address: { verseId: ZERO_IDS.verse, spaceId: ZERO_IDS.world },
       data: {
         source: 'ZERO_STATIC_SOLID',
         legacyId: solid.id,
@@ -69,9 +79,9 @@ export function adaptZeroWorldToGraph(): WorldGraph {
       },
     });
     graph = addWorldRelation(graph, {
-      id: `relation:zero:space-contains:${solid.id}`,
+      id: `REL-ZERO-WORLD-CONTAINS-${solid.id}`,
       type: 'CONTAINS',
-      from: ZERO_SPACE_ID,
+      from: ZERO_IDS.world,
       to: id,
       data: {},
     });
