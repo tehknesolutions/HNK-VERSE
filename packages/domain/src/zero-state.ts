@@ -55,6 +55,8 @@ export type ZeroWorldState = {
   worldTime: string;
   lastEventId: string | null;
   mhcmExecutionIds?: string[];
+  mhcmPathExecutions?: Array<{ irId: string; nodes: string[]; edges: string[] }>;
+  mhcmGlyphExecutions?: string[];
 };
 
 type AnyPayload = Record<string, any>;
@@ -88,6 +90,19 @@ export function reduceZeroEvent(
   const payload = (event.payload ?? {}) as AnyPayload;
 
   switch (event.eventType) {
+    case 'MhcmPathExecuted': {
+      state.mhcmPathExecutions = [...(state.mhcmPathExecutions ?? []), {
+        irId: String(payload.irId),
+        nodes: Array.isArray(payload.nodes) ? payload.nodes.map(String) : [],
+        edges: Array.isArray(payload.edges) ? payload.edges.map(String) : [],
+      }];
+      break;
+    }
+
+    case 'MhcmGlyphExecuted':
+      state.mhcmGlyphExecutions = [...(state.mhcmGlyphExecutions ?? []), String(payload.irId)];
+      break;
+
     case 'MhcmIrExecuted':
       state.mhcmExecutionIds = [...(state.mhcmExecutionIds ?? []), String(payload.irId)];
       break;
