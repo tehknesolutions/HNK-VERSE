@@ -1,5 +1,5 @@
 import type { KodeProgram, KodeSpan } from './kode.ts';
-import { createProvenance, createSemanticRef, semanticRefKey, SemanticRegistry, type PathValue, type SemanticRef } from './model.ts';
+import { createProvenance, createSemanticRef, SemanticRegistry, type PathValue, type SemanticRef } from './model.ts';
 import { diagnostic, type KodeDiagnostic } from './kode-diagnostics.ts';
 
 export type KodeType = 'Path' | 'OperatorResultPath';
@@ -16,8 +16,8 @@ export type KodeStaticPath = PathValue;
 
 export type KodeSemanticModel = {
   program: KodeProgram;
-  paths: Map<string, KodeStaticPath>;
-  symbols: Map<string, KodeSymbol>;
+  semanticPaths: SemanticRegistry<PathValue>;
+  semanticSymbols: SemanticRegistry<KodeSymbol>;
 };
 
 function createKodePath(name: string, nodes: string[], operation: 'declaration' | 'reverse' | 'compose'): PathValue {
@@ -35,10 +35,8 @@ function createKodePath(name: string, nodes: string[], operation: 'declaration' 
 
 export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemanticModel; diagnostics: [] } | { ok: false; model: null; diagnostics: KodeDiagnostic[] } {
   const diagnostics: KodeDiagnostic[] = [];
-  const paths = new Map<string, KodeStaticPath>();
-  const symbols = new Map<string, KodeSymbol>();
   const semanticPaths = new SemanticRegistry<PathValue>();
-  const semanticSymbols = new Map<string, KodeSymbol>();
+  const semanticSymbols = new SemanticRegistry<KodeSymbol>();
   const declared = new Set<string>();
 
   for (const statement of program.statements) {
@@ -57,12 +55,11 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
 
     if (statement.kind === 'PathDeclaration') {
       const path = createKodePath(statement.name, statement.nodes.map((node) => node.name), 'declaration');
-      paths.set(statement.name, path);
       semanticPaths.register(path, 'path');
-      semanticSymbols.set(semanticRefKey(declaration.ref), declaration);
+      semanticSymbols.register(declaration, 'path');
       symbols.set(statement.name, declaration);
     } else if (statement.kind === 'ReverseStatement') {
-      const input = semanticSymbols.get(semanticRefKey(statement.source.ref));
+      const input = semanticSymbols.get(statement.source.ref.id, statement.source.ref.namespace);
       const path = semanticPaths.get(statement.source.ref.id, statement.source.ref.namespace);
       if (!input || !path) {
         diagnostics.push(diagnostic('E_SYMBOL', `Unknown KODE symbol "${statement.source.name}".`, statement.source.span));
@@ -70,14 +67,13 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
         diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${statement.source.name}" is not a Path.`, statement.source.span));
       } else {
         const resultPath = createKodePath(statement.name, [...path.nodes].reverse(), 'reverse');
-        paths.set(statement.name, resultPath);
         semanticPaths.register(resultPath, 'path');
         semanticSymbols.set(semanticRefKey(declaration.ref), declaration);
         symbols.set(statement.name, declaration);
       }
     } else {
-      const left = semanticSymbols.get(semanticRefKey(statement.left.ref));
-      const right = semanticSymbols.get(semanticRefKey(statement.right.ref));
+      const left = semanticSymbols.get(statement.left.ref.id, statement.left.ref.namespace);
+      const right = semanticSymbols.get(statement.right.ref.id, statement.right.ref.namespace);
       const leftPath = semanticPaths.get(statement.left.ref.id, statement.left.ref.namespace);
       const rightPath = semanticPaths.get(statement.right.ref.id, statement.right.ref.namespace);
 
@@ -101,7 +97,6 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
         ));
       } else {
         const resultPath = createKodePath(statement.name, [...leftPath.nodes, ...rightPath.nodes.slice(1)], 'compose');
-        paths.set(statement.name, resultPath);
         semanticPaths.register(resultPath, 'path');
         semanticSymbols.set(semanticRefKey(declaration.ref), declaration);
         symbols.set(statement.name, declaration);
@@ -112,5 +107,5 @@ export function analyzeKode(program: KodeProgram): { ok: true; model: KodeSemant
   }
 
   if (diagnostics.length) return { ok: false, model: null, diagnostics };
-  return { ok: true, model: { program, paths, symbols }, diagnostics: [] };
+  return { ok: true, model: { program, semanticPaths, semanticSymbols }, diagnostics: [] };
 }
