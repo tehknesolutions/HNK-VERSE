@@ -21,6 +21,7 @@ import {
   parseKode,
   compileKode,
   tryCompileKode,
+  analyzeKode,
   type Cell,
   type Edge,
   type Path,
@@ -36,6 +37,11 @@ const tokens = lexKode(kodeSource);
 if (tokens.at(-1)?.kind !== 'EOF') throw new Error('KODE lexer did not terminate.');
 const kodeAst = parseKode(kodeSource);
 if (kodeAst.statements.length !== 4) throw new Error('KODE parser statement count mismatch.');
+const parsedKode = parseKode(kodeSource);
+const semanticKode = analyzeKode(parsedKode);
+if (!semanticKode.ok || semanticKode.model.paths.get('FINAL')?.start !== 'E') {
+  throw new Error('KODE semantic analysis contract failed.');
+}
 const kodeProgram = compileKode(kodeSource);
 if (kodeProgram.outputs[0] !== 'FINAL') throw new Error('KODE compiler output mismatch.');
 const kodeResult = executeMhcmProgram(kodeProgram);
@@ -216,3 +222,4 @@ console.log('PASS KODE-0 → Program Graph compiler');
 console.log('PASS KODE-0 execution');
 console.log('PASS KODE-0 static connectivity/type validation');
 console.log('PASS KODE-0 structured compile result API');
+console.log('PASS KODE-0 semantic analysis boundary');
