@@ -14,6 +14,7 @@ import {
   composePathIr,
   operatorToIr,
   typeCheckOperator,
+  executeMhcmOperator,
   type Cell,
   type Edge,
   type Path,
@@ -107,6 +108,10 @@ if (invalidTypeCheck.ok) throw new Error('Invalid operator arity was accepted.')
 const operatorIr = operatorToIr('PATH_COMPOSE', [pathIr, secondIr], pathIr.metadata.provenance);
 if (operatorIr.op !== 'MHCM_OPERATOR' || operatorIr.inputs.length !== 2) throw new Error('Operator IR lowering mismatch.');
 
+const executedCompose = executeMhcmOperator('PATH_COMPOSE', [pathIr, secondIr]);
+if (executedCompose.result.value.end !== 'E') throw new Error('Operator executor result mismatch.');
+if (executedCompose.result.inputs.length !== 2) throw new Error('Operator executor lost input provenance.');
+
 const manifestation = irToRuntimeManifestation(glyphIr);
 if (manifestation.commandType !== 'StartSession') throw new Error('Runtime boundary command mismatch.');
 if (manifestation.irId !== glyphIr.id) throw new Error('Runtime boundary lost IR identity.');
@@ -126,3 +131,4 @@ console.log('PASS PATH_REVERSE operator');
 console.log('PASS PATH_COMPOSE operator');
 console.log('PASS operator type checking');
 console.log('PASS operator → HNK-IR lowering');
+console.log('PASS operator executor produces result IR');
