@@ -1,4 +1,4 @@
-import { parseKode, type KodeProgram } from './kode.ts';
+import { KodeSyntaxError, parseKode, type KodeProgram } from './kode.ts';
 import { astToIr, pathToAst } from './ast.ts';
 import { createProvenance, type Path } from './model.ts';
 import type { MhcmProgram } from './program.ts';
@@ -13,7 +13,11 @@ export function compileKode(source: string): MhcmProgram {
   try {
     ast = parseKode(source);
   } catch (error) {
-    throw new KodeCompileError([{ code: 'E_SYNTAX', message: error instanceof Error ? error.message : String(error) }]);
+    throw new KodeCompileError([{
+      code: 'E_SYNTAX',
+      message: error instanceof Error ? error.message : String(error),
+      span: error instanceof KodeSyntaxError ? error.span : undefined,
+    }]);
   }
 
   const analysis = analyzeKode(ast);
@@ -55,7 +59,7 @@ export function tryCompileKode(source: string): KodeCompileResult {
     return {
       ok: false,
       program: null,
-      diagnostics: [{ code: 'E_SYNTAX', message: error instanceof Error ? error.message : String(error) }],
+      diagnostics: [{ code: 'E_SYNTAX', message: error instanceof Error ? error.message : String(error), span: error instanceof KodeSyntaxError ? error.span : undefined }],
     };
   }
 }
