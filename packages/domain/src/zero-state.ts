@@ -54,6 +54,7 @@ export type ZeroWorldState = {
   energyRest: number;
   worldTime: string;
   lastEventId: string | null;
+  mhcmExecutionIds?: string[];
 };
 
 type AnyPayload = Record<string, any>;
@@ -87,6 +88,10 @@ export function reduceZeroEvent(
   const payload = (event.payload ?? {}) as AnyPayload;
 
   switch (event.eventType) {
+    case 'MhcmIrExecuted':
+      state.mhcmExecutionIds = [...(state.mhcmExecutionIds ?? []), String(payload.irId)];
+      break;
+
     case 'AvatarPositionCheckpointed':
       state.avatarPosition = {
         logicalX: Number(payload.logicalX),
