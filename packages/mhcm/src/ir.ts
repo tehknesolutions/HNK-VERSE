@@ -1,12 +1,13 @@
 import type { HnkAstNode } from './ast.ts';
 
 export const HNK_IR_SCHEMA_VERSION = 1 as const;
+export const MHCM_OPERATOR_IR_VERSION = 1 as const;
 
 export type HnkIrNode = {
   irVersion: typeof HNK_IR_SCHEMA_VERSION;
   id: string;
   type: 'Path' | 'Glyph';
-  op: 'PATH_LITERAL' | 'GLYPH_LITERAL';
+  op: 'PATH_LITERAL' | 'GLYPH_LITERAL' | 'MHCM_OPERATOR';
   inputs: string[];
   value: Record<string, unknown>;
   metadata: {
@@ -14,6 +15,22 @@ export type HnkIrNode = {
     provenance: HnkAstNode['provenance'];
   };
 };
+
+export function operatorToIr(
+  operator: 'PATH_REVERSE' | 'PATH_COMPOSE',
+  inputs: HnkIrNode[],
+  provenance: HnkAstNode['provenance'],
+): HnkIrNode {
+  return {
+    irVersion: HNK_IR_SCHEMA_VERSION,
+    id: `IR-OP-${operator}-${inputs.map((input) => input.id).join('-')}`,
+    type: 'Path',
+    op: 'MHCM_OPERATOR',
+    inputs: inputs.map((input) => input.id),
+    value: { operator, inputs: inputs.map((input) => input.id), operatorVersion: MHCM_OPERATOR_IR_VERSION },
+    metadata: { sourceAstKind: inputs[0]?.metadata.sourceAstKind ?? 'PathExpression', provenance },
+  };
+}
 
 export function astToIr(node: HnkAstNode): HnkIrNode {
   if (node.kind === 'PathExpression') {
