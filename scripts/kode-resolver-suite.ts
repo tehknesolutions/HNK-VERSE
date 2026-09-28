@@ -1,7 +1,7 @@
 import { SemanticRegistry, createUnresolvedSemanticRef, type KodeSymbol, type SemanticRef } from '../packages/mhcm/src/model.ts';
 import { SemanticResolver } from '../packages/mhcm/src/kode-resolver.ts';
 import { KODE_TYPES, KodeTypeSystem, validateKodeTypeDefinitions } from '../packages/mhcm/src/kode-types.ts';
-import type { KodeTypeSystemPort } from '../packages/mhcm/src/kode-type-port.ts';
+import type { KodeTypeId, KodeTypeSystemPort } from '../packages/mhcm/src/kode-type-port.ts';
 import { KodeDiagnostic } from '../packages/mhcm/src/kode-diagnostics.ts';
 
 const span = { start: 0, end: 1, line: 1, column: 1 };
@@ -118,3 +118,9 @@ let unknownTypeRejected = false;
 try { typeSystem.get('UnknownType' as 'Path'); } catch { unknownTypeRejected = true; }
 if (!unknownTypeRejected) throw new Error('Unknown KODE type was not rejected.');
 console.log('PASS type descriptor integrity');
+
+const immutableSystem = new KodeTypeSystem(KODE_TYPES);
+const immutablePath = immutableSystem.get('Path');
+try { (immutablePath.parents as KodeTypeId[]).push('SpecialPath'); throw new Error('Frozen parents metadata was mutable.'); } catch (error) { if (error instanceof Error && error.message === 'Frozen parents metadata was mutable.') throw error; }
+try { (immutablePath as { category: string }).category = 'operator-result'; throw new Error('Frozen type descriptor was mutable.'); } catch (error) { if (error instanceof Error && error.message === 'Frozen type descriptor was mutable.') throw error; }
+console.log('PASS immutable type definitions');
