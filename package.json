@@ -3,9 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@10.17.1",
-  "engines": {
-    "node": ">=22"
-  },
+  "engines": { "node": ">=22" },
   "scripts": {
     "check": "pnpm typecheck && pnpm test && pnpm web:build",
     "lint": "pnpm -r --if-present lint",
@@ -22,21 +20,11 @@
     "test:reference-avatar": "node --experimental-strip-types scripts/reference-avatar-check.ts",
     "test:knowledge": "node --experimental-strip-types scripts/knowledge-architecture-check.ts",
     "test:codex-sync": "node --experimental-strip-types scripts/codex-sync-agent-context-check.ts",
-    "test:verse-sdk": "node --experimental-strip-types scripts/verse-sdk-contract-check.ts && node --experimental-strip-types scripts/verse-sdk-capability-check.ts && node --experimental-strip-types scripts/verse-sdk-chronicle-boundary-check.ts && node --experimental-strip-types scripts/verse-sdk-transition-check.ts && node --experimental-strip-types scripts/verse-sdk-interop-check.ts"
+    "test:verse-sdk": "node --experimental-strip-types scripts/verse-sdk-contract-check.ts && node --experimental-strip-types scripts/verse-sdk-capability-check.ts && node --experimental-strip-types scripts/verse-sdk-chronicle-boundary-check.ts && node --experimental-strip-types scripts/verse-sdk-transition-check.ts && node --experimental-strip-types scripts/verse-sdk-interop-check.ts && node --experimental-strip-types scripts/verse-sdk-lifecycle-check.ts"
   },
   "devDependencies": {
-    "typescript": "5.8.3",
-    "vite": "8.3.0",
-    "vitest": "3.2.4",
-    "@hnk-verse/chronicle": "workspace:*",
-    "@hnk-verse/contracts": "workspace:*",
-    "@hnk-verse/domain": "workspace:*",
-    "@hnk-verse/fixtures": "workspace:*",
-    "@hnk-verse/persistence": "workspace:*",
-    "@hnk-verse/renderer": "workspace:*",
-    "@hnk-verse/simulation": "workspace:*",
-    "@hnk-verse/world": "workspace:*",
-    "@hnk-verse/sdk": "workspace:*"
+    "typescript": "5.8.3", "vite": "8.3.0", "vitest": "3.2.4",
+    "@hnk-verse/chronicle": "workspace:*", "@hnk-verse/contracts": "workspace:*", "@hnk-verse/domain": "workspace:*", "@hnk-verse/fixtures": "workspace:*", "@hnk-verse/persistence": "workspace:*", "@hnk-verse/renderer": "workspace:*", "@hnk-verse/simulation": "workspace:*", "@hnk-verse/world": "workspace:*", "@hnk-verse/sdk": "workspace:*"
   },
   "type": "module"
 }
