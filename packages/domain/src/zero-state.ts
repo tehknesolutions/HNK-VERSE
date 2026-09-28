@@ -57,6 +57,7 @@ export type ZeroWorldState = {
   mhcmExecutionIds?: string[];
   mhcmPathExecutions?: Array<{ irId: string; nodes: string[]; edges: string[] }>;
   mhcmGlyphExecutions?: string[];
+  mhcmOperatorExecutions?: Array<{ irId: string; operator: string; inputs: string[] }>;
 };
 
 type AnyPayload = Record<string, any>;
@@ -98,6 +99,14 @@ export function reduceZeroEvent(
       }];
       break;
     }
+
+    case 'MhcmOperatorExecuted':
+      state.mhcmOperatorExecutions = [...(state.mhcmOperatorExecutions ?? []), {
+        irId: String(payload.irId),
+        operator: String(payload.operator),
+        inputs: Array.isArray(payload.inputs) ? payload.inputs.map(String) : [],
+      }];
+      break;
 
     case 'MhcmGlyphExecuted':
       state.mhcmGlyphExecutions = [...(state.mhcmGlyphExecutions ?? []), String(payload.irId)];
