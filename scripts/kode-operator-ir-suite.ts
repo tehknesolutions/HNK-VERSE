@@ -15,14 +15,14 @@ const composed = program.nodes.find((node) => node.id === 'C');
 if (!composed || composed.kind !== 'OPERATOR' || composed.operator !== 'PATH_COMPOSE') {
   throw new Error('Compose did not lower to PATH_COMPOSE.');
 }
-if (composed.inputs.join(',') !== 'A,B') throw new Error('Compose inputs changed.');
+if (composed.inputs.map((ref) => `${ref.namespace}:${ref.id}`).join(',') !== 'path:A,path:B') throw new Error('Compose inputs changed.');
 if (composed.resultType !== 'OperatorResultPath' || program.semanticPaths.getPath(composed.semanticPathRef.id)?.nodes.join(',') !== 'A,B,C') throw new Error('Compose semantic PathValue was not lowered.');
 
 const reversed = program.nodes.find((node) => node.id === 'R');
 if (!reversed || reversed.kind !== 'OPERATOR' || reversed.operator !== 'PATH_REVERSE') {
   throw new Error('Reverse did not lower to PATH_REVERSE.');
 }
-if (reversed.inputs[0] !== 'C') throw new Error('Reverse input changed.');
+if (reversed.inputs[0].namespace !== 'path' || reversed.inputs[0].id !== 'C') throw new Error('Reverse input changed.');
 if (reversed.resultType !== 'OperatorResultPath' || program.semanticPaths.getPath(reversed.semanticPathRef.id)?.nodes.join(',') !== 'C,B,A') throw new Error('Reverse semantic PathValue was not lowered.');
 
 const result = executeMhcmProgram(program);
