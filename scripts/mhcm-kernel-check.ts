@@ -15,6 +15,7 @@ import {
   operatorToIr,
   typeCheckOperator,
   executeMhcmOperator,
+  executeMhcmPipeline,
   type Cell,
   type Edge,
   type Path,
@@ -108,6 +109,17 @@ if (invalidTypeCheck.ok) throw new Error('Invalid operator arity was accepted.')
 const operatorIr = operatorToIr('PATH_COMPOSE', [pathIr, secondIr], pathIr.metadata.provenance);
 if (operatorIr.op !== 'MHCM_OPERATOR' || operatorIr.inputs.length !== 2) throw new Error('Operator IR lowering mismatch.');
 
+const pipeline = executeMhcmPipeline([
+  { kind: 'IR', node: pathIr },
+  { kind: 'OPERATOR', operator: 'PATH_REVERSE', inputs: [0] },
+  { kind: 'IR', node: secondIr },
+  { kind: 'OPERATOR', operator: 'PATH_COMPOSE', inputs: [1, 2] },
+]);
+if (pipeline.results.length !== 2) throw new Error('Pipeline result count mismatch.');
+if (pipeline.results[1].value.start !== 'C' || pipeline.results[1].value.end !== 'E') {
+  throw new Error('Composed pipeline result mismatch.');
+}
+
 const executedCompose = executeMhcmOperator('PATH_COMPOSE', [pathIr, secondIr]);
 if (executedCompose.result.value.end !== 'E') throw new Error('Operator executor result mismatch.');
 if (executedCompose.result.inputs.length !== 2) throw new Error('Operator executor lost input provenance.');
@@ -132,3 +144,4 @@ console.log('PASS PATH_COMPOSE operator');
 console.log('PASS operator type checking');
 console.log('PASS operator → HNK-IR lowering');
 console.log('PASS operator executor produces result IR');
+console.log('PASS composable operator pipeline');
