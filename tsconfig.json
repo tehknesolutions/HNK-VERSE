@@ -36,6 +36,9 @@
       ],
       "@hnk-verse/world": [
         "packages/world/src/index.ts"
+      ],
+      "@hnk-verse/sdk": [
+        "packages/sdk/src/index.ts"
       ]
     }
   },
