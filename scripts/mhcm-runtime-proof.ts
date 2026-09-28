@@ -103,11 +103,13 @@ assert(result.state.mhcmExecutionIds?.includes(glyphIr.id), 'Runtime state did n
 const events = await store.allEvents(ZERO_IDS.world);
 const executed = events.find((event) => event.eventType === 'MhcmIrExecuted');
 const semantic = events.find((event) => event.eventType === 'MhcmGlyphExecuted');
+const resultProduced = events.find((event) => event.eventType === 'MhcmOperatorResultProduced');
 assert(executed, 'Missing MhcmIrExecuted event.');
 assert((executed.payload as Record<string, unknown>).irId === glyphIr.id, 'Event lost IR identity.');
 assert(semantic, 'Missing semantic MHCM execution event.');
 assert(result.data?.executionMode === 'MHCM-GLYPH-V1', 'Runtime did not select Glyph semantics.');
 assert(result.state.mhcmGlyphExecutions?.includes(glyphIr.id), 'Runtime state did not record Glyph execution.');
+assert(resultProduced === undefined, 'Glyph execution unexpectedly produced an operator result.');
 
 console.log('MHCM runtime proof: PASS');
 console.log('PASS MHCM Path → Glyph → AST → HNK-IR');
