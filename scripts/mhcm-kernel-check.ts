@@ -9,6 +9,7 @@ import {
   astToIr,
   MHCM_SCHEMA_VERSION,
   HNK_IR_SCHEMA_VERSION,
+  irToRuntimeManifestation,
   type Cell,
   type Edge,
   type Path,
@@ -74,6 +75,11 @@ if (glyphIr.inputs[0] !== serialized) throw new Error('Glyph IR input mismatch.'
 if (MHCM_SCHEMA_VERSION !== 1) throw new Error('Unexpected MHCM schema version.');
 if (HNK_IR_SCHEMA_VERSION !== 1) throw new Error('Unexpected HNK-IR schema version.');
 
+const manifestation = irToRuntimeManifestation(glyphIr);
+if (manifestation.commandType !== 'StartSession') throw new Error('Runtime boundary command mismatch.');
+if (manifestation.irId !== glyphIr.id) throw new Error('Runtime boundary lost IR identity.');
+if (manifestation.payload.irOp !== glyphIr.op) throw new Error('Runtime boundary lost IR operation.');
+
 console.log('MHCM kernel check: PASS');
 console.log('PASS valid topology');
 console.log('PASS invalid topology rejection');
@@ -83,3 +89,4 @@ console.log('PASS Path → AST');
 console.log('PASS AST → HNK-IR');
 console.log('PASS Glyph → AST → HNK-IR');
 console.log('PASS schema versions');
+console.log('PASS HNK-IR → HNK-VERSE runtime boundary');
