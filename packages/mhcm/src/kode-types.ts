@@ -32,6 +32,12 @@ export type KodeTypeSystemValidation = {
 
 export function validateKodeTypeDefinitions(types: Record<KodeTypeId, KodeType> = KODE_TYPES): KodeTypeSystemValidation {
   const errors: string[] = [];
+  const allowedCategories = new Set<KodeTypeCategory>(['value', 'operator-result']);
+  for (const [key, type] of Object.entries(types)) {
+    if (key !== type.id) errors.push(`Type registry key ${key} does not match descriptor id ${type.id}.`);
+    if (!allowedCategories.has(type.category)) errors.push(`Type ${type.id} has invalid category ${type.category}.`);
+    if (!Array.isArray(type.parents)) errors.push(`Type ${type.id} has invalid parents metadata.`);
+  }
   for (const type of Object.values(types)) {
     for (const parent of type.parents) {
       if (!types[parent]) {
@@ -82,7 +88,9 @@ export class KodeTypeSystem {
   }
 
   get(id: KodeTypeId): KodeType {
-    return this.types[id];
+    const type = this.types[id];
+    if (!type) throw new Error(`Unknown KODE type: ${id}.`);
+    return type;
   }
 
   isSubtypeOf(actual: KodeTypeId, expected: KodeTypeId, seen = new Set<KodeTypeId>()): boolean {
