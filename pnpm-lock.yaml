@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@hnk-verse/mhcm':
+        specifier: workspace:*
+        version: link:packages/mhcm
       '@hnk-verse/chronicle':
         specifier: workspace:*
         version: link:packages/chronicle
@@ -78,6 +81,10 @@ importers:
       vitest:
         specifier: 3.2.4
         version: 3.2.4(@types/node@26.6.3)(lightningcss@1.33.0)
+
+  packages/mhcm:
+    dependencies: {}
+    devDependencies: {}
 
   packages/chronicle:
     dependencies:
