@@ -116,11 +116,11 @@ const program = {
   version: '0.1' as const,
   nodes: [
     { id: 'P-A', kind: 'IR' as const, ir: ir },
-    { id: 'P-B', kind: 'IR' as const, ir: glyphIr },
-    { id: 'P-REV', kind: 'OPERATOR' as const, operator: 'PATH_REVERSE' as const, inputs: ['P-A'] },
-    { id: 'P-COMPOSE', kind: 'OPERATOR' as const, operator: 'PATH_COMPOSE' as const, inputs: ['P-REV', 'P-B'] },
+    { id: 'P-B', kind: 'IR' as const, ir: astToIr(pathToAst({ ...path, id: 'PATH-CDE', start: 'C', nodes: ['C', 'D', 'E'], edges: ['CD', 'DE'], end: 'E' })) },
+    { id: 'P-COMPOSE', kind: 'OPERATOR' as const, operator: 'PATH_COMPOSE' as const, inputs: ['P-A', 'P-B'] },
+    { id: 'P-REV', kind: 'OPERATOR' as const, operator: 'PATH_REVERSE' as const, inputs: ['P-COMPOSE'] },
   ],
-  outputs: ['P-COMPOSE'],
+  outputs: ['P-REV'],
 };
 
 const programCommand: HnkCommand<Record<string, unknown>> = {
@@ -141,11 +141,16 @@ const programCommand: HnkCommand<Record<string, unknown>> = {
 const programResult = await runtime.execute(programCommand);
 assert(programResult.accepted, `MHCM program execution rejected: ${programResult.rejectionCode}`);
 assert(programResult.data?.programId === program.id, 'Program execution lost identity.');
+assert(programResult.data?.executionMode === 'MHCM-PROGRAM-V2', 'Program executor did not run semantic nodes.');
+assert(Number(programResult.data?.resultIrIds?.length ?? 0) >= 5, 'Program executor did not produce node results.');
 assert(programResult.state.mhcmProgramExecutions?.some((entry) => entry.programId === program.id), 'World state did not record program execution.');
 
 const programEvents = await store.allEvents(ZERO_IDS.world);
 const programExecuted = programEvents.find((event) => event.eventType === 'MhcmProgramExecuted');
 assert(programExecuted, 'Missing MhcmProgramExecuted event.');
+const nodeEvents = programEvents.filter((event) => event.eventType === 'MhcmProgramNodeExecuted');
+assert(nodeEvents.length === program.nodes.length, 'Program did not execute every node.');
+assert(programResult.state.mhcmProgramNodeExecutions?.length === program.nodes.length, 'World state did not persist every program node.');
 
 console.log('MHCM runtime proof: PASS');
 console.log('PASS MHCM Path → Glyph → AST → HNK-IR');
