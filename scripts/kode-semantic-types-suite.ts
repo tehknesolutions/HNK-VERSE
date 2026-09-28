@@ -6,9 +6,9 @@ const program = parseKode(
 const result = analyzeKode(program);
 if (!result.ok) throw new Error('Expected typed semantic model to succeed.');
 
-const a = result.model.symbols.get('A');
-const r = result.model.symbols.get('R');
-const c = result.model.symbols.get('C');
+const a = result.model.semanticSymbols.get('A', 'path');
+const r = result.model.semanticSymbols.get('R', 'path');
+const c = result.model.semanticSymbols.get('C', 'path');
 
 if (!a || a.type !== 'Path' || a.origin !== 'declaration') throw new Error('Path declaration type mismatch.');
 if (!r || r.type !== 'OperatorResultPath' || r.origin !== 'operator') throw new Error('Reverse operator result type mismatch.');
