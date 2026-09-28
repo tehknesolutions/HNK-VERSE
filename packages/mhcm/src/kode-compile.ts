@@ -1,6 +1,6 @@
 import { KodeSyntaxError, parseKode, type KodeProgram } from './kode.ts';
 import { astToIr, pathToAst } from './ast.ts';
-import { SemanticPathRegistry, type MhcmProgram } from './program.ts';
+import { SemanticRegistry, type MhcmProgram } from './program.ts';
 import { KodeCompileError, diagnostic, sortDiagnostics } from './kode-diagnostics.ts';
 import { analyzeKode } from './kode-semantic.ts';
 import type { KodeCompileResult } from './kode-result.ts';
@@ -18,7 +18,7 @@ export function compileKode(source: string): MhcmProgram {
   if (!analysis.ok) throw new KodeCompileError(sortDiagnostics(analysis.diagnostics));
 
   const nodes: MhcmProgram['nodes'] = [];
-  const semanticPaths = new SemanticPathRegistry();
+  const semanticPaths = new SemanticRegistry<import('./model.ts').PathValue>();
   for (const statement of ast.statements) {
     if (statement.kind === 'PathDeclaration') {
       const path = analysis.model.paths.get(statement.name);
