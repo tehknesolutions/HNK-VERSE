@@ -13,7 +13,7 @@ for (const source of fixtures) {
   const parsed = parseKode(source);
   const compiled = compileKode(source);
   const semantic = analyzeKode(parsed);
-  if (!semantic.ok || [...semantic.model.symbols.values()].some((symbol) => symbol.type !== 'Path')) throw new Error('KODE-0.2 Path typing compatibility failed.');
+  if (!semantic.ok || [...semantic.model.symbols.values()].some((symbol) => !['Path', 'OperatorResultPath'].includes(symbol.type))) throw new Error('KODE-0.2 Path typing compatibility failed.');
   const result = tryCompileKode(source);
   if (parsed.kind !== 'Program') throw new Error('KODE-0.1 parse compatibility failed.');
   if (compiled.id !== 'KODE-PROGRAM' || compiled.version !== '0.1') throw new Error('KODE-0.1 compiler contract changed.');

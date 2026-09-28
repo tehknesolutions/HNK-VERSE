@@ -1,15 +1,20 @@
 import type { HnkIrNode } from './ir.ts';
+import { SemanticRegistry, type PathValue } from './model.ts';
 import { executeMhcmOperator } from './executor.ts';
 
 export type MhcmProgramNode =
   | { id: string; kind: 'IR'; ir: HnkIrNode }
-  | { id: string; kind: 'OPERATOR'; operator: 'PATH_REVERSE' | 'PATH_COMPOSE'; inputs: string[] };
+  | { id: string; kind: 'OPERATOR'; operator: 'PATH_REVERSE' | 'PATH_COMPOSE'; inputs: string[]; resultType: 'OperatorResultPath'; semanticPathId: string };
+
+
+
 
 export type MhcmProgram = {
   id: string;
   version: '0.1';
   nodes: MhcmProgramNode[];
   outputs: string[];
+  semanticPaths: SemanticRegistry<PathValue>;
 };
 
 export type MhcmProgramResult = {
@@ -35,6 +40,15 @@ export function executeMhcmProgram(program: MhcmProgram): MhcmProgramResult {
     });
 
     const result = executeMhcmOperator(node.operator, inputs).result;
+    if (result.type !== 'Path' || result.op !== 'PATH_LITERAL') throw new Error(`Operator ${node.id} did not produce a Path literal.`);
+    const expected = program.semanticPaths.get(node.semanticPathId, 'path');
+    if (!expected) throw new Error(`Semantic PathValue ${node.semanticPathId} is unavailable.`);
+    const actual = result.value;
+    const actualNodes = Array.isArray(actual.nodes) ? actual.nodes.map(String) : [];
+    const actualEdges = Array.isArray(actual.edges) ? actual.edges.map(String) : [];
+    if (actualNodes.join('\u0000') !== expected.nodes.join('\u0000') || actualEdges.join('\u0000') !== expected.edges.join('\u0000') || String(actual.start) !== expected.start || String(actual.end) !== expected.end) {
+      throw new Error(`Operator ${node.id} result diverged from semantic PathValue.`);
+    }
     values.set(node.id, result);
   }
 

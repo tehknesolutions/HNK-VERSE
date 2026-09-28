@@ -34,7 +34,7 @@ export type Edge = {
   provenance: Provenance;
 };
 
-export type Path = {
+export type PathValue = {
   id: string;
   start: string;
   nodes: string[];
@@ -43,6 +43,48 @@ export type Path = {
   directed: boolean;
   provenance: Provenance;
 };
+
+export type Path = PathValue;
+
+export type SemanticValue = PathValue;
+
+export type SemanticNamespace = 'path' | 'cell' | 'edge' | 'generic';
+
+export type SemanticRegistryKey = `${SemanticNamespace}:${string}`;
+
+export class SemanticRegistry<T extends { id: string }> {
+  private readonly values = new Map<SemanticRegistryKey, T>();
+
+  private key(namespace: SemanticNamespace, id: string): SemanticRegistryKey {
+    return `${namespace}:${id}`;
+  }
+
+  constructor(values: Iterable<T> = []) {
+    for (const value of values) this.register(value);
+  }
+
+  register(value: T, namespace: SemanticNamespace = 'generic'): void {
+    const key = this.key(namespace, value.id);
+    if (this.values.has(key)) throw new Error(`Duplicate semantic value: ${key}`);
+    this.values.set(key, value);
+  }
+
+  has(id: string, namespace: SemanticNamespace = 'generic'): boolean {
+    return this.values.has(this.key(namespace, id));
+  }
+
+  get(id: string, namespace: SemanticNamespace = 'generic'): T | undefined {
+    return this.values.get(this.key(namespace, id));
+  }
+
+  valuesList(namespace?: SemanticNamespace): T[] {
+    if (!namespace) return [...this.values.values()];
+    const prefix = `${namespace}:`;
+    return [...this.values.entries()].filter(([key]) => key.startsWith(prefix)).map(([, value]) => value);
+  }
+    return [...this.values.values()];
+  }
+}
 
 export function createProvenance(
   source: string,
