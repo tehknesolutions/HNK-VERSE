@@ -3,8 +3,19 @@ import { SemanticRegistry, semanticRefKey, type PathValue, type SemanticRef, typ
 import type { KodeSpan } from './kode.ts';
 import type { KodeSymbol, KodeType } from './kode-semantic.ts';
 
+export type KodeTypeCompatibility = {
+  actual: KodeType;
+  expected: KodeType;
+};
+
+export function isTypeCompatible(actual: KodeType, expected: KodeType): boolean {
+  if (actual === expected) return true;
+  if (expected === 'Path' && actual === 'OperatorResultPath') return true;
+  return false;
+}
+
 export function isPathType(type: KodeType): boolean {
-  return type === 'Path' || type === 'OperatorResultPath';
+  return isTypeCompatible(type, 'Path');
 }
 
 export type SemanticResolution = {
@@ -35,8 +46,18 @@ export class SemanticResolver {
     };
   }
 
-  resolvePath(ref: UnresolvedSemanticRef, span: KodeSpan, displayName: string): PathResolution | null {
+  resolveAs(ref: UnresolvedSemanticRef, expected: KodeType, span: KodeSpan, displayName: string): SemanticResolution | null {
     const resolved = this.resolve(ref, span, displayName);
+    if (!resolved) return null;
+    if (!isTypeCompatible(resolved.symbol.type, expected)) {
+      this.diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${displayName}" is incompatible with expected type "${expected}".`, span));
+      return null;
+    }
+    return resolved;
+  }
+
+  resolvePath(ref: UnresolvedSemanticRef, span: KodeSpan, displayName: string): PathResolution | null {
+    const resolved = this.resolveAs(ref, 'Path', span, displayName);
     if (!resolved) return null;
     if (!isPathType(resolved.symbol.type)) {
       this.diagnostics.push(diagnostic('E_SYMBOL', `KODE symbol "${displayName}" is not a Path.`, span));
