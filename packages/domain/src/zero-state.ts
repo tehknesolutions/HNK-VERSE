@@ -103,6 +103,19 @@ export function reduceZeroEvent(
       state.mhcmGlyphExecutions = [...(state.mhcmGlyphExecutions ?? []), String(payload.irId)];
       break;
 
+    case 'MhcmPathExecuted': {
+      state.mhcmPathExecutions = [...(state.mhcmPathExecutions ?? []), {
+        irId: String(payload.irId),
+        nodes: Array.isArray(payload.nodes) ? payload.nodes.map(String) : [],
+        edges: Array.isArray(payload.edges) ? payload.edges.map(String) : [],
+      }];
+      break;
+    }
+
+    case 'MhcmGlyphExecuted':
+      state.mhcmGlyphExecutions = [...(state.mhcmGlyphExecutions ?? []), String(payload.irId)];
+      break;
+
     case 'MhcmIrExecuted':
       state.mhcmExecutionIds = [...(state.mhcmExecutionIds ?? []), String(payload.irId)];
       break;
