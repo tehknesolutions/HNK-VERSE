@@ -3,6 +3,7 @@ import { analyzeKode } from './kode-semantic.ts';
 import { KodeCompileError, sortDiagnostics, type KodeDiagnostic } from './kode-diagnostics.ts';
 import { createDiagnosticReport } from './kode-report.ts';
 import type { KodeCompileResult } from './kode-result.ts';
+import { SemanticRegistry, type PathValue } from './model.ts';
 import type { MhcmProgram, MhcmProgramNode } from './program.ts';
 import { pathToAst } from './ast.ts';
 import { astToIr } from './ir.ts';
@@ -12,12 +13,14 @@ function compileAnalyzedKode(source: string): MhcmProgram {
   const semantic = analyzeKode(ast);
   if (!semantic.ok) throw new KodeCompileError(sortDiagnostics(semantic.diagnostics));
   const nodes: MhcmProgramNode[] = [];
+  const semanticPaths = new SemanticRegistry<PathValue>();
   for (const statement of ast.statements) {
     const semanticPath = semantic.model.semanticPaths.get(`PATH-${statement.name}`, 'path');
     if (!semanticPath) throw new Error(`Missing semantic path for ${statement.name}.`);
+    semanticPaths.register(semanticPath, 'path');
     nodes.push({ id: statement.name, kind: 'IR', ir: astToIr(pathToAst(semanticPath)) });
   }
-  return { id: 'KODE-PROGRAM', version: '0.1', nodes, outputs: ast.statements.length ? [ast.statements.at(-1)!.name] : [] };
+  return { id: 'KODE-PROGRAM', version: '0.1', nodes, outputs: ast.statements.length ? [ast.statements.at(-1)!.name] : [], semanticPaths };
 }
 
 export function compileKode(source: string): MhcmProgram { return compileAnalyzedKode(source); }
