@@ -4,8 +4,8 @@ import { KODE_TYPE_SYSTEM_VERSION } from './kode-types.ts';
 import { executeMhcmOperator } from './executor.ts';
 
 export type MhcmProgramNode =
-  | { id: string; kind: 'IR'; ir: HnkIrNode }
-  | { id: string; kind: 'OPERATOR'; operator: 'PATH_REVERSE' | 'PATH_COMPOSE'; inputs: SemanticRef[]; resultType: 'OperatorResultPath'; semanticPathRef: SemanticRef };
+  | { id: string; kind: 'IR'; typeSystemVersion: typeof KODE_TYPE_SYSTEM_VERSION; ir: HnkIrNode }
+  | { id: string; kind: 'OPERATOR'; typeSystemVersion: typeof KODE_TYPE_SYSTEM_VERSION; operator: 'PATH_REVERSE' | 'PATH_COMPOSE'; inputs: SemanticRef[]; resultType: 'OperatorResultPath'; semanticPathRef: SemanticRef };
 
 
 
@@ -29,6 +29,7 @@ export function executeMhcmProgram(program: MhcmProgram): MhcmProgramResult {
   const values = new Map<string, HnkIrNode>();
 
   for (const node of program.nodes) {
+    if (node.typeSystemVersion !== program.typeSystemVersion) throw new Error(`Node ${node.id} type-system version ${node.typeSystemVersion} does not match program version ${program.typeSystemVersion}.`);
     if (values.has(node.id)) throw new Error(`Duplicate program node id: ${node.id}`);
 
     if (node.kind === 'IR') {
