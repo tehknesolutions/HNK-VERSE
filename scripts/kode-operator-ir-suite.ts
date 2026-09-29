@@ -132,3 +132,7 @@ if (!transactionResult.ok) throw new Error('Transactional migration unexpectedly
 if (JSON.stringify(program) !== sourceBeforeMigration) throw new Error('Migration mutated source artifact.');
 if (transactionResult.program === program) throw new Error('Migration returned source artifact instead of migrated artifact.');
 console.log('PASS transactional migration source preservation');
+
+if (!transactionResult.ok) throw new Error('Expected migration result.');
+if (!transactionResult.manifest || transactionResult.manifest.sourceVersion !== program.typeSystemVersion || transactionResult.manifest.targetVersion !== transactionTarget.typeSystemVersion || transactionResult.manifest.migrations.length !== 1) throw new Error('Migration manifest is incomplete.');
+console.log('PASS migration audit manifest');
