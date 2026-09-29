@@ -1,5 +1,6 @@
 import type { MhcmProgram } from './program.ts';
 import { validateProgramCompatibility } from './artifact-compatibility.ts';
+import { beginArtifactMigrationTransaction, commitArtifactMigrationTransaction } from './artifact-migration-transaction.ts';
 
 export type ArtifactMigration = {
   fromVersion: string;
@@ -63,7 +64,8 @@ export function migrateArtifact(
         message: `Migration ${migration.id} produced an incompatible artifact: ${compatibility.issues.map((issue) => `[${issue.code}] ${issue.message}`).join('; ')}`,
       };
     }
-    return { ok: true, program: migrated, migrationId: migration.id };
+    const transaction = beginArtifactMigrationTransaction(program, migrated, migration.id);
+    return { ok: true, program: commitArtifactMigrationTransaction(transaction), migrationId: migration.id };
   } catch (error) {
     return {
       ok: false,
