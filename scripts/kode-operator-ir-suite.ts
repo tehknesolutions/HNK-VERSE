@@ -1,4 +1,4 @@
-import { analyzeKode, compileKode, executeMhcmProgram, parseKode, validateProgramCompatibility, validateNodeCompatibility, validateIrCompatibility } from '../packages/mhcm/src/index.ts';
+import { analyzeKode, compileKode, executeMhcmProgram, parseKode, getCompatibilityAction, validateProgramCompatibility, validateNodeCompatibility, validateIrCompatibility } from '../packages/mhcm/src/index.ts';
 
 const source = [
   'path A = A -> B;',
@@ -99,3 +99,7 @@ if (badNode.kind === 'IR') {
   if (irReport.ok || !irReport.issues.some((issue) => issue.code === 'IR_SCHEMA_MISMATCH')) throw new Error('Structured IR schema compatibility code missing.');
 }
 console.log('PASS structured artifact compatibility report');
+
+if (getCompatibilityAction(compatibility) !== 'warn') throw new Error('Valid compatibility result should not request rejection.');
+if (getCompatibilityAction(report) !== 'reject') throw new Error('Program mismatch should request rejection.');
+console.log('PASS compatibility severity/action classification');
