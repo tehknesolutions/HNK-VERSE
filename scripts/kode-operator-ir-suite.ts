@@ -87,3 +87,15 @@ const firstNode = program.nodes[0];
 if (!validateNodeCompatibility(firstNode, program.typeSystemVersion).ok) throw new Error('Valid node failed centralized compatibility validation.');
 if (firstNode.kind === 'IR' && !validateIrCompatibility(firstNode.ir, firstNode.typeSystemVersion).ok) throw new Error('Valid IR failed centralized compatibility validation.');
 console.log('PASS centralized artifact compatibility validation');
+
+const badProgram = { ...program, typeSystemVersion: 'kode-types-v0.0.0' as typeof program.typeSystemVersion };
+const report = validateProgramCompatibility(badProgram);
+if (report.ok || !report.issues.some((issue) => issue.code === 'PROGRAM_TYPE_SYSTEM_MISMATCH')) throw new Error('Structured program compatibility code missing.');
+const badNode = { ...program.nodes[0], typeSystemVersion: 'kode-types-v0.0.0' as typeof program.nodes[0].typeSystemVersion };
+const nodeReport = validateNodeCompatibility(badNode, program.typeSystemVersion);
+if (nodeReport.ok || !nodeReport.issues.some((issue) => issue.code === 'NODE_TYPE_SYSTEM_MISMATCH')) throw new Error('Structured node compatibility code missing.');
+if (badNode.kind === 'IR') {
+  const irReport = validateIrCompatibility({ ...badNode.ir, irVersion: 'invalid' as typeof badNode.ir.irVersion }, badNode.typeSystemVersion);
+  if (irReport.ok || !irReport.issues.some((issue) => issue.code === 'IR_SCHEMA_MISMATCH')) throw new Error('Structured IR schema compatibility code missing.');
+}
+console.log('PASS structured artifact compatibility report');
