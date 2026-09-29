@@ -1,4 +1,4 @@
-import { analyzeKode, compileKode, executeMhcmProgram, parseKode, getCompatibilityAction, migrateArtifact, InMemoryArtifactMigrationRegistry, validateArtifactMigrationGraph, validateProgramCompatibility, validateNodeCompatibility, validateIrCompatibility } from '../packages/mhcm/src/index.ts';
+import { analyzeKode, compileKode, executeMhcmProgram, parseKode, getCompatibilityAction, migrateArtifact, migrateArtifactByPath, InMemoryArtifactMigrationRegistry, validateArtifactMigrationGraph, validateProgramCompatibility, validateNodeCompatibility, validateIrCompatibility } from '../packages/mhcm/src/index.ts';
 
 const source = [
   'path A = A -> B;',
@@ -186,3 +186,7 @@ if (!selectedPath.ok || selectedPath.path.map((step) => step.id).join(' -> ') !=
 const discontinuousPath = selectArtifactMigrationPath(ambiguousRegistry, 'v1', 'v4', ['PATH-C', 'PATH-D']);
 if (discontinuousPath.ok || discontinuousPath.reason !== 'DISCONTINUOUS_PATH') throw new Error('Discontinuous migration path was accepted.');
 console.log('PASS explicit migration path selection');
+
+const explicitExecution = migrateArtifactByPath(program, v03.typeSystemVersion, ['MIG-001', 'MIG-002'], composedRegistry);
+if (!explicitExecution.ok || explicitExecution.migrationId !== 'MIG-001 -> MIG-002') throw new Error('Explicit migration path execution failed.');
+console.log('PASS explicit migration path execution');
