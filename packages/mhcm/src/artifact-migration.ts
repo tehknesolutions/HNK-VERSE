@@ -1,6 +1,7 @@
 import type { MhcmProgram } from './program.ts';
 import { validateProgramCompatibility } from './artifact-compatibility.ts';
 import { beginArtifactMigrationTransaction, commitArtifactMigrationTransaction } from './artifact-migration-transaction.ts';
+import { createMigrationManifest, type ArtifactMigrationManifest } from './artifact-migration-manifest.ts';
 
 export type ArtifactMigration = {
   fromVersion: string;
@@ -30,7 +31,7 @@ export class InMemoryArtifactMigrationRegistry implements ArtifactMigrationRegis
 }
 
 export type ArtifactMigrationResult =
-  | { ok: true; program: MhcmProgram; migrationId: string }
+  | { ok: true; program: MhcmProgram; migrationId: string; manifest: ArtifactMigrationManifest }
   | { ok: false; reason: 'NO_MIGRATION' | 'MIGRATION_FAILED' | 'MIGRATED_ARTIFACT_INCOMPATIBLE'; message: string };
 
 export function migrateArtifact(
@@ -65,7 +66,7 @@ export function migrateArtifact(
       };
     }
     const transaction = beginArtifactMigrationTransaction(program, migrated, migration.id);
-    return { ok: true, program: commitArtifactMigrationTransaction(transaction), migrationId: migration.id };
+    return { ok: true, program: commitArtifactMigrationTransaction(transaction), migrationId: migration.id, manifest: createMigrationManifest(program.typeSystemVersion, targetVersion, migration.id) };
   } catch (error) {
     return {
       ok: false,
