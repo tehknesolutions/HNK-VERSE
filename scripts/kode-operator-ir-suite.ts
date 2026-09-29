@@ -269,3 +269,9 @@ for (const edge of [
 const overlapCycles = validateArtifactMigrationGraph(overlapCycleRegistry, { allowCycles: true });
 if (!overlapCycles.ok || !['a','b','c'].every((version) => overlapCycles.cycles.includes(version))) throw new Error('Overlapping cycle members were not fully reported.');
 console.log('PASS overlapping cycle detection');
+
+const identityManifest = { sourceVersion: 'v1', targetVersion: 'v1', migrations: Object.freeze([]) };
+let identityAppendRejected = false;
+try { appendMigrationManifest(identityManifest, 'BAD-APPEND', 'v2', 'v3'); } catch { identityAppendRejected = true; }
+if (!identityAppendRejected) throw new Error('Identity manifest accepted a discontinuous append.');
+console.log('PASS identity manifest append continuity');
