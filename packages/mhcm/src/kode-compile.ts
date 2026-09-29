@@ -26,17 +26,17 @@ export function compileKode(source: string): MhcmProgram {
       const path = analysis.model.semanticPaths.get(`PATH-${statement.name}`, 'path');
       if (!path) throw new Error(`Semantic PathValue missing for "${statement.name}".`);
       semanticPaths.register(path, 'path');
-      nodes.push({ id: statement.name, kind: 'IR', ir: astToIr(pathToAst(path)) });
+      nodes.push({ id: statement.name, kind: 'IR', typeSystemVersion: KODE_TYPE_SYSTEM_VERSION, ir: astToIr(pathToAst(path)) });
     } else if (statement.kind === 'ReverseStatement') {
       const semanticPath = analysis.model.semanticPaths.get(`PATH-${statement.name}`, 'path');
       if (!semanticPath) throw new Error(`Semantic PathValue missing for operator result "${statement.name}".`);
       semanticPaths.register(semanticPath, 'path');
-      nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_REVERSE', inputs: [statement.source.ref], resultType: 'OperatorResultPath', semanticPathRef: createSemanticRef('path', semanticPath.id) });
+      nodes.push({ id: statement.name, kind: 'OPERATOR', typeSystemVersion: KODE_TYPE_SYSTEM_VERSION, operator: 'PATH_REVERSE', inputs: [statement.source.ref], resultType: 'OperatorResultPath', semanticPathRef: createSemanticRef('path', semanticPath.id) });
     } else {
       const semanticPath = analysis.model.paths.get(statement.name);
       if (!semanticPath) throw new Error(`Semantic PathValue missing for operator result "${statement.name}".`);
       semanticPaths.register(semanticPath, 'path');
-      nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_COMPOSE', inputs: [statement.left.ref, statement.right.ref], resultType: 'OperatorResultPath', semanticPathRef: createSemanticRef('path', semanticPath.id) });
+      nodes.push({ id: statement.name, kind: 'OPERATOR', typeSystemVersion: KODE_TYPE_SYSTEM_VERSION, operator: 'PATH_COMPOSE', inputs: [statement.left.ref, statement.right.ref], resultType: 'OperatorResultPath', semanticPathRef: createSemanticRef('path', semanticPath.id) });
     }
   }
 
