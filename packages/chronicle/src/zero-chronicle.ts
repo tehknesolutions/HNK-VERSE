@@ -130,6 +130,16 @@ export function projectZeroChronicle(
         );
         break;
 
+      case 'MhcmProposalApplied':
+        entries.push(
+          entry(
+            source,
+            'CREATION',
+            'Proposta MHCM manifestada no World',
+            'Uma proposta MHCM autorizada foi materializada como estado do World e registrada por evento autoritativo.',
+          ),
+        );
+        break;
       case 'EntityCreated':
         if (payload.definitionId === 'ENTITY-WOODEN-BOX-ZERO-V0') {
           entries.push(
