@@ -1,7 +1,7 @@
 import { SemanticRegistry, createUnresolvedSemanticRef, type KodeSymbol, type SemanticRef } from '../packages/mhcm/src/model.ts';
 import { SemanticResolver } from '../packages/mhcm/src/kode-resolver.ts';
-import { KodeTypeSystem } from '../packages/mhcm/src/kode-types.ts';
-import type { KodeTypeSystemPort } from '../packages/mhcm/src/kode-type-port.ts';
+import { KODE_TYPES, KodeTypeSystem, validateKodeTypeDefinitions } from '../packages/mhcm/src/kode-types.ts';
+import type { KodeTypeId, KodeTypeSystemPort } from '../packages/mhcm/src/kode-type-port.ts';
 import { KodeDiagnostic } from '../packages/mhcm/src/kode-diagnostics.ts';
 
 const span = { start: 0, end: 1, line: 1, column: 1 };
@@ -77,3 +77,56 @@ console.log('PASS generalized type compatibility');
 const port: KodeTypeSystemPort = typeSystem;
 if (!port.isSubtypeOf('SpecialPath', 'Path')) throw new Error('Type-system port contract failed.');
 console.log('PASS type-system port contract');
+
+if (!validateKodeTypeDefinitions(KODE_TYPES).ok) throw new Error('Canonical KODE type hierarchy should validate.');
+const cyclicTypes = {
+  Path: { id: 'Path' as const, category: 'value' as const, parents: ['SpecialPath'] as const },
+  OperatorResultPath: KODE_TYPES.OperatorResultPath,
+  SpecialPath: KODE_TYPES.SpecialPath,
+};
+const cycleResult = validateKodeTypeDefinitions(cyclicTypes);
+if (cycleResult.ok || !cycleResult.errors.some((error) => error.includes('cycle'))) throw new Error('Type hierarchy cycle was not detected.');
+let invalidRejected = false;
+try { new KodeTypeSystem(cyclicTypes); } catch { invalidRejected = true; }
+if (!invalidRejected) throw new Error('Invalid type hierarchy was not rejected at initialization.');
+console.log('PASS type hierarchy validation');
+
+const invalidCategoryTypes = {
+  Path: { id: 'Path' as const, category: 'value' as const, parents: [] as const },
+  OperatorResultPath: { id: 'OperatorResultPath' as const, category: 'operator-result' as const, parents: ['Path'] as const },
+  SpecialPath: { id: 'SpecialPath' as const, category: 'value' as const, parents: ['OperatorResultPath'] as const },
+};
+const categoryResult = validateKodeTypeDefinitions(invalidCategoryTypes);
+if (categoryResult.ok || !categoryResult.errors.some((error) => error.includes('cannot inherit'))) throw new Error('Invalid type category inheritance was not detected.');
+console.log('PASS type category validation');
+
+const malformedDescriptors = {
+  Path: { id: 'WrongPathId' as 'Path', category: 'value' as const, parents: [] as const },
+  OperatorResultPath: KODE_TYPES.OperatorResultPath,
+  SpecialPath: KODE_TYPES.SpecialPath,
+};
+const descriptorResult = validateKodeTypeDefinitions(malformedDescriptors);
+if (descriptorResult.ok || !descriptorResult.errors.some((error) => error.includes('does not match descriptor id'))) throw new Error('Descriptor key/id mismatch was not detected.');
+const invalidMetadata = {
+  Path: { id: 'Path' as const, category: 'invalid' as 'value', parents: [] as const },
+  OperatorResultPath: KODE_TYPES.OperatorResultPath,
+  SpecialPath: KODE_TYPES.SpecialPath,
+};
+const metadataResult = validateKodeTypeDefinitions(invalidMetadata);
+if (metadataResult.ok || !metadataResult.errors.some((error) => error.includes('invalid category'))) throw new Error('Invalid descriptor category was not detected.');
+let unknownTypeRejected = false;
+try { typeSystem.get('UnknownType' as 'Path'); } catch { unknownTypeRejected = true; }
+if (!unknownTypeRejected) throw new Error('Unknown KODE type was not rejected.');
+console.log('PASS type descriptor integrity');
+
+const immutableSystem = new KodeTypeSystem(KODE_TYPES);
+const immutablePath = immutableSystem.get('Path');
+try { (immutablePath.parents as KodeTypeId[]).push('SpecialPath'); throw new Error('Frozen parents metadata was mutable.'); } catch (error) { if (error instanceof Error && error.message === 'Frozen parents metadata was mutable.') throw error; }
+try { (immutablePath as { category: string }).category = 'operator-result'; throw new Error('Frozen type descriptor was mutable.'); } catch (error) { if (error instanceof Error && error.message === 'Frozen type descriptor was mutable.') throw error; }
+console.log('PASS immutable type definitions');
+
+import { KODE_TYPE_SYSTEM_VERSION } from '../packages/mhcm/src/kode-types.ts';
+const versionedSystem = new KodeTypeSystem();
+if (versionedSystem.version !== KODE_TYPE_SYSTEM_VERSION) throw new Error('Type-system version mismatch.');
+if (!Object.isFrozen(KODE_TYPES) || !Object.isFrozen(KODE_TYPES.Path) || !Object.isFrozen(KODE_TYPES.Path.parents)) throw new Error('Canonical KODE type definitions are not frozen.');
+console.log('PASS canonical type-system version and immutability');
