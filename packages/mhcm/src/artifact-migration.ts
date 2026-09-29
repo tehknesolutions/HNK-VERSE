@@ -93,32 +93,26 @@ export function validateArtifactMigrationGraph(registry: ArtifactMigrationRegist
     adjacency.set(migration.fromVersion, targets);
   }
 
-  const visiting = new Set<string>();
-  const visited = new Set<string>();
-  const stack: string[] = [];
-  const reportedCycles = new Set<string>();
-  const walk = (version: string): void => {
-    const cycleStart = stack.indexOf(version);
-    if (cycleStart >= 0) {
-      const members = stack.slice(cycleStart);
-      for (const member of members) cycles.push(member);
-      const cycleKey = [...members].sort().join('->');
-      if (!reportedCycles.has(cycleKey)) {
-        reportedCycles.add(cycleKey);
-        if (!policy.allowCycles) issues.push({ code: 'MIGRATION_CYCLE', message: `Migration graph contains a cycle involving versions ${members.join(' -> ')}.` });
-      }
-      return;
+  const hasPath = (start: string, target: string): boolean => {
+    const seen = new Set<string>();
+    const queue = [start];
+    while (queue.length) {
+      const current = queue.shift()!;
+      if (current === target) return true;
+      if (seen.has(current)) continue;
+      seen.add(current);
+      queue.push(...(adjacency.get(current) ?? []));
     }
-    if (visited.has(version)) return;
-    visiting.add(version);
-    stack.push(version);
-    for (const target of adjacency.get(version) ?? []) walk(target);
-    stack.pop();
-    visiting.delete(version);
-    visited.add(version);
+    return false;
   };
-  for (const version of adjacency.keys()) walk(version);
-  return { ok: issues.length === 0, issues: Object.freeze(issues), cycles: Object.freeze([...new Set(cycles)]) };
+  const cyclicVersions = new Set<string>();
+  for (const [version, targets] of adjacency.entries()) {
+    if (targets.some((target) => hasPath(target, version))) cyclicVersions.add(version);
+  }
+  for (const version of cyclicVersions) cycles.push(version);
+  if (!policy.allowCycles && cyclicVersions.size) {
+    issues.push({ code: 'MIGRATION_CYCLE', message: `Migration graph contains cycle members: ${[...cyclicVersions].sort().join(' -> ')}.` });
+  }  return { ok: issues.length === 0, issues: Object.freeze(issues), cycles: Object.freeze([...new Set(cycles)]) };
 }
 
 export interface ArtifactMigrationRegistry {
@@ -135,10 +129,11 @@ export class InMemoryArtifactMigrationRegistry implements ArtifactMigrationRegis
   register(migration: ArtifactMigration): void {
     const key = `${migration.fromVersion}->${migration.toVersion}`;
     if (this.migrations.has(key)) throw new Error(`Artifact migration already registered: ${key}.`);
+    if (!migration.id.trim()) throw new Error('Artifact migration id must not be empty.');
     if (migration.fromVersion === migration.toVersion) throw new Error('Artifact migration must change version.');
-    this.migrations.set(key, migration);
+    if ([...this.migrations.values()].some((existing) => existing.id === migration.id)) throw new Error(`Artifact migration id already registered: ${migration.id}.`);
+    this.migrations.set(key, Object.freeze({ ...migration }));
   }
-
   find(fromVersion: string, toVersion: string): ArtifactMigration | null {
     return this.migrations.get(`${fromVersion}->${toVersion}`) ?? null;
   }
@@ -217,7 +212,11 @@ export function migrateArtifactByPath(program: MhcmProgram, targetVersion: strin
 }
 
 export function migrateArtifact(program: MhcmProgram, targetVersion: string, registry: ArtifactMigrationRegistry): ArtifactMigrationResult {
-  if (program.typeSystemVersion === targetVersion) return { ok: true, program, migrationId: 'identity', manifest: Object.freeze({ sourceVersion: targetVersion, targetVersion, migrations: Object.freeze([]) }) };
+  if (program.typeSystemVersion === targetVersion) {
+    const compatibility = validateProgramCompatibility(program, targetVersion);
+    if (!compatibility.ok) return { ok: false, reason: 'MIGRATED_ARTIFACT_INCOMPATIBLE', message: `Identity migration produced an incompatible artifact: ${compatibility.issues.map((issue) => `[${issue.code}] ${issue.message}`).join('; ')}` };
+    return { ok: true, program, migrationId: 'identity', manifest: Object.freeze({ sourceVersion: targetVersion, targetVersion, migrations: Object.freeze([]) }) };
+  }
   const direct = registry.find(program.typeSystemVersion, targetVersion);
   if (direct) return applyMigrationStep(program, direct);
   const pathResult = registry.resolvePath(program.typeSystemVersion, targetVersion, 'reject-ambiguous');
