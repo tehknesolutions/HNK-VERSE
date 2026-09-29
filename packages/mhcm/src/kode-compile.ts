@@ -4,6 +4,7 @@ import { SemanticRegistry, type MhcmProgram } from './program.ts';
 import { createSemanticRef, type PathValue } from './model.ts';
 import { KodeCompileError, diagnostic, sortDiagnostics } from './kode-diagnostics.ts';
 import { analyzeKode } from './kode-semantic.ts';
+import { KODE_TYPE_SYSTEM_VERSION } from './kode-types.ts';
 import type { KodeCompileResult } from './kode-result.ts';
 import { createDiagnosticReport } from './kode-report.ts';
 
@@ -27,7 +28,7 @@ export function compileKode(source: string): MhcmProgram {
       semanticPaths.register(path, 'path');
       nodes.push({ id: statement.name, kind: 'IR', ir: astToIr(pathToAst(path)) });
     } else if (statement.kind === 'ReverseStatement') {
-      const semanticPath = analysis.model.paths.get(statement.name);
+      const semanticPath = analysis.model.semanticPaths.get(`PATH-${statement.name}`, 'path');
       if (!semanticPath) throw new Error(`Semantic PathValue missing for operator result "${statement.name}".`);
       semanticPaths.register(semanticPath, 'path');
       nodes.push({ id: statement.name, kind: 'OPERATOR', operator: 'PATH_REVERSE', inputs: [statement.source.ref], resultType: 'OperatorResultPath', semanticPathRef: createSemanticRef('path', semanticPath.id) });
@@ -42,6 +43,7 @@ export function compileKode(source: string): MhcmProgram {
   return {
     id: 'KODE-PROGRAM',
     version: '0.1',
+    typeSystemVersion: KODE_TYPE_SYSTEM_VERSION,
     nodes,
     outputs: nodes.length ? [nodes[nodes.length - 1].id] : [],
     semanticPaths,
