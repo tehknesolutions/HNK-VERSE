@@ -1,7 +1,7 @@
 import type { MhcmProgram } from './program.ts';
 import { validateProgramCompatibility } from './artifact-compatibility.ts';
 import { beginArtifactMigrationTransaction, commitArtifactMigrationTransaction } from './artifact-migration-transaction.ts';
-import { createMigrationManifest, type ArtifactMigrationManifest } from './artifact-migration-manifest.ts';
+import { appendMigrationManifest, createMigrationManifest, type ArtifactMigrationManifest } from './artifact-migration-manifest.ts';
 
 export type ArtifactMigration = {
   fromVersion: string;
@@ -13,6 +13,7 @@ export type ArtifactMigration = {
 export interface ArtifactMigrationRegistry {
   register(migration: ArtifactMigration): void;
   find(fromVersion: string, toVersion: string): ArtifactMigration | null;
+  list(): readonly ArtifactMigration[];
 }
 
 export class InMemoryArtifactMigrationRegistry implements ArtifactMigrationRegistry {
@@ -28,50 +29,55 @@ export class InMemoryArtifactMigrationRegistry implements ArtifactMigrationRegis
   find(fromVersion: string, toVersion: string): ArtifactMigration | null {
     return this.migrations.get(`${fromVersion}->${toVersion}`) ?? null;
   }
+
+  list(): readonly ArtifactMigration[] {
+    return Object.freeze([...this.migrations.values()]);
+  }
 }
 
 export type ArtifactMigrationResult =
   | { ok: true; program: MhcmProgram; migrationId: string; manifest: ArtifactMigrationManifest }
   | { ok: false; reason: 'NO_MIGRATION' | 'MIGRATION_FAILED' | 'MIGRATED_ARTIFACT_INCOMPATIBLE'; message: string };
 
-export function migrateArtifact(
-  program: MhcmProgram,
-  targetVersion: string,
-  registry: ArtifactMigrationRegistry,
-): ArtifactMigrationResult {
-  const migration = registry.find(program.typeSystemVersion, targetVersion);
-  if (!migration) {
-    return {
-      ok: false,
-      reason: 'NO_MIGRATION',
-      message: `No migration registered from ${program.typeSystemVersion} to ${targetVersion}.`,
-    };
-  }
-
+function applyMigrationStep(program: MhcmProgram, migration: ArtifactMigration): ArtifactMigrationResult {
   try {
     const migrated = migration.migrate(program);
-    if (migrated.typeSystemVersion !== targetVersion) {
-      return {
-        ok: false,
-        reason: 'MIGRATION_FAILED',
-        message: `Migration ${migration.id} did not produce target version ${targetVersion}.`,
-      };
-    }
+    if (migrated.typeSystemVersion !== migration.toVersion) return { ok: false, reason: 'MIGRATION_FAILED', message: `Migration ${migration.id} did not produce target version ${migration.toVersion}.` };
     const compatibility = validateProgramCompatibility(migrated);
-    if (!compatibility.ok) {
-      return {
-        ok: false,
-        reason: 'MIGRATED_ARTIFACT_INCOMPATIBLE',
-        message: `Migration ${migration.id} produced an incompatible artifact: ${compatibility.issues.map((issue) => `[${issue.code}] ${issue.message}`).join('; ')}`,
-      };
-    }
+    if (!compatibility.ok) return { ok: false, reason: 'MIGRATED_ARTIFACT_INCOMPATIBLE', message: `Migration ${migration.id} produced an incompatible artifact: ${compatibility.issues.map((issue) => `[${issue.code}] ${issue.message}`).join('; ')}` };
     const transaction = beginArtifactMigrationTransaction(program, migrated, migration.id);
-    return { ok: true, program: commitArtifactMigrationTransaction(transaction), migrationId: migration.id, manifest: createMigrationManifest(program.typeSystemVersion, targetVersion, migration.id) };
+    return { ok: true, program: commitArtifactMigrationTransaction(transaction), migrationId: migration.id, manifest: createMigrationManifest(program.typeSystemVersion, migration.toVersion, migration.id) };
   } catch (error) {
-    return {
-      ok: false,
-      reason: 'MIGRATION_FAILED',
-      message: `Migration ${migration.id} failed: ${error instanceof Error ? error.message : String(error)}`,
-    };
+    return { ok: false, reason: 'MIGRATION_FAILED', message: `Migration ${migration.id} failed: ${error instanceof Error ? error.message : String(error)}` };
   }
+}
+
+export function migrateArtifact(program: MhcmProgram, targetVersion: string, registry: ArtifactMigrationRegistry): ArtifactMigrationResult {
+  if (program.typeSystemVersion === targetVersion) return { ok: true, program, migrationId: 'identity', manifest: Object.freeze({ sourceVersion: targetVersion, targetVersion, migrations: Object.freeze([]) }) };
+  const direct = registry.find(program.typeSystemVersion, targetVersion);
+  if (direct) return applyMigrationStep(program, direct);
+  const migrations = registry.list();
+  const queue: Array<{ version: string; path: ArtifactMigration[] }> = [{ version: program.typeSystemVersion, path: [] }];
+  const visited = new Set<string>([program.typeSystemVersion]);
+  let path: ArtifactMigration[] | null = null;
+  while (queue.length && !path) {
+    const current = queue.shift()!;
+    for (const candidate of migrations) {
+      if (candidate.fromVersion !== current.version || visited.has(candidate.toVersion)) continue;
+      const nextPath = [...current.path, candidate];
+      if (candidate.toVersion === targetVersion) { path = nextPath; break; }
+      visited.add(candidate.toVersion);
+      queue.push({ version: candidate.toVersion, path: nextPath });
+    }
+  }
+  if (!path) return { ok: false, reason: 'NO_MIGRATION', message: `No migration chain registered from ${program.typeSystemVersion} to ${targetVersion}.` };
+  let currentProgram = program;
+  let manifest: ArtifactMigrationManifest | null = null;
+  for (const step of path) {
+    const result = applyMigrationStep(currentProgram, step);
+    if (!result.ok) return result;
+    currentProgram = result.program;
+    manifest = manifest ? appendMigrationManifest(manifest, step.id, step.fromVersion, step.toVersion) : result.manifest;
+  }
+  return { ok: true, program: currentProgram, migrationId: path.map((step) => step.id).join(' -> '), manifest: manifest! };
 }
