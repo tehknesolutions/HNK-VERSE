@@ -1,6 +1,6 @@
 import { EXPERIENCE_A_MANIFEST, EXPERIENCE_B_MANIFEST, HUB_MANIFEST, InteropEngine, TransitionCoordinator, VerseLifecycleRuntime } from '@hnk-verse/sdk';
 import type { VerseContext, VerseRuntime } from '@hnk-verse/contracts';
-const assert=(x:unknown,m:string):asserts x=>{if(!x)throw new Error('VERSE_SDK_ZERO_E2E_CHECK_FAILED: '+m)};
+const assert: (x: unknown, m: string) => asserts x = (x, m) => {if(!x)throw new Error('VERSE_SDK_ZERO_E2E_CHECK_FAILED: '+m)};
 const manifests=new Map([HUB_MANIFEST,EXPERIENCE_A_MANIFEST,EXPERIENCE_B_MANIFEST].map(m=>[m.verseId,m]));
 let eventN=0,resultN=0; const interop=new InteropEngine({allocateResultRef:()=>`ZERO-E2E-RESULT-${++resultN}`});
 const ok=async()=>({ok:true} as const); const runtime:VerseRuntime={initialize:ok,enter:ok,suspend:ok,resume:ok,exit:ok,dispose:ok}; const lifecycle=new VerseLifecycleRuntime(runtime);

@@ -1,6 +1,6 @@
 import { assertBoundaryChain, createChronicleBoundaryEvent } from '@hnk-verse/sdk';
 
-const assert=(x:unknown,m:string):asserts x=>{if(!x)throw new Error('VERSE_SDK_CHRONICLE_CHECK_FAILED: '+m)};
+const assert: (x: unknown, m: string) => asserts x = (x, m) => {if(!x)throw new Error('VERSE_SDK_CHRONICLE_CHECK_FAILED: '+m)};
 const common={verseId:'VERSE-ZERO-HUB-001',worldId:'WORLD-ZERO-MALKUTH-001',actorId:'HNKID-ZERO-001',sessionId:'SESSION-TASK3-001',realTimestamp:'2026-09-27T23:00:00Z',worldTimestamp:'DAY-001T10:00:00',correlationId:'CORR-TASK3-001'};
 const requested=createChronicleBoundaryEvent({...common,eventId:'EVT-T3-001',eventType:'VerseTransitionRequested',payload:{sourceVerseId:'VERSE-ZERO-HUB-001',targetVerseId:'VERSE-ZERO-A-001',sourceWorldId:'WORLD-ZERO-MALKUTH-001',targetWorldId:'WORLD-ZERO-A-001',requestedCapabilities:['embodiment.verse-native']}});
 const negotiated=createChronicleBoundaryEvent({...common,eventId:'EVT-T3-002',eventType:'VerseCapabilityNegotiated',causationId:requested.eventId,payload:{sourceVerseId:'VERSE-ZERO-HUB-001',targetVerseId:'VERSE-ZERO-A-001',acceptedCapabilities:['embodiment.verse-native']}});

@@ -25,7 +25,8 @@ const provenance=(request:InteropRequest):InteropProvenance=>({
 });
 
 export class InteropEngine {
-  constructor(private readonly deps:InteropEngineDeps) {}
+  private readonly deps: InteropEngineDeps;
+  constructor(deps: InteropEngineDeps) { this.deps = deps; }
 
   execute(request:InteropRequest):InteropOutcome {
     if (request.outcome==='REJECT') return {kind:'REJECT',reason:request.reason??'INTEROP_REJECTED',provenance:provenance(request)};

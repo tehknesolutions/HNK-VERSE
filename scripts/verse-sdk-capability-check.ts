@@ -1,6 +1,6 @@
 import { INTEROP_OUTCOMES } from '@hnk-verse/contracts';
 import { EXPERIENCE_A_MANIFEST, EXPERIENCE_B_MANIFEST, HUB_MANIFEST, negotiateCapabilities } from '@hnk-verse/sdk';
-const assert=(x:unknown,m:string):asserts x=>{if(!x)throw new Error('VERSE_SDK_CAPABILITY_CHECK_FAILED: '+m)};
+const assert: (x: unknown, m: string) => asserts x = (x, m) => {if(!x)throw new Error('VERSE_SDK_CAPABILITY_CHECK_FAILED: '+m)};
 const base={requiredContracts:[{name:'verse-sdk',version:'0.1'}],grantedPermissions:[],correlationId:'CORR-TASK2'};
 const supported=negotiateCapabilities(HUB_MANIFEST,{...base,verseId:HUB_MANIFEST.verseId,requestedCapabilities:['portal.travel']});
 assert(supported.accepted,'supported capability must succeed');

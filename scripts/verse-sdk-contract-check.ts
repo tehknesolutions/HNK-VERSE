@@ -16,7 +16,7 @@ const expectedErrors = [
   'PLATFORM_BOUNDARY_ERROR',
 ];
 
-const assert = (condition: unknown, message: string): asserts condition => {
+const assert: (condition: unknown, message: string) => asserts condition = (condition, message) => {
   if (!condition) throw new Error(`VERSE_SDK_CONTRACT_CHECK_FAILED: ${message}`);
 };
 
