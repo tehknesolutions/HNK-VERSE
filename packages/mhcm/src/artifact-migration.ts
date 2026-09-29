@@ -10,10 +10,13 @@ export type ArtifactMigration = {
   migrate: (program: MhcmProgram) => MhcmProgram;
 };
 
+export type ArtifactMigrationPath = readonly ArtifactMigration[];
+
 export interface ArtifactMigrationRegistry {
   register(migration: ArtifactMigration): void;
   find(fromVersion: string, toVersion: string): ArtifactMigration | null;
   list(): readonly ArtifactMigration[];
+  findPath(fromVersion: string, toVersion: string): ArtifactMigrationPath | null;
 }
 
 export class InMemoryArtifactMigrationRegistry implements ArtifactMigrationRegistry {
@@ -32,6 +35,24 @@ export class InMemoryArtifactMigrationRegistry implements ArtifactMigrationRegis
 
   list(): readonly ArtifactMigration[] {
     return Object.freeze([...this.migrations.values()]);
+  }
+
+  findPath(fromVersion: string, toVersion: string): ArtifactMigrationPath | null {
+    if (fromVersion === toVersion) return Object.freeze([]);
+    const migrations = [...this.migrations.values()].sort((a, b) => a.id.localeCompare(b.id));
+    const queue: Array<{ version: string; path: ArtifactMigration[] }> = [{ version: fromVersion, path: [] }];
+    const visited = new Set<string>([fromVersion]);
+    while (queue.length) {
+      const current = queue.shift()!;
+      for (const candidate of migrations) {
+        if (candidate.fromVersion !== current.version || visited.has(candidate.toVersion)) continue;
+        const nextPath = [...current.path, candidate];
+        if (candidate.toVersion === toVersion) return Object.freeze(nextPath);
+        visited.add(candidate.toVersion);
+        queue.push({ version: candidate.toVersion, path: nextPath });
+      }
+    }
+    return null;
   }
 }
 
@@ -56,20 +77,7 @@ export function migrateArtifact(program: MhcmProgram, targetVersion: string, reg
   if (program.typeSystemVersion === targetVersion) return { ok: true, program, migrationId: 'identity', manifest: Object.freeze({ sourceVersion: targetVersion, targetVersion, migrations: Object.freeze([]) }) };
   const direct = registry.find(program.typeSystemVersion, targetVersion);
   if (direct) return applyMigrationStep(program, direct);
-  const migrations = registry.list();
-  const queue: Array<{ version: string; path: ArtifactMigration[] }> = [{ version: program.typeSystemVersion, path: [] }];
-  const visited = new Set<string>([program.typeSystemVersion]);
-  let path: ArtifactMigration[] | null = null;
-  while (queue.length && !path) {
-    const current = queue.shift()!;
-    for (const candidate of migrations) {
-      if (candidate.fromVersion !== current.version || visited.has(candidate.toVersion)) continue;
-      const nextPath = [...current.path, candidate];
-      if (candidate.toVersion === targetVersion) { path = nextPath; break; }
-      visited.add(candidate.toVersion);
-      queue.push({ version: candidate.toVersion, path: nextPath });
-    }
-  }
+  const path = registry.findPath(program.typeSystemVersion, targetVersion);
   if (!path) return { ok: false, reason: 'NO_MIGRATION', message: `No migration chain registered from ${program.typeSystemVersion} to ${targetVersion}.` };
   let currentProgram = program;
   let manifest: ArtifactMigrationManifest | null = null;
