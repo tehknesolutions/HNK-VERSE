@@ -146,3 +146,11 @@ const composed = migrateArtifact(program, v03.typeSystemVersion, composedRegistr
 if (!composed.ok || composed.manifest.migrations.length !== 2 || composed.manifest.sourceVersion !== program.typeSystemVersion || composed.manifest.targetVersion !== v03.typeSystemVersion) throw new Error('Composed migration chain failed.');
 if (composed.migrationId !== 'MIG-001 -> MIG-002') throw new Error('Composed migration audit chain is incorrect.');
 console.log('PASS composed artifact migration chain');
+
+const pathRegistry = new InMemoryArtifactMigrationRegistry();
+pathRegistry.register({ id: 'Z-DIRECT-UNUSED', fromVersion: program.typeSystemVersion, toVersion: 'kode-types-v0.4.0', migrate: (input) => ({ ...input, typeSystemVersion: 'kode-types-v0.4.0' as typeof input.typeSystemVersion }) });
+pathRegistry.register({ id: 'A-001', fromVersion: program.typeSystemVersion, toVersion: 'kode-types-v0.2.0', migrate: (input) => ({ ...input, typeSystemVersion: 'kode-types-v0.2.0' as typeof input.typeSystemVersion }) });
+pathRegistry.register({ id: 'A-002', fromVersion: 'kode-types-v0.2.0', toVersion: 'kode-types-v0.3.0', migrate: (input) => ({ ...input, typeSystemVersion: 'kode-types-v0.3.0' as typeof input.typeSystemVersion }) });
+const discoveredPath = pathRegistry.findPath(program.typeSystemVersion, 'kode-types-v0.3.0');
+if (!discoveredPath || discoveredPath.map((step) => step.id).join(' -> ') !== 'A-001 -> A-002') throw new Error('Deterministic migration path discovery failed.');
+console.log('PASS deterministic migration path discovery');
