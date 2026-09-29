@@ -45,6 +45,30 @@ export type ArtifactMigrationPathResolution =
   | { ok: true; path: ArtifactMigrationPath; ambiguous: false }
   | { ok: false; reason: 'NO_PATH' | 'AMBIGUOUS_PATH'; candidates: readonly ArtifactMigrationPath[] };
 
+export type ArtifactMigrationPathSelectionResult =
+  | { ok: true; path: ArtifactMigrationPath }
+  | { ok: false; reason: 'EMPTY_SELECTION' | 'UNKNOWN_MIGRATION' | 'DISCONTINUOUS_PATH' | 'WRONG_TARGET' };
+
+export function selectArtifactMigrationPath(
+  registry: ArtifactMigrationRegistry,
+  fromVersion: string,
+  toVersion: string,
+  migrationIds: readonly string[],
+): ArtifactMigrationPathSelectionResult {
+  if (migrationIds.length === 0) return { ok: false, reason: 'EMPTY_SELECTION' };
+  let current = fromVersion;
+  const selected: ArtifactMigration[] = [];
+  for (const id of migrationIds) {
+    const migration = registry.list().find((candidate) => candidate.id === id);
+    if (!migration) return { ok: false, reason: 'UNKNOWN_MIGRATION' };
+    if (migration.fromVersion !== current) return { ok: false, reason: 'DISCONTINUOUS_PATH' };
+    selected.push(migration);
+    current = migration.toVersion;
+  }
+  if (current !== toVersion) return { ok: false, reason: 'WRONG_TARGET' };
+  return { ok: true, path: Object.freeze(selected) };
+}
+
 export function validateArtifactMigrationGraph(registry: ArtifactMigrationRegistry, policy: ArtifactMigrationGraphPolicy = {}): ArtifactMigrationGraphValidation {
   const issues: ArtifactMigrationGraphIssue[] = [];
   const cycles: string[] = [];
