@@ -1,4 +1,4 @@
-import { analyzeKode, compileKode, executeMhcmProgram, parseKode, getCompatibilityAction, migrateArtifact, InMemoryArtifactMigrationRegistry, validateProgramCompatibility, validateNodeCompatibility, validateIrCompatibility } from '../packages/mhcm/src/index.ts';
+import { analyzeKode, compileKode, executeMhcmProgram, parseKode, getCompatibilityAction, migrateArtifact, InMemoryArtifactMigrationRegistry, validateArtifactMigrationGraph, validateProgramCompatibility, validateNodeCompatibility, validateIrCompatibility } from '../packages/mhcm/src/index.ts';
 
 const source = [
   'path A = A -> B;',
@@ -154,3 +154,12 @@ pathRegistry.register({ id: 'A-002', fromVersion: 'kode-types-v0.2.0', toVersion
 const discoveredPath = pathRegistry.findPath(program.typeSystemVersion, 'kode-types-v0.3.0');
 if (!discoveredPath || discoveredPath.map((step) => step.id).join(' -> ') !== 'A-001 -> A-002') throw new Error('Deterministic migration path discovery failed.');
 console.log('PASS deterministic migration path discovery');
+
+const graphValidation = validateArtifactMigrationGraph(pathRegistry);
+if (!graphValidation.ok) throw new Error('Valid migration graph failed validation.');
+const invalidGraphRegistry = new InMemoryArtifactMigrationRegistry();
+invalidGraphRegistry.register({ id: 'CYCLE-A', fromVersion: 'vA', toVersion: 'vB', migrate: (input) => input });
+invalidGraphRegistry.register({ id: 'CYCLE-B', fromVersion: 'vB', toVersion: 'vA', migrate: (input) => input });
+const invalidGraph = validateArtifactMigrationGraph(invalidGraphRegistry);
+if (invalidGraph.ok || !invalidGraph.issues.some((issue) => issue.code === 'MIGRATION_CYCLE')) throw new Error('Migration cycle was not detected.');
+console.log('PASS migration graph validation');
