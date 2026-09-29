@@ -180,3 +180,9 @@ if (ambiguous.ok || ambiguous.reason !== 'AMBIGUOUS_PATH' || ambiguous.candidate
 const deterministic = ambiguousRegistry.resolvePath('v1', 'v4', 'deterministic-id');
 if (!deterministic.ok || !deterministic.ambiguous || deterministic.path[0]?.id !== 'PATH-A') throw new Error('Deterministic migration policy failed.');
 console.log('PASS migration path ambiguity policy');
+
+const selectedPath = selectArtifactMigrationPath(ambiguousRegistry, 'v1', 'v4', ['PATH-B', 'PATH-D']);
+if (!selectedPath.ok || selectedPath.path.map((step) => step.id).join(' -> ') !== 'PATH-B -> PATH-D') throw new Error('Explicit migration path selection failed.');
+const discontinuousPath = selectArtifactMigrationPath(ambiguousRegistry, 'v1', 'v4', ['PATH-C', 'PATH-D']);
+if (discontinuousPath.ok || discontinuousPath.reason !== 'DISCONTINUOUS_PATH') throw new Error('Discontinuous migration path was accepted.');
+console.log('PASS explicit migration path selection');
