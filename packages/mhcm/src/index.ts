@@ -20,3 +20,4 @@ export * from './kode-resolver.ts';
 export * from './kode-types.ts';
 export * from './kode-type-port.ts';
 export * from './artifact-compatibility.ts';
+export * from './artifact-migration.ts';
