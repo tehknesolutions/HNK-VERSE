@@ -14,7 +14,8 @@ const SDK_ERROR_CODES: readonly SdkErrorCode[] = ['UNSUPPORTED_CAPABILITY','INCO
 const normalizeError=(error:unknown):SdkErrorCode=>{const code=(error as {code?:unknown})?.code;return typeof code==='string'&&SDK_ERROR_CODES.includes(code as SdkErrorCode)?code as SdkErrorCode:'INTERNAL_VERSE_ERROR';};
 
 export class TransitionCoordinator {
-  constructor(private readonly deps: TransitionCoordinatorDeps) {}
+  private readonly deps: TransitionCoordinatorDeps;
+  constructor(deps: TransitionCoordinatorDeps) { this.deps = deps; }
   async transition(request: TransitionRequest): Promise<TransitionResult> {
     const events: ChronicleBoundaryEvent[]=[]; let last: ChronicleBoundaryEvent|undefined;
     const emit=(eventType:ChronicleBoundaryEvent['eventType'],payload:ChronicleBoundaryEvent['payload'])=>{const time=this.deps.now();const event=createChronicleBoundaryEvent({eventId:this.deps.nextEventId(),eventType,verseId:request.source.verseId,worldId:request.source.worldId,actorId:request.source.identityId,sessionId:request.source.sessionId,realTimestamp:time.realTimestamp,worldTimestamp:time.worldTimestamp,correlationId:request.correlationId,causationId:last?.eventId,payload});events.push(event);assertBoundaryChain(events);last=event;return event;};

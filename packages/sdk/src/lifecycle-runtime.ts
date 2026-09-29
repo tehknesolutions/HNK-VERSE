@@ -13,7 +13,8 @@ const ALLOWED: Record<LifecycleOperation, readonly VerseLifecycleState[]> = {
 
 export class VerseLifecycleRuntime {
   private current: VerseLifecycleState = 'UNINITIALIZED';
-  constructor(private readonly runtime: VerseRuntime) {}
+  private readonly runtime: VerseRuntime;
+  constructor(runtime: VerseRuntime) { this.runtime = runtime; }
   get state(): VerseLifecycleState { return this.current; }
 
   private invalid(operation: LifecycleOperation): VerseRuntimeResult {
