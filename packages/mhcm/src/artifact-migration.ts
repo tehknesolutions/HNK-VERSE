@@ -95,15 +95,25 @@ export function validateArtifactMigrationGraph(registry: ArtifactMigrationRegist
 
   const visiting = new Set<string>();
   const visited = new Set<string>();
+  const stack: string[] = [];
+  const reportedCycles = new Set<string>();
   const walk = (version: string): void => {
-    if (visiting.has(version)) {
-      cycles.push(version);
-      if (!policy.allowCycles) issues.push({ code: 'MIGRATION_CYCLE', message: `Migration graph contains a cycle involving version ${version}.` });
+    const cycleStart = stack.indexOf(version);
+    if (cycleStart >= 0) {
+      const members = stack.slice(cycleStart);
+      for (const member of members) cycles.push(member);
+      const cycleKey = [...members].sort().join('->');
+      if (!reportedCycles.has(cycleKey)) {
+        reportedCycles.add(cycleKey);
+        if (!policy.allowCycles) issues.push({ code: 'MIGRATION_CYCLE', message: `Migration graph contains a cycle involving versions ${members.join(' -> ')}.` });
+      }
       return;
     }
     if (visited.has(version)) return;
     visiting.add(version);
+    stack.push(version);
     for (const target of adjacency.get(version) ?? []) walk(target);
+    stack.pop();
     visiting.delete(version);
     visited.add(version);
   };
@@ -180,9 +190,10 @@ export type ArtifactMigrationResult =
 
 function applyMigrationStep(program: MhcmProgram, migration: ArtifactMigration): ArtifactMigrationResult {
   try {
-    const migrated = migration.migrate(program);
+    const protectedSource = structuredClone(program);
+    const migrated = migration.migrate(protectedSource);
     if (migrated.typeSystemVersion !== migration.toVersion) return { ok: false, reason: 'MIGRATION_FAILED', message: `Migration ${migration.id} did not produce target version ${migration.toVersion}.` };
-    const compatibility = validateProgramCompatibility(migrated);
+    const compatibility = validateProgramCompatibility(migrated, migration.toVersion);
     if (!compatibility.ok) return { ok: false, reason: 'MIGRATED_ARTIFACT_INCOMPATIBLE', message: `Migration ${migration.id} produced an incompatible artifact: ${compatibility.issues.map((issue) => `[${issue.code}] ${issue.message}`).join('; ')}` };
     const transaction = beginArtifactMigrationTransaction(program, migrated, migration.id);
     return { ok: true, program: commitArtifactMigrationTransaction(transaction), migrationId: migration.id, manifest: createMigrationManifest(program.typeSystemVersion, migration.toVersion, migration.id) };
