@@ -1,4 +1,4 @@
-import { analyzeKode, compileKode, executeMhcmProgram, parseKode } from '../packages/mhcm/src/index.ts';
+import { analyzeKode, compileKode, executeMhcmProgram, parseKode, validateProgramCompatibility, validateNodeCompatibility, validateIrCompatibility } from '../packages/mhcm/src/index.ts';
 
 const source = [
   'path A = A -> B;',
@@ -80,3 +80,10 @@ let rejectedIrVersion = false;
 try { executeMhcmProgram(mismatchedIrProgram); } catch (error) { rejectedIrVersion = error instanceof Error && error.message.includes('IR') && error.message.includes('does not match node version'); }
 if (!rejectedIrVersion) throw new Error('Runtime accepted IR with incompatible type-system provenance.');
 console.log('PASS IR type-system provenance gate');
+
+const compatibility = validateProgramCompatibility(program);
+if (!compatibility.ok) throw new Error('Valid program failed centralized compatibility validation.');
+const firstNode = program.nodes[0];
+if (!validateNodeCompatibility(firstNode, program.typeSystemVersion).ok) throw new Error('Valid node failed centralized compatibility validation.');
+if (firstNode.kind === 'IR' && !validateIrCompatibility(firstNode.ir, firstNode.typeSystemVersion).ok) throw new Error('Valid IR failed centralized compatibility validation.');
+console.log('PASS centralized artifact compatibility validation');
