@@ -1,4 +1,4 @@
-import { analyzeKode, compileKode, executeMhcmProgram, parseKode, getCompatibilityAction, migrateArtifact, migrateArtifactByPath, InMemoryArtifactMigrationRegistry, validateArtifactMigrationGraph, validateProgramCompatibility, validateNodeCompatibility, validateIrCompatibility } from '../packages/mhcm/src/index.ts';
+import { analyzeKode, compileKode, executeMhcmProgram, parseKode, getCompatibilityAction, migrateArtifact, migrateArtifactByPath, InMemoryArtifactMigrationRegistry, validateArtifactMigrationGraph, validateProgramCompatibility, validateMigrationManifest, validateNodeCompatibility, validateIrCompatibility } from '../packages/mhcm/src/index.ts';
 
 const source = [
   'path A = A -> B;',
@@ -8,6 +8,16 @@ const source = [
 ].join('\n');
 
 const program = compileKode(source);
+function retargetProgram(sourceProgram: typeof program, targetVersion: string) {
+  return {
+    ...sourceProgram,
+    typeSystemVersion: targetVersion,
+    nodes: sourceProgram.nodes.map((node) => node.kind === 'IR'
+      ? { ...node, typeSystemVersion: targetVersion, ir: { ...node.ir, metadata: { ...node.ir.metadata, typeSystemVersion: targetVersion } } }
+      : { ...node, typeSystemVersion: targetVersion }),
+  };
+}
+
 if (program.version !== '0.1') throw new Error('KODE program version changed.');
 if (program.typeSystemVersion !== 'kode-types-v0.1.0') throw new Error('Compiled program lost type-system version provenance.');
 if (program.nodes.length !== 4) throw new Error('Unexpected KODE program node count.');
@@ -63,7 +73,7 @@ if (!registry.has('PATH-C', 'path') || !registry.has('PATH-R', 'path')) throw ne
 if (registry.get('PATH-C', 'path')?.nodes.join(',') !== 'A,B,C') throw new Error('Registry returned incorrect compose PathValue.');
 console.log('PASS semantic PathValue registry API');
 
-const incompatible = { ...program, typeSystemVersion: 'kode-types-v0.0.0' as typeof program.typeSystemVersion };
+const incompatible = { ...program, typeSystemVersion: 'kode-types-v0.0.0' };
 let rejectedVersion = false;
 try { executeMhcmProgram(incompatible); } catch (error) { rejectedVersion = error instanceof Error && error.message.includes('Incompatible KODE type-system version'); }
 if (!rejectedVersion) throw new Error('Runtime accepted an incompatible type-system version.');
@@ -88,7 +98,7 @@ if (!validateNodeCompatibility(firstNode, program.typeSystemVersion).ok) throw n
 if (firstNode.kind === 'IR' && !validateIrCompatibility(firstNode.ir, firstNode.typeSystemVersion).ok) throw new Error('Valid IR failed centralized compatibility validation.');
 console.log('PASS centralized artifact compatibility validation');
 
-const badProgram = { ...program, typeSystemVersion: 'kode-types-v0.0.0' as typeof program.typeSystemVersion };
+const badProgram = { ...program, typeSystemVersion: 'kode-types-v0.0.0' };
 const report = validateProgramCompatibility(badProgram);
 if (report.ok || !report.issues.some((issue) => issue.code === 'PROGRAM_TYPE_SYSTEM_MISMATCH')) throw new Error('Structured program compatibility code missing.');
 const badNode = { ...program.nodes[0], typeSystemVersion: 'kode-types-v0.0.0' as typeof program.nodes[0].typeSystemVersion };
@@ -105,7 +115,7 @@ if (getCompatibilityAction(report) !== 'reject') throw new Error('Program mismat
 console.log('PASS compatibility severity/action classification');
 
 const migrationRegistry = new InMemoryArtifactMigrationRegistry();
-const migrated = { ...program, typeSystemVersion: 'kode-types-v0.2.0' as typeof program.typeSystemVersion };
+const migrated = retargetProgram(program, 'kode-types-v0.2.0');
 migrationRegistry.register({ id: 'kode-types-0.1-to-0.2', fromVersion: program.typeSystemVersion, toVersion: migrated.typeSystemVersion, migrate: () => migrated });
 const migrationResult = migrateArtifact(program, migrated.typeSystemVersion, migrationRegistry);
 if (!migrationResult.ok || migrationResult.migrationId !== 'kode-types-0.1-to-0.2') throw new Error('Registered artifact migration did not execute.');
@@ -125,7 +135,7 @@ console.log('PASS migrate → validate → accept gate');
 
 const sourceBeforeMigration = JSON.stringify(program);
 const transactionRegistry = new InMemoryArtifactMigrationRegistry();
-const transactionTarget = { ...program, typeSystemVersion: 'kode-types-v0.3.0' as typeof program.typeSystemVersion };
+const transactionTarget = retargetProgram(program, 'kode-types-v0.3.0');
 transactionRegistry.register({ id: 'transactional-0.1-to-0.3', fromVersion: program.typeSystemVersion, toVersion: transactionTarget.typeSystemVersion, migrate: (input) => ({ ...input, typeSystemVersion: transactionTarget.typeSystemVersion }) });
 const transactionResult = migrateArtifact(program, transactionTarget.typeSystemVersion, transactionRegistry);
 if (!transactionResult.ok) throw new Error('Transactional migration unexpectedly failed.');
@@ -138,8 +148,8 @@ if (!transactionResult.manifest || transactionResult.manifest.sourceVersion !== 
 console.log('PASS migration audit manifest');
 
 const composedRegistry = new InMemoryArtifactMigrationRegistry();
-const v02 = { ...program, typeSystemVersion: 'kode-types-v0.2.0' as typeof program.typeSystemVersion };
-const v03 = { ...v02, typeSystemVersion: 'kode-types-v0.3.0' as typeof program.typeSystemVersion };
+const v02 = retargetProgram(program, 'kode-types-v0.2.0');
+const v03 = retargetProgram(v02, 'kode-types-v0.3.0');
 composedRegistry.register({ id: 'MIG-001', fromVersion: program.typeSystemVersion, toVersion: v02.typeSystemVersion, migrate: () => v02 });
 composedRegistry.register({ id: 'MIG-002', fromVersion: v02.typeSystemVersion, toVersion: v03.typeSystemVersion, migrate: () => v03 });
 const composed = migrateArtifact(program, v03.typeSystemVersion, composedRegistry);
@@ -210,7 +220,9 @@ const intermediateRegistry = new InMemoryArtifactMigrationRegistry();
 const intermediateVersion = program.typeSystemVersion + '-intermediate';
 intermediateRegistry.register({ id: 'INT-001', fromVersion: program.typeSystemVersion, toVersion: intermediateVersion, migrate: (input) => ({ ...input, typeSystemVersion: intermediateVersion }) });
 intermediateRegistry.register({ id: 'INT-002', fromVersion: intermediateVersion, toVersion: program.typeSystemVersion, migrate: (input) => ({ ...input, typeSystemVersion: program.typeSystemVersion }) });
-const intermediateResult = migrateArtifact(program, program.typeSystemVersion, intermediateRegistry);
+const intermediateTarget = program.typeSystemVersion + '-final';
+intermediateRegistry.register({ id: 'INT-003', fromVersion: intermediateVersion, toVersion: intermediateTarget, migrate: (input) => retargetProgram(input, intermediateTarget) });
+const intermediateResult = migrateArtifact(program, intermediateTarget, intermediateRegistry);
 if (!intermediateResult.ok) throw new Error('Intermediate-to-current migration failed.');
 console.log('PASS intermediate migration target validation');
 
@@ -230,7 +242,7 @@ const semanticResult = migrateArtifact(program, semanticTarget, semanticIsolatio
 if (!semanticResult.ok) throw new Error('Semantic registry was not preserved during migration isolation.');
 console.log('PASS semantic registry isolation');
 
-const identityInvalid = { ...program, nodes: program.nodes.map((node) => ({ ...node, typeSystemVersion: 'invalid-version' as typeof node.typeSystemVersion })) };
+const identityInvalid = { ...program, nodes: program.nodes.map((node) => ({ ...node, typeSystemVersion: 'invalid-version' })) };
 const identityResult = migrateArtifact(identityInvalid, identityInvalid.typeSystemVersion, new InMemoryArtifactMigrationRegistry());
 if (identityResult.ok || identityResult.reason !== 'MIGRATED_ARTIFACT_INCOMPATIBLE') throw new Error('Invalid identity artifact was accepted.');
 console.log('PASS identity migration compatibility gate');
