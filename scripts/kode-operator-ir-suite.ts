@@ -75,7 +75,7 @@ console.log('PASS semantic PathValue registry API');
 
 const incompatible = { ...program, typeSystemVersion: 'kode-types-v0.0.0' };
 let rejectedVersion = false;
-try { executeMhcmProgram(incompatible); } catch (error) { rejectedVersion = error instanceof Error && error.message.includes('Incompatible KODE type-system version'); }
+try { executeMhcmProgram(incompatible); } catch (error) { rejectedVersion = error instanceof Error && error.message.includes('Incompatible MHCM artifact'); }
 if (!rejectedVersion) throw new Error('Runtime accepted an incompatible type-system version.');
 console.log('PASS type-system version compatibility gate');
 
@@ -136,7 +136,7 @@ console.log('PASS migrate → validate → accept gate');
 const sourceBeforeMigration = JSON.stringify(program);
 const transactionRegistry = new InMemoryArtifactMigrationRegistry();
 const transactionTarget = retargetProgram(program, 'kode-types-v0.3.0');
-transactionRegistry.register({ id: 'transactional-0.1-to-0.3', fromVersion: program.typeSystemVersion, toVersion: transactionTarget.typeSystemVersion, migrate: (input) => ({ ...input, typeSystemVersion: transactionTarget.typeSystemVersion }) });
+transactionRegistry.register({ id: 'transactional-0.1-to-0.3', fromVersion: program.typeSystemVersion, toVersion: transactionTarget.typeSystemVersion, migrate: () => transactionTarget });
 const transactionResult = migrateArtifact(program, transactionTarget.typeSystemVersion, transactionRegistry);
 if (!transactionResult.ok) throw new Error('Transactional migration unexpectedly failed.');
 if (JSON.stringify(program) !== sourceBeforeMigration) throw new Error('Migration mutated source artifact.');
@@ -158,9 +158,9 @@ if (composed.migrationId !== 'MIG-001 -> MIG-002') throw new Error('Composed mig
 console.log('PASS composed artifact migration chain');
 
 const pathRegistry = new InMemoryArtifactMigrationRegistry();
-pathRegistry.register({ id: 'Z-DIRECT-UNUSED', fromVersion: program.typeSystemVersion, toVersion: 'kode-types-v0.4.0', migrate: (input) => ({ ...input, typeSystemVersion: 'kode-types-v0.4.0' as typeof input.typeSystemVersion }) });
-pathRegistry.register({ id: 'A-001', fromVersion: program.typeSystemVersion, toVersion: 'kode-types-v0.2.0', migrate: (input) => ({ ...input, typeSystemVersion: 'kode-types-v0.2.0' as typeof input.typeSystemVersion }) });
-pathRegistry.register({ id: 'A-002', fromVersion: 'kode-types-v0.2.0', toVersion: 'kode-types-v0.3.0', migrate: (input) => ({ ...input, typeSystemVersion: 'kode-types-v0.3.0' as typeof input.typeSystemVersion }) });
+pathRegistry.register({ id: 'Z-DIRECT-UNUSED', fromVersion: program.typeSystemVersion, toVersion: 'kode-types-v0.4.0', migrate: (input) => retargetProgram(input, 'kode-types-v0.4.0') });
+pathRegistry.register({ id: 'A-001', fromVersion: program.typeSystemVersion, toVersion: 'kode-types-v0.2.0', migrate: (input) => retargetProgram(input, 'kode-types-v0.2.0') });
+pathRegistry.register({ id: 'A-002', fromVersion: 'kode-types-v0.2.0', toVersion: 'kode-types-v0.3.0', migrate: (input) => retargetProgram(input, 'kode-types-v0.3.0') });
 const discoveredPath = pathRegistry.findPath(program.typeSystemVersion, 'kode-types-v0.3.0');
 if (!discoveredPath || discoveredPath.map((step) => step.id).join(' -> ') !== 'A-001 -> A-002') throw new Error('Deterministic migration path discovery failed.');
 console.log('PASS deterministic migration path discovery');
@@ -218,8 +218,8 @@ console.log('PASS migration source isolation');
 
 const intermediateRegistry = new InMemoryArtifactMigrationRegistry();
 const intermediateVersion = program.typeSystemVersion + '-intermediate';
-intermediateRegistry.register({ id: 'INT-001', fromVersion: program.typeSystemVersion, toVersion: intermediateVersion, migrate: (input) => ({ ...input, typeSystemVersion: intermediateVersion }) });
-intermediateRegistry.register({ id: 'INT-002', fromVersion: intermediateVersion, toVersion: program.typeSystemVersion, migrate: (input) => ({ ...input, typeSystemVersion: program.typeSystemVersion }) });
+intermediateRegistry.register({ id: 'INT-001', fromVersion: program.typeSystemVersion, toVersion: intermediateVersion, migrate: (input) => retargetProgram(input, intermediateVersion) });
+intermediateRegistry.register({ id: 'INT-002', fromVersion: intermediateVersion, toVersion: program.typeSystemVersion, migrate: (input) => retargetProgram(input, program.typeSystemVersion) });
 const intermediateTarget = program.typeSystemVersion + '-final';
 intermediateRegistry.register({ id: 'INT-003', fromVersion: intermediateVersion, toVersion: intermediateTarget, migrate: (input) => retargetProgram(input, intermediateTarget) });
 const intermediateResult = migrateArtifact(program, intermediateTarget, intermediateRegistry);
