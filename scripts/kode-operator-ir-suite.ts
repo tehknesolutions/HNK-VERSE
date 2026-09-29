@@ -12,6 +12,7 @@ if (program.version !== '0.1') throw new Error('KODE program version changed.');
 if (program.typeSystemVersion !== 'kode-types-v0.1.0') throw new Error('Compiled program lost type-system version provenance.');
 if (program.nodes.length !== 4) throw new Error('Unexpected KODE program node count.');
 if (program.nodes.some((node) => node.typeSystemVersion !== program.typeSystemVersion)) throw new Error('Program node type-system provenance mismatch.');
+if (program.nodes.some((node) => node.kind === 'IR' && node.ir.metadata.typeSystemVersion !== node.typeSystemVersion)) throw new Error('IR type-system provenance mismatch.');
 
 const composed = program.nodes.find((node) => node.id === 'C');
 if (!composed || composed.kind !== 'OPERATOR' || composed.operator !== 'PATH_COMPOSE') {
@@ -73,3 +74,9 @@ let rejectedNodeVersion = false;
 try { executeMhcmProgram(mismatchedNodeProgram); } catch (error) { rejectedNodeVersion = error instanceof Error && error.message.includes('does not match program version'); }
 if (!rejectedNodeVersion) throw new Error('Runtime accepted a node with incompatible type-system provenance.');
 console.log('PASS per-node type-system provenance gate');
+
+const mismatchedIrProgram = { ...program, nodes: program.nodes.map((node, index) => index === 0 && node.kind === 'IR' ? { ...node, ir: { ...node.ir, metadata: { ...node.ir.metadata, typeSystemVersion: 'kode-types-v0.0.0' as typeof node.ir.metadata.typeSystemVersion } } } : node) };
+let rejectedIrVersion = false;
+try { executeMhcmProgram(mismatchedIrProgram); } catch (error) { rejectedIrVersion = error instanceof Error && error.message.includes('IR') && error.message.includes('does not match node version'); }
+if (!rejectedIrVersion) throw new Error('Runtime accepted IR with incompatible type-system provenance.');
+console.log('PASS IR type-system provenance gate');
