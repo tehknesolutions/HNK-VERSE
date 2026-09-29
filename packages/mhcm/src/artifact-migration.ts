@@ -12,6 +12,67 @@ export type ArtifactMigration = {
 
 export type ArtifactMigrationPath = readonly ArtifactMigration[];
 
+export type ArtifactMigrationGraphIssueCode =
+  | 'INVALID_MIGRATION_ID'
+  | 'INVALID_SOURCE_VERSION'
+  | 'INVALID_TARGET_VERSION'
+  | 'SELF_MIGRATION'
+  | 'DUPLICATE_MIGRATION_ID'
+  | 'DUPLICATE_VERSION_EDGE'
+  | 'MIGRATION_FUNCTION_MISSING'
+  | 'MIGRATION_CYCLE';
+
+export type ArtifactMigrationGraphIssue = {
+  code: ArtifactMigrationGraphIssueCode;
+  message: string;
+  migrationId?: string;
+};
+
+export type ArtifactMigrationGraphValidation = {
+  ok: boolean;
+  issues: readonly ArtifactMigrationGraphIssue[];
+};
+
+export function validateArtifactMigrationGraph(registry: ArtifactMigrationRegistry): ArtifactMigrationGraphValidation {
+  const issues: ArtifactMigrationGraphIssue[] = [];
+  const migrations = registry.list();
+  const ids = new Set<string>();
+  const edges = new Set<string>();
+  const adjacency = new Map<string, string[]>();
+
+  for (const migration of migrations) {
+    if (!migration.id.trim()) issues.push({ code: 'INVALID_MIGRATION_ID', message: 'Migration id must not be empty.' });
+    if (ids.has(migration.id)) issues.push({ code: 'DUPLICATE_MIGRATION_ID', migrationId: migration.id, message: `Duplicate migration id: ${migration.id}.` });
+    ids.add(migration.id);
+    if (!migration.fromVersion.trim()) issues.push({ code: 'INVALID_SOURCE_VERSION', migrationId: migration.id, message: `Migration ${migration.id} has an empty source version.` });
+    if (!migration.toVersion.trim()) issues.push({ code: 'INVALID_TARGET_VERSION', migrationId: migration.id, message: `Migration ${migration.id} has an empty target version.` });
+    if (migration.fromVersion === migration.toVersion) issues.push({ code: 'SELF_MIGRATION', migrationId: migration.id, message: `Migration ${migration.id} points to the same source and target version.` });
+    if (typeof migration.migrate !== 'function') issues.push({ code: 'MIGRATION_FUNCTION_MISSING', migrationId: migration.id, message: `Migration ${migration.id} has no callable migration function.` });
+    const edge = `${migration.fromVersion}->${migration.toVersion}`;
+    if (edges.has(edge)) issues.push({ code: 'DUPLICATE_VERSION_EDGE', migrationId: migration.id, message: `Duplicate migration edge: ${edge}.` });
+    edges.add(edge);
+    const targets = adjacency.get(migration.fromVersion) ?? [];
+    targets.push(migration.toVersion);
+    adjacency.set(migration.fromVersion, targets);
+  }
+
+  const visiting = new Set<string>();
+  const visited = new Set<string>();
+  const walk = (version: string): void => {
+    if (visiting.has(version)) {
+      issues.push({ code: 'MIGRATION_CYCLE', message: `Migration graph contains a cycle involving version ${version}.` });
+      return;
+    }
+    if (visited.has(version)) return;
+    visiting.add(version);
+    for (const target of adjacency.get(version) ?? []) walk(target);
+    visiting.delete(version);
+    visited.add(version);
+  };
+  for (const version of adjacency.keys()) walk(version);
+  return { ok: issues.length === 0, issues: Object.freeze(issues) };
+}
+
 export interface ArtifactMigrationRegistry {
   register(migration: ArtifactMigration): void;
   find(fromVersion: string, toVersion: string): ArtifactMigration | null;
