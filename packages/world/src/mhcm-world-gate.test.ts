@@ -7,7 +7,7 @@ import { evaluateMhcmWorldOperation } from './mhcm-world-gate.ts';
 const path = (id: string, nodes: string[]): HnkIrNode => ({
   irVersion: 1, id, type: 'Path', op: 'PATH_LITERAL', inputs: [],
   value: { id, start: nodes[0], nodes, edges: nodes.slice(0, -1).map((_, i) => `e:${i}`), end: nodes.at(-1), directed: true },
-  metadata: { sourceAstKind: 'PathExpression', provenance: { source: 'hv-01.4-test' } },
+  metadata: { sourceAstKind: 'PathExpression', provenance: { source: 'hv-01.4-test', schemaVersion: 1, authorityStatus: 'EXPERIMENTAL', sourceRefs: ['HV-01.4'] } },
 });
 
 test('MHCM can transform path IR without mutating Presence authority', () => {
