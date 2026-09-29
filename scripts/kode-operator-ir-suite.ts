@@ -169,3 +169,14 @@ if (!cycleObserved.ok || cycleObserved.cycles.length !== 2) throw new Error('Cyc
 const cycleRejected = validateArtifactMigrationGraph(invalidGraph);
 if (cycleRejected.ok || !cycleRejected.issues.some((issue) => issue.code === 'MIGRATION_CYCLE')) throw new Error('Default migration graph policy failed to reject cycles.');
 console.log('PASS migration cycle detection vs policy');
+
+const ambiguousRegistry = new InMemoryArtifactMigrationRegistry();
+ambiguousRegistry.register({ id: 'PATH-A', fromVersion: 'v1', toVersion: 'v2', migrate: (input) => ({ ...input, typeSystemVersion: 'v2' as typeof input.typeSystemVersion }) });
+ambiguousRegistry.register({ id: 'PATH-B', fromVersion: 'v1', toVersion: 'v3', migrate: (input) => ({ ...input, typeSystemVersion: 'v3' as typeof input.typeSystemVersion }) });
+ambiguousRegistry.register({ id: 'PATH-C', fromVersion: 'v2', toVersion: 'v4', migrate: (input) => ({ ...input, typeSystemVersion: 'v4' as typeof input.typeSystemVersion }) });
+ambiguousRegistry.register({ id: 'PATH-D', fromVersion: 'v3', toVersion: 'v4', migrate: (input) => ({ ...input, typeSystemVersion: 'v4' as typeof input.typeSystemVersion }) });
+const ambiguous = ambiguousRegistry.resolvePath('v1', 'v4', 'reject-ambiguous');
+if (ambiguous.ok || ambiguous.reason !== 'AMBIGUOUS_PATH' || ambiguous.candidates.length !== 2) throw new Error('Ambiguous migration paths were not rejected.');
+const deterministic = ambiguousRegistry.resolvePath('v1', 'v4', 'deterministic-id');
+if (!deterministic.ok || !deterministic.ambiguous || deterministic.path[0]?.id !== 'PATH-A') throw new Error('Deterministic migration policy failed.');
+console.log('PASS migration path ambiguity policy');
