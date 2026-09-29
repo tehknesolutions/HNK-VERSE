@@ -48,6 +48,7 @@ export function appendMigrationManifest(
 }
 
 export function validateMigrationManifest(manifest: ArtifactMigrationManifest): boolean {
+  if (!manifest.sourceVersion.trim() || !manifest.targetVersion.trim()) return false;
   if (manifest.migrations.length === 0) return manifest.sourceVersion === manifest.targetVersion;
   if (manifest.migrations[0].fromVersion !== manifest.sourceVersion) return false;
   if (manifest.migrations[manifest.migrations.length - 1].toVersion !== manifest.targetVersion) return false;
