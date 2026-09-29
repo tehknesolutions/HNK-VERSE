@@ -213,3 +213,47 @@ intermediateRegistry.register({ id: 'INT-002', fromVersion: intermediateVersion,
 const intermediateResult = migrateArtifact(program, program.typeSystemVersion, intermediateRegistry);
 if (!intermediateResult.ok) throw new Error('Intermediate-to-current migration failed.');
 console.log('PASS intermediate migration target validation');
+
+const semanticIsolationRegistry = new InMemoryArtifactMigrationRegistry();
+const semanticTarget = program.typeSystemVersion + '-semantic';
+semanticIsolationRegistry.register({
+  id: 'SEM-001',
+  fromVersion: program.typeSystemVersion,
+  toVersion: semanticTarget,
+  migrate: (input) => {
+    const semantic = input.semanticPaths.get('missing', 'path');
+    if (semantic) throw new Error('Unexpected semantic value.');
+    return { ...input, typeSystemVersion: semanticTarget };
+  },
+});
+const semanticResult = migrateArtifact(program, semanticTarget, semanticIsolationRegistry);
+if (!semanticResult.ok) throw new Error('Semantic registry was not preserved during migration isolation.');
+console.log('PASS semantic registry isolation');
+
+const identityInvalid = { ...program, nodes: program.nodes.map((node) => ({ ...node, typeSystemVersion: 'invalid-version' as typeof node.typeSystemVersion })) };
+const identityResult = migrateArtifact(identityInvalid, identityInvalid.typeSystemVersion, new InMemoryArtifactMigrationRegistry());
+if (identityResult.ok || identityResult.reason !== 'MIGRATED_ARTIFACT_INCOMPATIBLE') throw new Error('Invalid identity artifact was accepted.');
+console.log('PASS identity migration compatibility gate');
+
+const manifestEmptyVersions = validateMigrationManifest({ sourceVersion: '', targetVersion: '', migrations: [] });
+if (manifestEmptyVersions) throw new Error('Empty identity manifest was accepted.');
+console.log('PASS empty identity manifest rejection');
+
+const duplicateIdRegistry = new InMemoryArtifactMigrationRegistry();
+duplicateIdRegistry.register({ id: 'DUP-ID', fromVersion: 'd1', toVersion: 'd2', migrate: (input) => input });
+let duplicateIdRejected = false;
+try {
+  duplicateIdRegistry.register({ id: 'DUP-ID', fromVersion: 'd2', toVersion: 'd3', migrate: (input) => input });
+} catch {
+  duplicateIdRejected = true;
+}
+if (!duplicateIdRejected) throw new Error('Duplicate migration id was accepted.');
+console.log('PASS duplicate migration id rejection');
+
+const overlapCycleRegistry = new InMemoryArtifactMigrationRegistry();
+for (const edge of [
+  ['a','b','AB'], ['b','a','BA'], ['a','c','AC'], ['c','b','CB'],
+] as const) overlapCycleRegistry.register({ id: edge[2], fromVersion: edge[0], toVersion: edge[1], migrate: (input) => input });
+const overlapCycles = validateArtifactMigrationGraph(overlapCycleRegistry, { allowCycles: true });
+if (!overlapCycles.ok || !['a','b','c'].every((version) => overlapCycles.cycles.includes(version))) throw new Error('Overlapping cycle members were not fully reported.');
+console.log('PASS overlapping cycle detection');
