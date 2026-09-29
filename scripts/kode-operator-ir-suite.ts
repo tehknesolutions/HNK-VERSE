@@ -190,3 +190,26 @@ console.log('PASS explicit migration path selection');
 const explicitExecution = migrateArtifactByPath(program, v03.typeSystemVersion, ['MIG-001', 'MIG-002'], composedRegistry);
 if (!explicitExecution.ok || explicitExecution.migrationId !== 'MIG-001 -> MIG-002') throw new Error('Explicit migration path execution failed.');
 console.log('PASS explicit migration path execution');
+
+const mutatingRegistry = new InMemoryArtifactMigrationRegistry();
+const sourceSnapshot = JSON.stringify(program);
+mutatingRegistry.register({
+  id: 'MUTATING-MIG',
+  fromVersion: program.typeSystemVersion,
+  toVersion: program.typeSystemVersion + '-mutated',
+  migrate: (input) => {
+    input.nodes.length = 0;
+    throw new Error('intentional mutation failure');
+  },
+});
+const mutatingResult = migrateArtifact(program, program.typeSystemVersion + '-mutated', mutatingRegistry);
+if (mutatingResult.ok || JSON.stringify(program) !== sourceSnapshot) throw new Error('Migration source was mutated by a failing callback.');
+console.log('PASS migration source isolation');
+
+const intermediateRegistry = new InMemoryArtifactMigrationRegistry();
+const intermediateVersion = program.typeSystemVersion + '-intermediate';
+intermediateRegistry.register({ id: 'INT-001', fromVersion: program.typeSystemVersion, toVersion: intermediateVersion, migrate: (input) => ({ ...input, typeSystemVersion: intermediateVersion }) });
+intermediateRegistry.register({ id: 'INT-002', fromVersion: intermediateVersion, toVersion: program.typeSystemVersion, migrate: (input) => ({ ...input, typeSystemVersion: program.typeSystemVersion }) });
+const intermediateResult = migrateArtifact(program, program.typeSystemVersion, intermediateRegistry);
+if (!intermediateResult.ok) throw new Error('Intermediate-to-current migration failed.');
+console.log('PASS intermediate migration target validation');
