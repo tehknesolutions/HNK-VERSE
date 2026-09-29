@@ -28,13 +28,19 @@ export type ArtifactMigrationGraphIssue = {
   migrationId?: string;
 };
 
+export type ArtifactMigrationGraphPolicy = {
+  allowCycles?: boolean;
+};
+
 export type ArtifactMigrationGraphValidation = {
   ok: boolean;
   issues: readonly ArtifactMigrationGraphIssue[];
+  cycles: readonly string[];
 };
 
-export function validateArtifactMigrationGraph(registry: ArtifactMigrationRegistry): ArtifactMigrationGraphValidation {
+export function validateArtifactMigrationGraph(registry: ArtifactMigrationRegistry, policy: ArtifactMigrationGraphPolicy = {}): ArtifactMigrationGraphValidation {
   const issues: ArtifactMigrationGraphIssue[] = [];
+  const cycles: string[] = [];
   const migrations = registry.list();
   const ids = new Set<string>();
   const edges = new Set<string>();
@@ -60,7 +66,8 @@ export function validateArtifactMigrationGraph(registry: ArtifactMigrationRegist
   const visited = new Set<string>();
   const walk = (version: string): void => {
     if (visiting.has(version)) {
-      issues.push({ code: 'MIGRATION_CYCLE', message: `Migration graph contains a cycle involving version ${version}.` });
+      cycles.push(version);
+      if (!policy.allowCycles) issues.push({ code: 'MIGRATION_CYCLE', message: `Migration graph contains a cycle involving version ${version}.` });
       return;
     }
     if (visited.has(version)) return;
@@ -70,7 +77,7 @@ export function validateArtifactMigrationGraph(registry: ArtifactMigrationRegist
     visited.add(version);
   };
   for (const version of adjacency.keys()) walk(version);
-  return { ok: issues.length === 0, issues: Object.freeze(issues) };
+  return { ok: issues.length === 0, issues: Object.freeze(issues), cycles: Object.freeze([...new Set(cycles)]) };
 }
 
 export interface ArtifactMigrationRegistry {
