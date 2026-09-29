@@ -191,6 +191,20 @@ function applyMigrationStep(program: MhcmProgram, migration: ArtifactMigration):
   }
 }
 
+export function migrateArtifactByPath(program: MhcmProgram, targetVersion: string, migrationIds: readonly string[], registry: ArtifactMigrationRegistry): ArtifactMigrationResult {
+  const selection = selectArtifactMigrationPath(registry, program.typeSystemVersion, targetVersion, migrationIds);
+  if (!selection.ok) return { ok: false, reason: 'NO_MIGRATION', message: `Explicit migration path rejected: ${selection.reason}.` };
+  let currentProgram = program;
+  let manifest: ArtifactMigrationManifest | null = null;
+  for (const step of selection.path) {
+    const result = applyMigrationStep(currentProgram, step);
+    if (!result.ok) return result;
+    currentProgram = result.program;
+    manifest = manifest ? appendMigrationManifest(manifest, step.id, step.fromVersion, step.toVersion) : result.manifest;
+  }
+  return { ok: true, program: currentProgram, migrationId: selection.path.map((step) => step.id).join(' -> '), manifest: manifest! };
+}
+
 export function migrateArtifact(program: MhcmProgram, targetVersion: string, registry: ArtifactMigrationRegistry): ArtifactMigrationResult {
   if (program.typeSystemVersion === targetVersion) return { ok: true, program, migrationId: 'identity', manifest: Object.freeze({ sourceVersion: targetVersion, targetVersion, migrations: Object.freeze([]) }) };
   const direct = registry.find(program.typeSystemVersion, targetVersion);
