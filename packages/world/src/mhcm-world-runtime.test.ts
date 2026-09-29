@@ -6,7 +6,7 @@ import { createWorldGraph } from './world-graph.ts';
 import { applyMhcmWorldProposal } from './mhcm-world-runtime.ts';
 import type { MhcmWorldProposal } from './mhcm-world-gate.ts';
 
-const ir: HnkIrNode = { irVersion:1,id:'IR-OP-PATH_REVERSE-A',type:'Path',op:'MHCM_OPERATOR',inputs:['A'],value:{operator:'PATH_REVERSE'},metadata:{typeSystemVersion:'1',sourceAstKind:'PathExpression',provenance:{source:'hv-01.6-test'}} };
+const ir: HnkIrNode = { irVersion:1,id:'IR-OP-PATH_REVERSE-A',type:'Path',op:'MHCM_OPERATOR',inputs:['A'],value:{operator:'PATH_REVERSE'},metadata:{typeSystemVersion:'1',sourceAstKind:'PathExpression',provenance:{source:'hv-01.6-test',schemaVersion:1,authorityStatus:'EXPERIMENTAL',sourceRefs:['HV-01.6']}} };
 const presence=createPresence({id:'p:tw',identityId:'i:tw',sessionId:'s:tw',state:'ACTIVE',address:{verseId:'ZERO'},visibility:{online:true,verse:true,preciseLocation:false}});
 const proposal: MhcmWorldProposal={effect:'PROPOSAL_ONLY',ir,presence,authority:{identityId:'i:tw',sessionId:'s:tw',presenceId:'p:tw'}};
 const base=()=>({proposal,graph:createWorldGraph(),presence,targetVerseId:'ZERO',entityId:'entity:mhcm:1',event:{eventId:'evt:1',worldId:'world:1',realTimestamp:'2026-09-29T18:00:00Z',worldTimestamp:'W1',correlationId:'corr:1'}} as const);

@@ -1,4 +1,4 @@
-import { analyzeKode, compileKode, executeMhcmProgram, parseKode, getCompatibilityAction, migrateArtifact, migrateArtifactByPath, InMemoryArtifactMigrationRegistry, validateArtifactMigrationGraph, validateProgramCompatibility, validateMigrationManifest, validateNodeCompatibility, validateIrCompatibility } from '../packages/mhcm/src/index.ts';
+import { analyzeKode, compileKode, executeMhcmProgram, parseKode, getCompatibilityAction, migrateArtifact, migrateArtifactByPath, InMemoryArtifactMigrationRegistry, validateArtifactMigrationGraph, validateProgramCompatibility, validateMigrationManifest, validateNodeCompatibility, validateIrCompatibility, selectArtifactMigrationPath } from '../packages/mhcm/src/index.ts';
 
 const source = [
   'path A = A -> B;',
@@ -87,7 +87,7 @@ console.log('PASS per-node type-system provenance gate');
 
 const mismatchedIrProgram = { ...program, nodes: program.nodes.map((node, index) => index === 0 && node.kind === 'IR' ? { ...node, ir: { ...node.ir, metadata: { ...node.ir.metadata, typeSystemVersion: 'kode-types-v0.0.0' as typeof node.ir.metadata.typeSystemVersion } } } : node) };
 let rejectedIrVersion = false;
-try { executeMhcmProgram(mismatchedIrProgram); } catch (error) { rejectedIrVersion = error instanceof Error && error.message.includes('IR') && error.message.includes('does not match node version'); }
+try { executeMhcmProgram(mismatchedIrProgram); } catch (error) { rejectedIrVersion = error instanceof Error && (error.message.includes('Incompatible MHCM artifact') || (error.message.includes('IR') && error.message.includes('does not match node version'))); }
 if (!rejectedIrVersion) throw new Error('Runtime accepted IR with incompatible type-system provenance.');
 console.log('PASS IR type-system provenance gate');
 
@@ -101,11 +101,11 @@ console.log('PASS centralized artifact compatibility validation');
 const badProgram = { ...program, typeSystemVersion: 'kode-types-v0.0.0' };
 const report = validateProgramCompatibility(badProgram);
 if (report.ok || !report.issues.some((issue) => issue.code === 'PROGRAM_TYPE_SYSTEM_MISMATCH')) throw new Error('Structured program compatibility code missing.');
-const badNode = { ...program.nodes[0], typeSystemVersion: 'kode-types-v0.0.0' as typeof program.nodes[0].typeSystemVersion };
+const badNode = { ...program.nodes[0], typeSystemVersion: 'kode-types-v0.0.0' as (typeof program.nodes)[number]['typeSystemVersion'] };
 const nodeReport = validateNodeCompatibility(badNode, program.typeSystemVersion);
 if (nodeReport.ok || !nodeReport.issues.some((issue) => issue.code === 'NODE_TYPE_SYSTEM_MISMATCH')) throw new Error('Structured node compatibility code missing.');
 if (badNode.kind === 'IR') {
-  const irReport = validateIrCompatibility({ ...badNode.ir, irVersion: 'invalid' as typeof badNode.ir.irVersion }, badNode.typeSystemVersion);
+  const irReport = validateIrCompatibility({ ...badNode.ir, irVersion: 'invalid' as unknown as typeof badNode.ir.irVersion }, badNode.typeSystemVersion);
   if (irReport.ok || !irReport.issues.some((issue) => issue.code === 'IR_SCHEMA_MISMATCH')) throw new Error('Structured IR schema compatibility code missing.');
 }
 console.log('PASS structured artifact compatibility report');
@@ -152,9 +152,9 @@ const v02 = retargetProgram(program, 'kode-types-v0.2.0');
 const v03 = retargetProgram(v02, 'kode-types-v0.3.0');
 composedRegistry.register({ id: 'MIG-001', fromVersion: program.typeSystemVersion, toVersion: v02.typeSystemVersion, migrate: () => v02 });
 composedRegistry.register({ id: 'MIG-002', fromVersion: v02.typeSystemVersion, toVersion: v03.typeSystemVersion, migrate: () => v03 });
-const composed = migrateArtifact(program, v03.typeSystemVersion, composedRegistry);
-if (!composed.ok || composed.manifest.migrations.length !== 2 || composed.manifest.sourceVersion !== program.typeSystemVersion || composed.manifest.targetVersion !== v03.typeSystemVersion) throw new Error('Composed migration chain failed.');
-if (composed.migrationId !== 'MIG-001 -> MIG-002') throw new Error('Composed migration audit chain is incorrect.');
+const composedMigration = migrateArtifact(program, v03.typeSystemVersion, composedRegistry);
+if (!composedMigration.ok || composedMigration.manifest.migrations.length !== 2 || composedMigration.manifest.sourceVersion !== program.typeSystemVersion || composedMigration.manifest.targetVersion !== v03.typeSystemVersion) throw new Error('Composed migration chain failed.');
+if (composedMigration.migrationId !== 'MIG-001 -> MIG-002') throw new Error('Composed migration audit chain is incorrect.');
 console.log('PASS composed artifact migration chain');
 
 const pathRegistry = new InMemoryArtifactMigrationRegistry();
@@ -174,9 +174,9 @@ const invalidGraph = validateArtifactMigrationGraph(invalidGraphRegistry);
 if (invalidGraph.ok || !invalidGraph.issues.some((issue) => issue.code === 'MIGRATION_CYCLE')) throw new Error('Migration cycle was not detected.');
 console.log('PASS migration graph validation');
 
-const cycleObserved = validateArtifactMigrationGraph(invalidGraph, { allowCycles: true });
+const cycleObserved = validateArtifactMigrationGraph(invalidGraphRegistry, { allowCycles: true });
 if (!cycleObserved.ok || cycleObserved.cycles.length !== 2) throw new Error('Cycle observation policy failed to separate detection from rejection.');
-const cycleRejected = validateArtifactMigrationGraph(invalidGraph);
+const cycleRejected = validateArtifactMigrationGraph(invalidGraphRegistry);
 if (cycleRejected.ok || !cycleRejected.issues.some((issue) => issue.code === 'MIGRATION_CYCLE')) throw new Error('Default migration graph policy failed to reject cycles.');
 console.log('PASS migration cycle detection vs policy');
 
@@ -235,7 +235,7 @@ semanticIsolationRegistry.register({
   migrate: (input) => {
     const semantic = input.semanticPaths.get('missing', 'path');
     if (semantic) throw new Error('Unexpected semantic value.');
-    return { ...input, typeSystemVersion: semanticTarget };
+    return retargetProgram(input, semanticTarget);
   },
 });
 const semanticResult = migrateArtifact(program, semanticTarget, semanticIsolationRegistry);

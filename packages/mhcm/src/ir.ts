@@ -72,6 +72,7 @@ export function astToIr(node: HnkAstNode): HnkIrNode {
       encoding: node.encoding,
     },
     metadata: {
+      typeSystemVersion: KODE_TYPE_SYSTEM_VERSION,
       sourceAstKind: node.kind,
       provenance: node.provenance,
     },

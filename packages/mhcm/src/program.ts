@@ -6,7 +6,7 @@ import { assertProgramCompatibility } from './artifact-compatibility.ts';
 
 export type MhcmProgramNode =
   | { id: string; kind: 'IR'; typeSystemVersion: string; ir: HnkIrNode }
-  | { id: string; kind: 'OPERATOR'; typeSystemVersion: typeof KODE_TYPE_SYSTEM_VERSION; operator: 'PATH_REVERSE' | 'PATH_COMPOSE'; inputs: SemanticRef[]; resultType: 'OperatorResultPath'; semanticPathRef: SemanticRef };
+  | { id: string; kind: 'OPERATOR'; typeSystemVersion: string; operator: 'PATH_REVERSE' | 'PATH_COMPOSE'; inputs: SemanticRef[]; resultType: 'OperatorResultPath'; semanticPathRef: SemanticRef };
 
 
 
@@ -14,7 +14,7 @@ export type MhcmProgramNode =
 export type MhcmProgram = {
   id: string;
   version: '0.1';
-  typeSystemVersion: typeof KODE_TYPE_SYSTEM_VERSION;
+  typeSystemVersion: string;
   nodes: MhcmProgramNode[];
   outputs: string[];
   semanticPaths: SemanticRegistry<PathValue>;

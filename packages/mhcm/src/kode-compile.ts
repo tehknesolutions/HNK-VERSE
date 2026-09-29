@@ -32,12 +32,12 @@ export function compileKode(source: string): MhcmProgram {
       const semanticPath = analysis.model.semanticPaths.get(`PATH-${statement.name}`, 'path');
       if (!semanticPath) throw new Error(`Semantic PathValue missing for operator result "${statement.name}".`);
       semanticPaths.register(semanticPath, 'path');
-      nodes.push({ id: statement.name, kind: 'OPERATOR', typeSystemVersion: KODE_TYPE_SYSTEM_VERSION, operator: 'PATH_REVERSE', inputs: [statement.source.ref], resultType: 'OperatorResultPath', semanticPathRef: createSemanticRef('path', semanticPath.id) });
+      nodes.push({ id: statement.name, kind: 'OPERATOR', typeSystemVersion: KODE_TYPE_SYSTEM_VERSION, operator: 'PATH_REVERSE', inputs: [createSemanticRef('path', statement.source.name)], resultType: 'OperatorResultPath', semanticPathRef: createSemanticRef('path', semanticPath.id) });
     } else {
       const semanticPath = analysis.model.semanticPaths.get(`PATH-${statement.name}`, 'path');
       if (!semanticPath) throw new Error(`Semantic PathValue missing for operator result "${statement.name}".`);
       semanticPaths.register(semanticPath, 'path');
-      nodes.push({ id: statement.name, kind: 'OPERATOR', typeSystemVersion: KODE_TYPE_SYSTEM_VERSION, operator: 'PATH_COMPOSE', inputs: [statement.left.ref, statement.right.ref], resultType: 'OperatorResultPath', semanticPathRef: createSemanticRef('path', semanticPath.id) });
+      nodes.push({ id: statement.name, kind: 'OPERATOR', typeSystemVersion: KODE_TYPE_SYSTEM_VERSION, operator: 'PATH_COMPOSE', inputs: [createSemanticRef('path', statement.left.name), createSemanticRef('path', statement.right.name)], resultType: 'OperatorResultPath', semanticPathRef: createSemanticRef('path', semanticPath.id) });
     }
   }
 
