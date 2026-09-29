@@ -1,4 +1,4 @@
-import { analyzeKode, compileKode, executeMhcmProgram, parseKode, getCompatibilityAction, validateProgramCompatibility, validateNodeCompatibility, validateIrCompatibility } from '../packages/mhcm/src/index.ts';
+import { analyzeKode, compileKode, executeMhcmProgram, parseKode, getCompatibilityAction, migrateArtifact, InMemoryArtifactMigrationRegistry, validateProgramCompatibility, validateNodeCompatibility, validateIrCompatibility } from '../packages/mhcm/src/index.ts';
 
 const source = [
   'path A = A -> B;',
@@ -103,3 +103,15 @@ console.log('PASS structured artifact compatibility report');
 if (getCompatibilityAction(compatibility) !== 'warn') throw new Error('Valid compatibility result should not request rejection.');
 if (getCompatibilityAction(report) !== 'reject') throw new Error('Program mismatch should request rejection.');
 console.log('PASS compatibility severity/action classification');
+
+const migrationRegistry = new InMemoryArtifactMigrationRegistry();
+const migrated = { ...program, typeSystemVersion: 'kode-types-v0.2.0' as typeof program.typeSystemVersion };
+migrationRegistry.register({ id: 'kode-types-0.1-to-0.2', fromVersion: program.typeSystemVersion, toVersion: migrated.typeSystemVersion, migrate: () => migrated });
+const migrationResult = migrateArtifact(program, migrated.typeSystemVersion, migrationRegistry);
+if (!migrationResult.ok || migrationResult.migrationId !== 'kode-types-0.1-to-0.2') throw new Error('Registered artifact migration did not execute.');
+const noMigration = migrateArtifact(program, 'kode-types-v9.9.9', migrationRegistry);
+if (noMigration.ok || noMigration.reason !== 'NO_MIGRATION') throw new Error('Missing artifact migration was not reported.');
+let duplicateMigrationRejected = false;
+try { migrationRegistry.register({ id: 'duplicate', fromVersion: program.typeSystemVersion, toVersion: migrated.typeSystemVersion, migrate: () => migrated }); } catch { duplicateMigrationRejected = true; }
+if (!duplicateMigrationRejected) throw new Error('Duplicate artifact migration was accepted.');
+console.log('PASS explicit artifact migration API');
