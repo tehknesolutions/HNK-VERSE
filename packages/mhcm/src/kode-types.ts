@@ -8,11 +8,19 @@ export type KodeType = {
   parents: readonly KodeTypeId[];
 };
 
-export const KODE_TYPES: Record<KodeTypeId, KodeType> = {
+export const KODE_TYPE_SYSTEM_VERSION = 'kode-types-v0.1.0';
+
+const KODE_TYPE_DEFINITIONS: Record<KodeTypeId, KodeType> = {
   Path: { id: 'Path', category: 'value', parents: [] },
   OperatorResultPath: { id: 'OperatorResultPath', category: 'operator-result', parents: ['Path'] },
   SpecialPath: { id: 'SpecialPath', category: 'operator-result', parents: ['OperatorResultPath'] },
 };
+
+export const KODE_TYPES: Readonly<Record<KodeTypeId, KodeType>> = Object.freeze(
+  Object.fromEntries(
+    Object.entries(KODE_TYPE_DEFINITIONS).map(([id, type]) => [id, Object.freeze({ ...type, parents: Object.freeze([...type.parents]) })]),
+  ) as Record<KodeTypeId, KodeType>,
+);
 
 export type KodeTypeCompatibility = {
   actual: KodeTypeId;
@@ -93,9 +101,11 @@ function freezeTypeDefinitions(types: Record<KodeTypeId, KodeType>): Readonly<Re
 }
 
 export class KodeTypeSystem {
+  readonly version: string;
   private readonly types: Readonly<Record<KodeTypeId, KodeType>>;
 
-  constructor(types: Record<KodeTypeId, KodeType> = KODE_TYPES) {
+  constructor(types: Record<KodeTypeId, KodeType> = KODE_TYPES, version = KODE_TYPE_SYSTEM_VERSION) {
+    this.version = version;
     assertValidKodeTypeDefinitions(types);
     this.types = freezeTypeDefinitions(types);
   }
