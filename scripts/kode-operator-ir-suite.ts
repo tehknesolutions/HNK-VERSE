@@ -136,3 +136,13 @@ console.log('PASS transactional migration source preservation');
 if (!transactionResult.ok) throw new Error('Expected migration result.');
 if (!transactionResult.manifest || transactionResult.manifest.sourceVersion !== program.typeSystemVersion || transactionResult.manifest.targetVersion !== transactionTarget.typeSystemVersion || transactionResult.manifest.migrations.length !== 1) throw new Error('Migration manifest is incomplete.');
 console.log('PASS migration audit manifest');
+
+const composedRegistry = new InMemoryArtifactMigrationRegistry();
+const v02 = { ...program, typeSystemVersion: 'kode-types-v0.2.0' as typeof program.typeSystemVersion };
+const v03 = { ...v02, typeSystemVersion: 'kode-types-v0.3.0' as typeof program.typeSystemVersion };
+composedRegistry.register({ id: 'MIG-001', fromVersion: program.typeSystemVersion, toVersion: v02.typeSystemVersion, migrate: () => v02 });
+composedRegistry.register({ id: 'MIG-002', fromVersion: v02.typeSystemVersion, toVersion: v03.typeSystemVersion, migrate: () => v03 });
+const composed = migrateArtifact(program, v03.typeSystemVersion, composedRegistry);
+if (!composed.ok || composed.manifest.migrations.length !== 2 || composed.manifest.sourceVersion !== program.typeSystemVersion || composed.manifest.targetVersion !== v03.typeSystemVersion) throw new Error('Composed migration chain failed.');
+if (composed.migrationId !== 'MIG-001 -> MIG-002') throw new Error('Composed migration audit chain is incorrect.');
+console.log('PASS composed artifact migration chain');
