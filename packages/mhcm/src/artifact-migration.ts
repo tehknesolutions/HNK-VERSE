@@ -1,4 +1,5 @@
 import type { MhcmProgram } from './program.ts';
+import { SemanticRegistry, type PathValue } from './model.ts';
 import { validateProgramCompatibility } from './artifact-compatibility.ts';
 import { beginArtifactMigrationTransaction, commitArtifactMigrationTransaction } from './artifact-migration-transaction.ts';
 import { appendMigrationManifest, createMigrationManifest, type ArtifactMigrationManifest } from './artifact-migration-manifest.ts';
@@ -183,9 +184,22 @@ export type ArtifactMigrationResult =
   | { ok: true; program: MhcmProgram; migrationId: string; manifest: ArtifactMigrationManifest }
   | { ok: false; reason: 'NO_MIGRATION' | 'MIGRATION_FAILED' | 'MIGRATED_ARTIFACT_INCOMPATIBLE'; message: string };
 
+function cloneSemanticRegistry(source: MhcmProgram['semanticPaths']): SemanticRegistry<PathValue> {
+  const clone = new SemanticRegistry<PathValue>();
+  for (const namespace of ['path', 'cell', 'edge', 'generic'] as const) {
+    for (const value of source.valuesList(namespace)) clone.register(structuredClone(value), namespace);
+  }
+  return clone;
+}
+
+function cloneMigrationInput(program: MhcmProgram): MhcmProgram {
+  const clone = structuredClone(program);
+  return { ...clone, semanticPaths: cloneSemanticRegistry(program.semanticPaths) };
+}
+
 function applyMigrationStep(program: MhcmProgram, migration: ArtifactMigration): ArtifactMigrationResult {
   try {
-    const protectedSource = structuredClone(program);
+    const protectedSource = cloneMigrationInput(program);
     const migrated = migration.migrate(protectedSource);
     if (migrated.typeSystemVersion !== migration.toVersion) return { ok: false, reason: 'MIGRATION_FAILED', message: `Migration ${migration.id} did not produce target version ${migration.toVersion}.` };
     const compatibility = validateProgramCompatibility(migrated, migration.toVersion);
