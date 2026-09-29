@@ -1,0 +1,32 @@
+name: HV-01 World Gate
+
+on:
+  push:
+    branches:
+      - feature/hv-01-platform-kernel
+      - fix/hv-01-2r-world-hardening
+  pull_request:
+    paths:
+      - 'packages/world/**'
+      - 'packages/contracts/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/hv-01-platform-kernel.yml'
+
+jobs:
+  world:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: World invariants
+        run: pnpm test:world
+      - name: World typecheck
+        run: pnpm typecheck:world

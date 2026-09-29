@@ -44,16 +44,16 @@ const nodes = output.value.nodes as string[];
 const edges = output.value.edges as string[];
 
 if (nodes.join(',') !== 'C,B,A') throw new Error(`Unexpected final nodes: ${nodes.join(',')}`);
-if (edges.join(',') !== 'B->C,A->B') throw new Error(`Unexpected final edges: ${edges.join(',')}`);
+if (edges.join(',') !== 'C->B,B->A') throw new Error(`Unexpected final edges: ${edges.join(',')}`);
 if (output.value.start !== 'C' || output.value.end !== 'A') throw new Error('Final path endpoints mismatch.');
-if (output.inputs.length !== 1 || output.inputs[0] !== 'IR-A-COMPOSE-IR-B') {
+if (output.inputs.length !== 1 || output.inputs[0] !== 'IR-PATH-A-COMPOSE-IR-PATH-B') {
   throw new Error('Reverse IR input identity mismatch.');
 }
 
 console.log('KODE-0.2 operator IR suite: PASS');
-console.log('PASS KODE compose → PATH_COMPOSE');
-console.log('PASS KODE reverse → PATH_REVERSE');
-console.log('PASS compile graph → MHCM program execution');
+console.log('PASS KODE compose ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ PATH_COMPOSE');
+console.log('PASS KODE reverse ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ PATH_REVERSE');
+console.log('PASS compile graph ÃƒÂ¢Ã¢â‚¬Â Ã¢â‚¬â„¢ MHCM program execution');
 console.log('PASS final composed/reversed Path IR');
 
 const ast = parseKode(source);

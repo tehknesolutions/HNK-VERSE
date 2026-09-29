@@ -1,7 +1,7 @@
 import { VerseLifecycleRuntime } from '@hnk-verse/sdk';
 import type { VerseContext, VerseRuntime } from '@hnk-verse/contracts';
 
-const assert=(x:unknown,m:string):asserts x=>{if(!x)throw new Error('VERSE_SDK_LIFECYCLE_CHECK_FAILED: '+m)};
+const assert = (x: unknown, m: string) => {if(!x)throw new Error('VERSE_SDK_LIFECYCLE_CHECK_FAILED: '+m)};
 const context:VerseContext={identityId:'HNKID-ZERO-001',sessionId:'SESSION-T6-001',presenceId:'PRESENCE-T6-001',verseId:'VERSE-ZERO-A-001',worldId:'WORLD-ZERO-A-001',roles:['player'],permissions:[],correlationId:'CORR-T6-001',contracts:[{name:'verse-sdk',version:'0.1'}]};
 const ok=async()=>({ok:true} as const);
 const runtime:VerseRuntime={initialize:ok,enter:ok,suspend:ok,resume:ok,exit:ok,dispose:ok};

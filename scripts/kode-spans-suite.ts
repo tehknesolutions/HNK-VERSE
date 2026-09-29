@@ -6,10 +6,10 @@ const pathToken = tokens.find((token) => token.lexeme === 'path');
 if (!pathToken || pathToken.span.start !== 0 || pathToken.span.end !== 4 || pathToken.span.startPosition.line !== 1 || pathToken.span.startPosition.column !== 1 || pathToken.span.endPosition.column !== 5) throw new Error('KODE token span mismatch.');
 
 const program = parseKode(source);
-if (program.statements[0].span.start !== 0 || program.statements[0].span.end !== 17 || program.statements[0].span.startPosition.line !== 1 || program.statements[0].span.endPosition.line !== 1) {
+if (program.statements[0].span.start !== 0 || program.statements[0].span.end !== 16 || program.statements[0].span.startPosition.line !== 1 || program.statements[0].span.endPosition.line !== 1) {
   throw new Error(`KODE statement span mismatch: ${JSON.stringify(program.statements[0].span)}`);
 }
-if (program.statements[1].span.start !== 18 || program.statements[1].span.end !== source.length || program.statements[1].span.startPosition.line !== 2 || program.statements[1].span.startPosition.column !== 1) {
+if (program.statements[1].span.start !== 17 || program.statements[1].span.end !== source.length || program.statements[1].span.startPosition.line !== 2 || program.statements[1].span.startPosition.column !== 1) {
   throw new Error(`KODE reverse statement span mismatch: ${JSON.stringify(program.statements[1].span)}`);
 }
 

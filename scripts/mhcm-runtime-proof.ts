@@ -135,14 +135,14 @@ const programCommand: HnkCommand<Record<string, unknown>> = {
   issuedAtWorld: ZERO_FIXTURE_V1_INITIAL_STATE.worldTime,
   correlationId: 'CORR:MHCM-PROGRAM-RUNTIME-001',
   idempotencyKey: 'IDEMP:MHCM-PROGRAM-RUNTIME-001',
-  payload: program,
+  payload: { programId: program.id, nodes: program.nodes, outputs: program.outputs },
 };
 
 const programResult = await runtime.execute(programCommand);
 assert(programResult.accepted, `MHCM program execution rejected: ${programResult.rejectionCode}`);
 assert(programResult.data?.programId === program.id, 'Program execution lost identity.');
 assert(programResult.data?.executionMode === 'MHCM-PROGRAM-V2', 'Program executor did not run semantic nodes.');
-assert(Number(programResult.data?.resultIrIds?.length ?? 0) >= 5, 'Program executor did not produce node results.');
+assert(Array.isArray(programResult.data?.resultIrIds) && programResult.data.resultIrIds.length >= program.nodes.length, 'Program executor did not produce node results.');
 assert(programResult.state.mhcmProgramExecutions?.some((entry) => entry.programId === program.id), 'World state did not record program execution.');
 
 const programEvents = await store.allEvents(ZERO_IDS.world);
@@ -153,8 +153,8 @@ assert(nodeEvents.length === program.nodes.length, 'Program did not execute ever
 assert(programResult.state.mhcmProgramNodeExecutions?.length === program.nodes.length, 'World state did not persist every program node.');
 
 console.log('MHCM runtime proof: PASS');
-console.log('PASS MHCM Path → Glyph → AST → HNK-IR');
-console.log('PASS HNK-IR → ExecuteMhcmIr command');
+console.log('PASS MHCM Path â†’ Glyph â†’ AST â†’ HNK-IR');
+console.log('PASS HNK-IR â†’ ExecuteMhcmIr command');
 console.log('PASS runtime accepted IR');
 console.log('PASS MhcmIrExecuted event emitted');
 console.log('PASS semantic Glyph execution');

@@ -39,8 +39,10 @@ export function sortDiagnostics(diagnostics: KodeDiagnostic[]): KodeDiagnostic[]
 }
 
 export class KodeCompileError extends Error {
-  constructor(public readonly diagnostics: KodeDiagnostic[]) {
+  public readonly diagnostics: KodeDiagnostic[];
+  constructor(diagnostics: KodeDiagnostic[]) {
     super(diagnostics.map((d) => d.message).join('\n'));
+    this.diagnostics = diagnostics;
     this.name = 'KodeCompileError';
   }
 }
