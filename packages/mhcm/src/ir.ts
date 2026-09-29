@@ -1,4 +1,5 @@
 import type { HnkAstNode } from './ast.ts';
+import { KODE_TYPE_SYSTEM_VERSION } from './kode-types.ts';
 
 export const HNK_IR_SCHEMA_VERSION = 1 as const;
 export const MHCM_OPERATOR_IR_VERSION = 1 as const;
@@ -11,6 +12,7 @@ export type HnkIrNode = {
   inputs: string[];
   value: Record<string, unknown>;
   metadata: {
+    typeSystemVersion: typeof KODE_TYPE_SYSTEM_VERSION;
     sourceAstKind: HnkAstNode['kind'];
     provenance: HnkAstNode['provenance'];
   };
@@ -28,7 +30,7 @@ export function operatorToIr(
     op: 'MHCM_OPERATOR',
     inputs: inputs.map((input) => input.id),
     value: { operator, inputs: inputs.map((input) => input.id), operatorVersion: MHCM_OPERATOR_IR_VERSION },
-    metadata: { sourceAstKind: inputs[0]?.metadata.sourceAstKind ?? 'PathExpression', provenance },
+    metadata: { typeSystemVersion: KODE_TYPE_SYSTEM_VERSION, sourceAstKind: inputs[0]?.metadata.sourceAstKind ?? 'PathExpression', provenance },
   };
 }
 
@@ -49,6 +51,7 @@ export function astToIr(node: HnkAstNode): HnkIrNode {
         directed: node.directed,
       },
       metadata: {
+        typeSystemVersion: KODE_TYPE_SYSTEM_VERSION,
         sourceAstKind: node.kind,
         provenance: node.provenance,
       },
