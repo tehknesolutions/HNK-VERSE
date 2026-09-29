@@ -4,7 +4,7 @@ const source = 'path A = A -> B;\nreverse R = MISSING;';
 const ast = parseKode(source);
 if (ast.statements[1].kind !== 'ReverseStatement') throw new Error('Unexpected AST statement.');
 if (ast.statements[1].source.span.startPosition.line !== 2) throw new Error('Reference symbol line mismatch.');
-if (ast.statements[1].source.span.startPosition.column !== 14) throw new Error(`Reference symbol column mismatch: ${ast.statements[1].source.span.startPosition.column}`);
+if (ast.statements[1].source.span.startPosition.column !== 13) throw new Error(`Reference symbol column mismatch: ${ast.statements[1].source.span.startPosition.column}`);
 
 const result = tryCompileKode(source);
 if (result.ok) throw new Error('Expected semantic failure.');
