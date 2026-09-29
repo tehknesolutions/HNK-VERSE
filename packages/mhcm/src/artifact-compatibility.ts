@@ -24,15 +24,15 @@ export type ArtifactCompatibilityResult =
   | { ok: true; issues: readonly [] }
   | { ok: false; issues: readonly ArtifactCompatibilityIssue[] };
 
-export function validateProgramCompatibility(program: MhcmProgram): ArtifactCompatibilityResult {
+export function validateProgramCompatibility(program: MhcmProgram, expectedTypeSystemVersion: string = KODE_TYPE_SYSTEM_VERSION): ArtifactCompatibilityResult {
   const issues: ArtifactCompatibilityIssue[] = [];
-  if (program.typeSystemVersion !== KODE_TYPE_SYSTEM_VERSION) {
+  if (program.typeSystemVersion !== expectedTypeSystemVersion) {
     issues.push({
       code: 'PROGRAM_TYPE_SYSTEM_MISMATCH',
       severity: 'error',
       action: 'reject',
       artifactId: program.id,
-      message: `Program type-system version ${program.typeSystemVersion} is incompatible with ${KODE_TYPE_SYSTEM_VERSION}.`,
+      message: `Program type-system version ${program.typeSystemVersion} is incompatible with ${expectedTypeSystemVersion}.`,
     });
   }
 
