@@ -115,3 +115,10 @@ let duplicateMigrationRejected = false;
 try { migrationRegistry.register({ id: 'duplicate', fromVersion: program.typeSystemVersion, toVersion: migrated.typeSystemVersion, migrate: () => migrated }); } catch { duplicateMigrationRejected = true; }
 if (!duplicateMigrationRejected) throw new Error('Duplicate artifact migration was accepted.');
 console.log('PASS explicit artifact migration API');
+
+const incompatibleMigrationRegistry = new InMemoryArtifactMigrationRegistry();
+const brokenMigrated = { ...program, typeSystemVersion: 'kode-types-v0.2.0' as typeof program.typeSystemVersion, nodes: program.nodes.map((node) => ({ ...node, typeSystemVersion: 'kode-types-v0.0.0' as typeof node.typeSystemVersion })) };
+incompatibleMigrationRegistry.register({ id: 'broken-0.1-to-0.2', fromVersion: program.typeSystemVersion, toVersion: brokenMigrated.typeSystemVersion, migrate: () => brokenMigrated });
+const incompatibleMigration = migrateArtifact(program, brokenMigrated.typeSystemVersion, incompatibleMigrationRegistry);
+if (incompatibleMigration.ok || incompatibleMigration.reason !== 'MIGRATED_ARTIFACT_INCOMPATIBLE') throw new Error('Incompatible migrated artifact was accepted.');
+console.log('PASS migrate → validate → accept gate');
