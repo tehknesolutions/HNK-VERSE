@@ -12,7 +12,7 @@ export type HnkIrNode = {
   inputs: string[];
   value: Record<string, unknown>;
   metadata: {
-    typeSystemVersion: typeof KODE_TYPE_SYSTEM_VERSION;
+    typeSystemVersion: string;
     sourceAstKind: HnkAstNode['kind'];
     provenance: HnkAstNode['provenance'];
   };
