@@ -1,5 +1,6 @@
 import type { HnkIrNode } from './ir.ts';
 import { SemanticRegistry, type PathValue, type SemanticRef } from './model.ts';
+import { KODE_TYPE_SYSTEM_VERSION } from './kode-types.ts';
 import { executeMhcmOperator } from './executor.ts';
 
 export type MhcmProgramNode =
@@ -12,6 +13,7 @@ export type MhcmProgramNode =
 export type MhcmProgram = {
   id: string;
   version: '0.1';
+  typeSystemVersion: typeof KODE_TYPE_SYSTEM_VERSION;
   nodes: MhcmProgramNode[];
   outputs: string[];
   semanticPaths: SemanticRegistry<PathValue>;
@@ -23,6 +25,7 @@ export type MhcmProgramResult = {
 };
 
 export function executeMhcmProgram(program: MhcmProgram): MhcmProgramResult {
+  if (program.typeSystemVersion !== KODE_TYPE_SYSTEM_VERSION) throw new Error(`Incompatible KODE type-system version: ${program.typeSystemVersion}. Expected ${KODE_TYPE_SYSTEM_VERSION}.`);
   const values = new Map<string, HnkIrNode>();
 
   for (const node of program.nodes) {
