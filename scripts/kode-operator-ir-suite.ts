@@ -9,6 +9,7 @@ const source = [
 
 const program = compileKode(source);
 if (program.version !== '0.1') throw new Error('KODE program version changed.');
+if (program.typeSystemVersion !== 'kode-types-v0.1.0') throw new Error('Compiled program lost type-system version provenance.');
 if (program.nodes.length !== 4) throw new Error('Unexpected KODE program node count.');
 
 const composed = program.nodes.find((node) => node.id === 'C');
@@ -59,3 +60,9 @@ const registry = program.semanticPaths;
 if (!registry.has('PATH-C', 'path') || !registry.has('PATH-R', 'path')) throw new Error('Semantic PathValue registry lookup failed.');
 if (registry.get('PATH-C', 'path')?.nodes.join(',') !== 'A,B,C') throw new Error('Registry returned incorrect compose PathValue.');
 console.log('PASS semantic PathValue registry API');
+
+const incompatible = { ...program, typeSystemVersion: 'kode-types-v0.0.0' as typeof program.typeSystemVersion };
+let rejectedVersion = false;
+try { executeMhcmProgram(incompatible); } catch (error) { rejectedVersion = error instanceof Error && error.message.includes('Incompatible KODE type-system version'); }
+if (!rejectedVersion) throw new Error('Runtime accepted an incompatible type-system version.');
+console.log('PASS type-system version compatibility gate');
