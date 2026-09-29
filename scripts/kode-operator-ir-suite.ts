@@ -11,6 +11,7 @@ const program = compileKode(source);
 if (program.version !== '0.1') throw new Error('KODE program version changed.');
 if (program.typeSystemVersion !== 'kode-types-v0.1.0') throw new Error('Compiled program lost type-system version provenance.');
 if (program.nodes.length !== 4) throw new Error('Unexpected KODE program node count.');
+if (program.nodes.some((node) => node.typeSystemVersion !== program.typeSystemVersion)) throw new Error('Program node type-system provenance mismatch.');
 
 const composed = program.nodes.find((node) => node.id === 'C');
 if (!composed || composed.kind !== 'OPERATOR' || composed.operator !== 'PATH_COMPOSE') {
@@ -66,3 +67,9 @@ let rejectedVersion = false;
 try { executeMhcmProgram(incompatible); } catch (error) { rejectedVersion = error instanceof Error && error.message.includes('Incompatible KODE type-system version'); }
 if (!rejectedVersion) throw new Error('Runtime accepted an incompatible type-system version.');
 console.log('PASS type-system version compatibility gate');
+
+const mismatchedNodeProgram = { ...program, nodes: program.nodes.map((node, index) => index === 0 ? { ...node, typeSystemVersion: 'kode-types-v0.0.0' as typeof node.typeSystemVersion } : node) };
+let rejectedNodeVersion = false;
+try { executeMhcmProgram(mismatchedNodeProgram); } catch (error) { rejectedNodeVersion = error instanceof Error && error.message.includes('does not match program version'); }
+if (!rejectedNodeVersion) throw new Error('Runtime accepted a node with incompatible type-system provenance.');
+console.log('PASS per-node type-system provenance gate');
