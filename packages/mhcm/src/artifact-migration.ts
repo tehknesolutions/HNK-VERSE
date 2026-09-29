@@ -1,4 +1,5 @@
 import type { MhcmProgram } from './program.ts';
+import { validateProgramCompatibility } from './artifact-compatibility.ts';
 
 export type ArtifactMigration = {
   fromVersion: string;
@@ -29,7 +30,7 @@ export class InMemoryArtifactMigrationRegistry implements ArtifactMigrationRegis
 
 export type ArtifactMigrationResult =
   | { ok: true; program: MhcmProgram; migrationId: string }
-  | { ok: false; reason: 'NO_MIGRATION' | 'MIGRATION_FAILED'; message: string };
+  | { ok: false; reason: 'NO_MIGRATION' | 'MIGRATION_FAILED' | 'MIGRATED_ARTIFACT_INCOMPATIBLE'; message: string };
 
 export function migrateArtifact(
   program: MhcmProgram,
@@ -52,6 +53,14 @@ export function migrateArtifact(
         ok: false,
         reason: 'MIGRATION_FAILED',
         message: `Migration ${migration.id} did not produce target version ${targetVersion}.`,
+      };
+    }
+    const compatibility = validateProgramCompatibility(migrated);
+    if (!compatibility.ok) {
+      return {
+        ok: false,
+        reason: 'MIGRATED_ARTIFACT_INCOMPATIBLE',
+        message: `Migration ${migration.id} produced an incompatible artifact: ${compatibility.issues.map((issue) => `[${issue.code}] ${issue.message}`).join('; ')}`,
       };
     }
     return { ok: true, program: migrated, migrationId: migration.id };
