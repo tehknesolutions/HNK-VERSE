@@ -163,3 +163,9 @@ invalidGraphRegistry.register({ id: 'CYCLE-B', fromVersion: 'vB', toVersion: 'vA
 const invalidGraph = validateArtifactMigrationGraph(invalidGraphRegistry);
 if (invalidGraph.ok || !invalidGraph.issues.some((issue) => issue.code === 'MIGRATION_CYCLE')) throw new Error('Migration cycle was not detected.');
 console.log('PASS migration graph validation');
+
+const cycleObserved = validateArtifactMigrationGraph(invalidGraph, { allowCycles: true });
+if (!cycleObserved.ok || cycleObserved.cycles.length !== 2) throw new Error('Cycle observation policy failed to separate detection from rejection.');
+const cycleRejected = validateArtifactMigrationGraph(invalidGraph);
+if (cycleRejected.ok || !cycleRejected.issues.some((issue) => issue.code === 'MIGRATION_CYCLE')) throw new Error('Default migration graph policy failed to reject cycles.');
+console.log('PASS migration cycle detection vs policy');
