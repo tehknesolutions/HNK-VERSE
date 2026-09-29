@@ -28,8 +28,11 @@ export type ArtifactMigrationGraphIssue = {
   migrationId?: string;
 };
 
+export type ArtifactMigrationPathPolicy = 'reject-ambiguous' | 'deterministic-id';
+
 export type ArtifactMigrationGraphPolicy = {
   allowCycles?: boolean;
+  pathPolicy?: ArtifactMigrationPathPolicy;
 };
 
 export type ArtifactMigrationGraphValidation = {
@@ -37,6 +40,10 @@ export type ArtifactMigrationGraphValidation = {
   issues: readonly ArtifactMigrationGraphIssue[];
   cycles: readonly string[];
 };
+
+export type ArtifactMigrationPathResolution =
+  | { ok: true; path: ArtifactMigrationPath; ambiguous: false }
+  | { ok: false; reason: 'NO_PATH' | 'AMBIGUOUS_PATH'; candidates: readonly ArtifactMigrationPath[] };
 
 export function validateArtifactMigrationGraph(registry: ArtifactMigrationRegistry, policy: ArtifactMigrationGraphPolicy = {}): ArtifactMigrationGraphValidation {
   const issues: ArtifactMigrationGraphIssue[] = [];
@@ -84,6 +91,7 @@ export interface ArtifactMigrationRegistry {
   register(migration: ArtifactMigration): void;
   find(fromVersion: string, toVersion: string): ArtifactMigration | null;
   list(): readonly ArtifactMigration[];
+  resolvePath(fromVersion: string, toVersion: string, policy?: ArtifactMigrationPathPolicy): ArtifactMigrationPathResolution;
   findPath(fromVersion: string, toVersion: string): ArtifactMigrationPath | null;
 }
 
@@ -105,22 +113,40 @@ export class InMemoryArtifactMigrationRegistry implements ArtifactMigrationRegis
     return Object.freeze([...this.migrations.values()]);
   }
 
-  findPath(fromVersion: string, toVersion: string): ArtifactMigrationPath | null {
-    if (fromVersion === toVersion) return Object.freeze([]);
+  resolvePath(fromVersion: string, toVersion: string, policy: ArtifactMigrationPathPolicy = 'reject-ambiguous'): ArtifactMigrationPathResolution {
+    if (fromVersion === toVersion) return { ok: true, path: Object.freeze([]), ambiguous: false };
     const migrations = [...this.migrations.values()].sort((a, b) => a.id.localeCompare(b.id));
     const queue: Array<{ version: string; path: ArtifactMigration[] }> = [{ version: fromVersion, path: [] }];
-    const visited = new Set<string>([fromVersion]);
+    const distances = new Map<string, number>([[fromVersion, 0]]);
+    const candidates: ArtifactMigrationPath[] = [];
+    let shortestLength: number | null = null;
     while (queue.length) {
       const current = queue.shift()!;
+      if (shortestLength !== null && current.path.length >= shortestLength) continue;
       for (const candidate of migrations) {
-        if (candidate.fromVersion !== current.version || visited.has(candidate.toVersion)) continue;
+        if (candidate.fromVersion !== current.version) continue;
         const nextPath = [...current.path, candidate];
-        if (candidate.toVersion === toVersion) return Object.freeze(nextPath);
-        visited.add(candidate.toVersion);
+        const previousDistance = distances.get(candidate.toVersion);
+        if (previousDistance !== undefined && previousDistance < nextPath.length) continue;
+        distances.set(candidate.toVersion, nextPath.length);
+        if (candidate.toVersion === toVersion) {
+          shortestLength = nextPath.length;
+          candidates.push(Object.freeze(nextPath));
+          continue;
+        }
         queue.push({ version: candidate.toVersion, path: nextPath });
       }
     }
-    return null;
+    const shortest = candidates.filter((candidate) => candidate.length === shortestLength);
+    if (!shortest.length) return { ok: false, reason: 'NO_PATH', candidates: Object.freeze([]) };
+    if (shortest.length > 1 && policy === 'reject-ambiguous') return { ok: false, reason: 'AMBIGUOUS_PATH', candidates: Object.freeze(shortest) };
+    const selected = [...shortest].sort((a, b) => a.map((x) => x.id).join('\0').localeCompare(b.map((x) => x.id).join('\0')))[0];
+    return { ok: true, path: selected, ambiguous: shortest.length > 1 };
+  }
+
+  findPath(fromVersion: string, toVersion: string): ArtifactMigrationPath | null {
+    const result = this.resolvePath(fromVersion, toVersion, 'deterministic-id');
+    return result.ok ? result.path : null;
   }
 }
 
@@ -145,8 +171,9 @@ export function migrateArtifact(program: MhcmProgram, targetVersion: string, reg
   if (program.typeSystemVersion === targetVersion) return { ok: true, program, migrationId: 'identity', manifest: Object.freeze({ sourceVersion: targetVersion, targetVersion, migrations: Object.freeze([]) }) };
   const direct = registry.find(program.typeSystemVersion, targetVersion);
   if (direct) return applyMigrationStep(program, direct);
-  const path = registry.findPath(program.typeSystemVersion, targetVersion);
-  if (!path) return { ok: false, reason: 'NO_MIGRATION', message: `No migration chain registered from ${program.typeSystemVersion} to ${targetVersion}.` };
+  const pathResult = registry.resolvePath(program.typeSystemVersion, targetVersion, 'reject-ambiguous');
+  if (!pathResult.ok) return { ok: false, reason: 'NO_MIGRATION', message: pathResult.reason === 'AMBIGUOUS_PATH' ? `Multiple shortest migration chains exist from ${program.typeSystemVersion} to ${targetVersion}; explicit path selection is required.` : `No migration chain registered from ${program.typeSystemVersion} to ${targetVersion}.` };
+  const path = pathResult.path;
   let currentProgram = program;
   let manifest: ArtifactMigrationManifest | null = null;
   for (const step of path) {
