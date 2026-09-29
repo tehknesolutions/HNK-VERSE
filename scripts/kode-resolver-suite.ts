@@ -124,3 +124,9 @@ const immutablePath = immutableSystem.get('Path');
 try { (immutablePath.parents as KodeTypeId[]).push('SpecialPath'); throw new Error('Frozen parents metadata was mutable.'); } catch (error) { if (error instanceof Error && error.message === 'Frozen parents metadata was mutable.') throw error; }
 try { (immutablePath as { category: string }).category = 'operator-result'; throw new Error('Frozen type descriptor was mutable.'); } catch (error) { if (error instanceof Error && error.message === 'Frozen type descriptor was mutable.') throw error; }
 console.log('PASS immutable type definitions');
+
+import { KODE_TYPE_SYSTEM_VERSION } from '../packages/mhcm/src/kode-types.ts';
+const versionedSystem = new KodeTypeSystem();
+if (versionedSystem.version !== KODE_TYPE_SYSTEM_VERSION) throw new Error('Type-system version mismatch.');
+if (!Object.isFrozen(KODE_TYPES) || !Object.isFrozen(KODE_TYPES.Path) || !Object.isFrozen(KODE_TYPES.Path.parents)) throw new Error('Canonical KODE type definitions are not frozen.');
+console.log('PASS canonical type-system version and immutability');
