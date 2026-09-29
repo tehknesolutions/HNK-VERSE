@@ -33,8 +33,9 @@ export function appendMigrationManifest(
   toVersion: string,
 ): ArtifactMigrationManifest {
   const last = manifest.migrations[manifest.migrations.length - 1];
-  if (last && last.toVersion !== fromVersion) {
-    throw new Error(`Migration chain discontinuity: expected ${last.toVersion}, received ${fromVersion}.`);
+  const expectedFromVersion = last?.toVersion ?? manifest.targetVersion;
+  if (expectedFromVersion !== fromVersion) {
+    throw new Error(`Migration chain discontinuity: expected ${expectedFromVersion}, received ${fromVersion}.`);
   }
   if (toVersion === fromVersion) throw new Error('Migration manifest entry must change version.');
   return Object.freeze({
