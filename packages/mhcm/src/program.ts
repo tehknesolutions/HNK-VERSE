@@ -5,7 +5,7 @@ import { executeMhcmOperator } from './executor.ts';
 import { assertProgramCompatibility } from './artifact-compatibility.ts';
 
 export type MhcmProgramNode =
-  | { id: string; kind: 'IR'; typeSystemVersion: typeof KODE_TYPE_SYSTEM_VERSION; ir: HnkIrNode }
+  | { id: string; kind: 'IR'; typeSystemVersion: string; ir: HnkIrNode }
   | { id: string; kind: 'OPERATOR'; typeSystemVersion: typeof KODE_TYPE_SYSTEM_VERSION; operator: 'PATH_REVERSE' | 'PATH_COMPOSE'; inputs: SemanticRef[]; resultType: 'OperatorResultPath'; semanticPathRef: SemanticRef };
 
 
