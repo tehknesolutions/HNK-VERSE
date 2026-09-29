@@ -30,6 +30,7 @@ export function executeMhcmProgram(program: MhcmProgram): MhcmProgramResult {
 
   for (const node of program.nodes) {
     if (node.typeSystemVersion !== program.typeSystemVersion) throw new Error(`Node ${node.id} type-system version ${node.typeSystemVersion} does not match program version ${program.typeSystemVersion}.`);
+    if (node.kind === 'IR' && node.ir.metadata.typeSystemVersion !== node.typeSystemVersion) throw new Error(`IR ${node.ir.id} type-system version ${node.ir.metadata.typeSystemVersion} does not match node version ${node.typeSystemVersion}.`);
     if (values.has(node.id)) throw new Error(`Duplicate program node id: ${node.id}`);
 
     if (node.kind === 'IR') {
