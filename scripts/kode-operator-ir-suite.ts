@@ -122,3 +122,13 @@ incompatibleMigrationRegistry.register({ id: 'broken-0.1-to-0.2', fromVersion: p
 const incompatibleMigration = migrateArtifact(program, brokenMigrated.typeSystemVersion, incompatibleMigrationRegistry);
 if (incompatibleMigration.ok || incompatibleMigration.reason !== 'MIGRATED_ARTIFACT_INCOMPATIBLE') throw new Error('Incompatible migrated artifact was accepted.');
 console.log('PASS migrate → validate → accept gate');
+
+const sourceBeforeMigration = JSON.stringify(program);
+const transactionRegistry = new InMemoryArtifactMigrationRegistry();
+const transactionTarget = { ...program, typeSystemVersion: 'kode-types-v0.3.0' as typeof program.typeSystemVersion };
+transactionRegistry.register({ id: 'transactional-0.1-to-0.3', fromVersion: program.typeSystemVersion, toVersion: transactionTarget.typeSystemVersion, migrate: (input) => ({ ...input, typeSystemVersion: transactionTarget.typeSystemVersion }) });
+const transactionResult = migrateArtifact(program, transactionTarget.typeSystemVersion, transactionRegistry);
+if (!transactionResult.ok) throw new Error('Transactional migration unexpectedly failed.');
+if (JSON.stringify(program) !== sourceBeforeMigration) throw new Error('Migration mutated source artifact.');
+if (transactionResult.program === program) throw new Error('Migration returned source artifact instead of migrated artifact.');
+console.log('PASS transactional migration source preservation');
