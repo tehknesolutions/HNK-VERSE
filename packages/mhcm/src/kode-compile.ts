@@ -1,64 +1,40 @@
-import { KodeSyntaxError, parseKode, type KodeProgram } from './kode.ts';
+import { parseKode, KodeSyntaxError } from './kode.ts';
+import { analyzeKode } from './kode-semantic.ts';
+import { KodeCompileError, sortDiagnostics, type KodeDiagnostic } from './kode-diagnostics.ts';
+import { createDiagnosticReport } from './kode-report.ts';
+import type { KodeCompileResult } from './kode-result.ts';
+import type { MhcmProgram, MhcmProgramNode } from './program.ts';
 import { pathToAst } from './ast.ts';
 import { astToIr } from './ir.ts';
-import type { MhcmProgram } from './program.ts';
-import { SemanticRegistry, createSemanticRef, type PathValue } from './model.ts';
-import { KodeCompileError, diagnostic, sortDiagnostics } from './kode-diagnostics.ts';
-import { analyzeKode } from './kode-semantic.ts';
-import type { KodeCompileResult } from './kode-result.ts';
-import { createDiagnosticReport } from './kode-report.ts';
 
-export function compileKode(source: string): MhcmProgram {
-  let ast: KodeProgram;
-  try {
-    ast = parseKode(source);
-  } catch (error) {
-    throw new KodeCompileError([diagnostic('E_SYNTAX', error instanceof Error ? error.message : String(error), error instanceof KodeSyntaxError ? error.span : undefined)]);
-  }
-
-  const analysis = analyzeKode(ast);
-  if (!analysis.ok) throw new KodeCompileError(sortDiagnostics(analysis.diagnostics));
-
-  const semanticPaths = new SemanticRegistry<PathValue>();
-  const nodes: MhcmProgram['nodes'] = [];
-  const outputs: string[] = [];
-
+function compileAnalyzedKode(source: string): MhcmProgram {
+  const ast = parseKode(source);
+  const semantic = analyzeKode(ast);
+  if (!semantic.ok) throw new KodeCompileError(sortDiagnostics(semantic.diagnostics));
+  const nodes: MhcmProgramNode[] = [];
   for (const statement of ast.statements) {
-    const astPath = pathToAst({
-      id: statement.name,
-      start: statement.expression.nodes[0],
-      nodes: statement.expression.nodes,
-      edges: statement.expression.edges,
-      end: statement.expression.nodes.at(-1) ?? statement.expression.nodes[0],
-      directed: true,
-      provenance: { source: 'HNK-KODE' },
-    });
-    const ir = astToIr(astPath);
-    semanticPaths.register({
-      namespace: 'kode', id: statement.name, kind: 'Path', version: '0.1',
-      value: { start: astPath.start, nodes: [...astPath.nodes], edges: [...astPath.edges], end: astPath.end, directed: astPath.directed },
-    });
-    nodes.push({ id: statement.name, kind: 'IR', ir });
-    outputs.push(statement.name);
+    const semanticPath = semantic.model.semanticPaths.get(`PATH-${statement.name}`, 'path');
+    if (!semanticPath) throw new Error(`Missing semantic path for ${statement.name}.`);
+    nodes.push({ id: statement.name, kind: 'IR', ir: astToIr(pathToAst(semanticPath)) });
   }
-
-  return { id: 'KODE-PROGRAM', version: '0.1', nodes, outputs, semanticPaths };
+  return { id: 'KODE-PROGRAM', version: '0.1', nodes, outputs: ast.statements.length ? [ast.statements.at(-1)!.name] : [] };
 }
 
-export function compileKodeWithReport(source: string): KodeCompileResult {
+export function compileKode(source: string): MhcmProgram { return compileAnalyzedKode(source); }
+
+export function tryCompileKode(source: string): KodeCompileResult {
   try {
-    const program = compileKode(source);
-    return { ok: true, program, report: createDiagnosticReport([]) };
+    const program = compileAnalyzedKode(source);
+    const report = createDiagnosticReport([]);
+    return { ok: true, program, diagnostics: [], report };
   } catch (error) {
-    if (error instanceof KodeCompileError) return { ok: false, diagnostics: error.diagnostics, report: createDiagnosticReport(error.diagnostics) };
-    throw error;
+    const diagnostics: KodeDiagnostic[] = error instanceof KodeCompileError
+      ? sortDiagnostics(error.diagnostics)
+      : error instanceof KodeSyntaxError
+        ? [{ code: 'E_SYNTAX', severity: 'error', message: error.message, span: error.span, relatedSpans: [] }]
+        : (() => { throw error; })();
+    return { ok: false, program: null, diagnostics, report: createDiagnosticReport(diagnostics) };
   }
 }
 
-export function resolveKodePath(program: MhcmProgram, id: string) {
-  return program.semanticPaths.get(id, 'kode');
-}
-
-export function kodePathRef(id: string) {
-  return createSemanticRef('kode', id, 'Path', '0.1');
-}
+export function compileKodeWithReport(source: string): KodeCompileResult { return tryCompileKode(source); }
