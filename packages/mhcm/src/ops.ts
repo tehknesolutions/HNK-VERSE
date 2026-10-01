@@ -16,5 +16,5 @@ export function composePathIr(left: HnkIrNode, right: HnkIrNode): HnkIrNode {
   const le = Array.isArray(lv.edges) ? lv.edges.map(String) : [], re = Array.isArray(rv.edges) ? rv.edges.map(String) : [];
   if (!ln.length || !rn.length || String(lv.end) !== String(rv.start)) throw new Error('PATH_COMPOSE requires contiguous paths.');
   const nodes = [...ln, ...rn.slice(1)], edges = [...le, ...re];
-  return { irVersion: left.irVersion, id: `IR-${String(lv.id)}-COMPOSE-${right.id}`, type: 'Path', op: 'PATH_LITERAL', inputs: [left.id, right.id], value: { id: `${String(lv.id)}-COMPOSE-${String(rv.id)}`, start: nodes[0], nodes, edges, end: nodes[nodes.length - 1], directed: Boolean(lv.directed) && Boolean(rv.directed) }, metadata: { sourceAstKind: left.metadata.sourceAstKind, provenance: left.metadata.provenance } };
+  return { irVersion: left.irVersion, id: `IR-${String(lv.id)}-COMPOSE-${right.id}`, type: 'Path', op: 'PATH_LITERAL', inputs: [left.id, right.id], value: { id: `${String(lv.id)}-COMPOSE-${String(rv.id)}`, start: nodes[0], nodes, edges, end: nodes[nodes.length - 1], directed: Boolean(lv.directed) && Boolean(rv.directed) }, metadata: { typeSystemVersion: left.metadata.typeSystemVersion, sourceAstKind: left.metadata.sourceAstKind, provenance: left.metadata.provenance } };
 }

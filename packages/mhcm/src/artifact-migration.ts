@@ -43,7 +43,7 @@ export type ArtifactMigrationGraphValidation = {
 };
 
 export type ArtifactMigrationPathResolution =
-  | { ok: true; path: ArtifactMigrationPath; ambiguous: false }
+  | { ok: true; path: ArtifactMigrationPath; ambiguous: boolean }
   | { ok: false; reason: 'NO_PATH' | 'AMBIGUOUS_PATH'; candidates: readonly ArtifactMigrationPath[] };
 
 export type ArtifactMigrationPathSelectionResult =
